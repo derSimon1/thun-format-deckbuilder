@@ -1,0 +1,13 @@
+{
+  "deck_size": 60,
+  "sideboard_size": 15,
+  "max_copies": 3,
+
+  "allowed_rarities": [
+    "common",
+    "uncommon"
+  ],
+
+
+  "allow_basic_lands": true
+}

@@ -1,0 +1,35 @@
+{
+  "UR Robots": {
+    "colors": [
+      "U",
+      "R"
+    ],
+
+{
+  "required_tags": ["robot"],
+  "preferred_tags": [
+    "artifact",
+    "evasion",
+    "card_draw"
+  ],
+  "excluded_tags": [
+    "mill"
+  ],
+  "weights": {
+    "removal": 8,
+    "draw": 6,
+    "artifact": 10,
+    "tempo": 5
+  }
+}
+
+    "minimum_creatures": 22,
+
+    "preferred_curve": {
+      "1": 8,
+      "2": 14,
+      "3": 8,
+      "4": 4
+    }
+  }
+}
