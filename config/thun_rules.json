@@ -1,13 +1,10 @@
 {
-  "deck_size": 60,
-  "sideboard_size": 15,
   "max_copies": 3,
-
-  "allowed_rarities": [
-    "common",
-    "uncommon"
-  ],
-
-
-  "allow_basic_lands": true
+  "deck_size": 60,
+  "allowed_rarities": ["common", "uncommon"],
+  "allowed_formats": ["standard"],
+  "allowed_sets": [...],
+  "blocked_sets": [...],
+  "ignore_bonus_sheets": true,
+  "allow_reprints": true
 }
