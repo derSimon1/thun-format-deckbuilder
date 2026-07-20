@@ -4,7 +4,7 @@ import re
 from dataclasses import dataclass
 
 from thun_deckbuilder.card_analyzer import CardAnalysis
-from thun_deckbuilder.card_scoring import ScoreBreakdown
+from thun_deckbuilder.card_scoring import ScoreBreakdown, score_burn_card
 from thun_deckbuilder.deck_skeleton import BURN_SKELETON, DeckSkeleton
 from thun_deckbuilder.knowledge_base import CardKnowledge, KnowledgeBase
 
@@ -128,7 +128,7 @@ def _collect_candidates(
             BurnCandidate(
                 knowledge=knowledge,
                 mana_cost=parse_mana_cost(raw_mana_cost),
-                scoring=knowledge.scoring,
+                scoring=score_burn_card(knowledge.analysis),
             )
         )
 

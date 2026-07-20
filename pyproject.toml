@@ -12,6 +12,9 @@ dependencies = [
     "requests>=2.32,<3",
 ]
 
+[project.scripts]
+thun-deckbuilder = "thun_deckbuilder.cli:main"
+
 [project.optional-dependencies]
 dev = [
     "pytest>=8.3,<9",

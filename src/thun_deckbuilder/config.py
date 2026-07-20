@@ -32,6 +32,7 @@ class LegalityConfig:
 class SetConfig:
     starting_set: str
     blocked_sets: tuple[str, ...]
+    allowed_sets: tuple[str, ...]
 
 
 @dataclass(frozen=True)
@@ -41,9 +42,14 @@ class AppConfig:
     sets: SetConfig
 
 
+def _lower_tuple(values: object) -> tuple[str, ...]:
+    if not isinstance(values, list):
+        raise ValueError("Konfigurationswert muss eine Liste sein.")
+    return tuple(str(value).strip().lower() for value in values)
+
+
 def load_config(path: str | Path = THUN_CONFIG_FILE) -> AppConfig:
     config_path = Path(path)
-
     if not config_path.exists():
         raise FileNotFoundError(
             f"Konfigurationsdatei nicht gefunden: {config_path}"
@@ -56,7 +62,7 @@ def load_config(path: str | Path = THUN_CONFIG_FILE) -> AppConfig:
     legality_data = raw["legality"]
     set_data = raw["sets"]
 
-    return AppConfig(
+    config = AppConfig(
         format=FormatConfig(
             code=str(format_data["code"]),
             name=str(format_data["name"]),
@@ -67,25 +73,24 @@ def load_config(path: str | Path = THUN_CONFIG_FILE) -> AppConfig:
             commander_required=bool(format_data["commander_required"]),
         ),
         legality=LegalityConfig(
-            allowed_rarities=tuple(
-                str(value).lower()
-                for value in legality_data["allowed_rarities"]
-            ),
+            allowed_rarities=_lower_tuple(legality_data["allowed_rarities"]),
             paper_only=bool(legality_data["paper_only"]),
             allow_digital=bool(legality_data["allow_digital"]),
             allow_acorn=bool(legality_data["allow_acorn"]),
-            allow_bonus_sheets=bool(
-                legality_data["allow_bonus_sheets"]
-            ),
-            allow_special_guests=bool(
-                legality_data["allow_special_guests"]
-            ),
+            allow_bonus_sheets=bool(legality_data["allow_bonus_sheets"]),
+            allow_special_guests=bool(legality_data["allow_special_guests"]),
         ),
         sets=SetConfig(
             starting_set=str(set_data["starting_set"]).lower(),
-            blocked_sets=tuple(
-                str(value).lower()
-                for value in set_data["blocked_sets"]
-            ),
+            blocked_sets=_lower_tuple(set_data["blocked_sets"]),
+            allowed_sets=_lower_tuple(set_data["allowed_sets"]),
         ),
     )
+
+    overlap = set(config.sets.allowed_sets) & set(config.sets.blocked_sets)
+    if overlap:
+        raise ValueError(
+            "Sets dürfen nicht gleichzeitig erlaubt und gesperrt sein: "
+            + ", ".join(sorted(overlap))
+        )
+    return config

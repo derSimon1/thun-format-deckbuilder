@@ -1,104 +1,70 @@
+from __future__ import annotations
+
+from collections.abc import Iterable
 from dataclasses import dataclass
+from typing import Any
+
+from thun_deckbuilder.config import AppConfig
 
 
-@dataclass
+@dataclass(frozen=True)
 class PrintLegalityResult:
     legal: bool
     reason: str
 
 
-def is_print_legal(
-    *,
-    rarity: str,
-    digital: bool,
-    games: str,
-    set_allowed: bool,
-) -> PrintLegalityResult:
-    """
-    Prüft einen einzelnen Druck auf Thun-Legalität.
-    """
-
-    rarity = rarity.lower()
-
-    if rarity not in ("common", "uncommon"):
-        return PrintLegalityResult(
-            False,
-            "Rarity is not common or uncommon."
-        )
-
-    if digital:
-        return PrintLegalityResult(
-            False,
-            "Digital print."
-        )
-
-    if "paper" not in games.lower():
-        return PrintLegalityResult(
-            False,
-            "Not available in paper."
-        )
-
-    if not set_allowed:
-        return PrintLegalityResult(
-            False,
-            "Set not allowed."
-        )
-
-    return PrintLegalityResult(
-        True,
-        "Legal."
-    )
-from collections.abc import Iterable
-from typing import Any
-
-
-@dataclass
+@dataclass(frozen=True)
 class CardLegalityResult:
     legal: bool
     reason: str
-    legal_prints: list[dict[str, Any]]
+    legal_prints: tuple[dict[str, Any], ...]
+
+
+def _contains_paper(games: object) -> bool:
+    if isinstance(games, (list, tuple, set)):
+        return "paper" in {str(game).lower() for game in games}
+    return "paper" in str(games).lower()
+
+
+def is_print_legal(
+    card_print: dict[str, Any],
+    config: AppConfig,
+) -> PrintLegalityResult:
+    rarity = str(card_print.get("rarity", "")).lower()
+    set_code = str(card_print.get("set_code", card_print.get("set", ""))).lower()
+    digital = bool(card_print.get("digital", False))
+    games = card_print.get("games", "")
+
+    if rarity not in config.legality.allowed_rarities:
+        return PrintLegalityResult(False, "Rarity is not allowed.")
+    if digital and not config.legality.allow_digital:
+        return PrintLegalityResult(False, "Digital print.")
+    if config.legality.paper_only and not _contains_paper(games):
+        return PrintLegalityResult(False, "Not available in paper.")
+    if set_code in config.sets.blocked_sets:
+        return PrintLegalityResult(False, "Set is blocked.")
+    if set_code not in config.sets.allowed_sets:
+        return PrintLegalityResult(False, "Set is not allowed.")
+    return PrintLegalityResult(True, "Legal.")
 
 
 def is_card_legal(
     prints: Iterable[dict[str, Any]],
+    config: AppConfig,
 ) -> CardLegalityResult:
-    """
-    Prüft alle Druckversionen einer Karte.
-
-    Eine Karte ist legal, wenn mindestens ein Print legal ist.
-    """
-
     print_list = list(prints)
-
     if not print_list:
-        return CardLegalityResult(
-            legal=False,
-            reason="No prints found.",
-            legal_prints=[],
-        )
+        return CardLegalityResult(False, "No prints found.", ())
 
-    legal_prints: list[dict[str, Any]] = []
-
-    for card_print in print_list:
-        result = is_print_legal(
-            rarity=str(card_print.get("rarity", "")),
-            digital=bool(card_print.get("digital", False)),
-            games=str(card_print.get("games", "")),
-            set_allowed=bool(card_print.get("set_allowed", False)),
-        )
-
-        if result.legal:
-            legal_prints.append(card_print)
-
+    legal_prints = tuple(
+        card_print
+        for card_print in print_list
+        if is_print_legal(card_print, config).legal
+    )
     if legal_prints:
         return CardLegalityResult(
-            legal=True,
-            reason="At least one legal print exists.",
-            legal_prints=legal_prints,
+            True,
+            "At least one legal print exists.",
+            legal_prints,
         )
-
-    return CardLegalityResult(
-        legal=False,
-        reason="No legal print exists.",
-        legal_prints=[],
-    )
+    return CardLegalityResult(False, "No legal print exists.", ())

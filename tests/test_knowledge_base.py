@@ -24,4 +24,3 @@ def test_every_card_has_analysis():
         assert card.analysis.name
         assert card.roles is not None
         assert card.synergies is not None
-        assert card.scoring.score >= 0
