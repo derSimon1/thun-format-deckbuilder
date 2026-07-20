@@ -84,3 +84,28 @@ def test_destroy_card_has_removal_role():
     roles = detect_roles(analysis)
 
     assert "removal" in roles
+
+def test_detects_token_payoff_and_anthem():
+    card = {
+        "name": "Test Anthem",
+        "mana_value": 2,
+        "colors": ["W"],
+        "color_identity": ["W"],
+        "type_line": "Enchantment",
+        "oracle_text": "Creature tokens you control get +1/+1.",
+    }
+    roles = detect_roles(analyze_card(card))
+    assert "anthem" in roles
+    assert "token_payoff" in roles
+
+
+def test_detects_early_creature_as_aggro_creature():
+    card = {
+        "name": "Test Aggro",
+        "mana_value": 1,
+        "colors": ["R"],
+        "color_identity": ["R"],
+        "type_line": "Creature — Goblin",
+        "oracle_text": "Haste",
+    }
+    assert "aggro_creature" in detect_roles(analyze_card(card))

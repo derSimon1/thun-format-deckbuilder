@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
+set -euo pipefail
 
-set -e
+cd "$(dirname "$0")/.."
 
 echo "======================================"
 echo "Running test suite"
 echo "======================================"
 
-pytest
+python -m pytest

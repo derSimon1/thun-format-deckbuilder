@@ -32,58 +32,43 @@ class DeckEntry:
     type_line: str
     score: float = 0.0
     reasons: tuple[str, ...] = ()
+    roles: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
 class GeneratedDeck:
     mainboard: tuple[DeckEntry, ...]
     lands: int
+    profile_name: str = ""
+    requested_roles: tuple[tuple[str, int], ...] = ()
+    fulfilled_roles: tuple[tuple[str, int], ...] = ()
+    warnings: tuple[str, ...] = ()
 
 
 def parse_mana_cost(raw_mana_cost: str) -> ManaCost:
     symbols = re.findall(r"\{([^}]+)\}", raw_mana_cost)
-
     generic = 0
     colored_parts: list[str] = []
-
     for symbol in symbols:
         normalized = symbol.upper()
-
         if normalized.isdigit():
             generic += int(normalized)
-            continue
-
-        colored_parts.append(normalized)
-
-    return ManaCost(
-        raw=raw_mana_cost,
-        generic=generic,
-        colored=" ".join(colored_parts),
-    )
+        else:
+            colored_parts.append(normalized)
+    return ManaCost(raw=raw_mana_cost, generic=generic, colored=" ".join(colored_parts))
 
 
 def _is_mono_red(analysis: CardAnalysis) -> bool:
     return set(analysis.color_identity).issubset({"R"})
 
 
-def _is_reasonable_burn_card(
-    knowledge: CardKnowledge,
-) -> bool:
+def _is_reasonable_burn_card(knowledge: CardKnowledge) -> bool:
     analysis = knowledge.analysis
     text = analysis.oracle_text.lower()
-
-    if analysis.is_land:
+    if analysis.is_land or not _is_mono_red(analysis) or analysis.mana_value > 4:
         return False
-
-    if "burn" not in knowledge.roles:
+    if not knowledge.roles.intersection({"burn", "aggro_creature", "card_draw"}):
         return False
-
-    if not _is_mono_red(analysis):
-        return False
-
-    if analysis.mana_value > 4:
-        return False
-
     bad_phrases = (
         "deals damage to you",
         "damage to itself",
@@ -91,108 +76,22 @@ def _is_reasonable_burn_card(
         "damage to each creature you control",
         "damage equal to its power to itself",
     )
-
-    if any(phrase in text for phrase in bad_phrases):
-        return False
-
-    useful_targets = (
-        "any target",
-        "target creature",
-        "target player",
-        "target opponent",
-        "each opponent",
-        "each player",
-        "creature or planeswalker",
-    )
-
-    return any(
-        target in text
-        for target in useful_targets
-    )
+    return not any(phrase in text for phrase in bad_phrases)
 
 
-def _collect_candidates(
-    knowledge_base: KnowledgeBase,
-) -> list[BurnCandidate]:
-    candidates: list[BurnCandidate] = []
-
-    for knowledge in knowledge_base.cards:
-        if not _is_reasonable_burn_card(knowledge):
-            continue
-
-        raw_mana_cost = str(
-            knowledge.card.get("mana_cost", "")
-        )
-
-        candidates.append(
-            BurnCandidate(
-                knowledge=knowledge,
-                mana_cost=parse_mana_cost(raw_mana_cost),
-                scoring=score_burn_card(knowledge.analysis),
-            )
-        )
-
-    return candidates
-
-
-def _select_cards_for_curve_slot(
-    candidates: list[BurnCandidate],
-    minimum_mana_value: float,
-    maximum_mana_value: float,
-    cards_needed: int,
-    max_copies: int,
-    used_names: set[str],
-) -> list[DeckEntry]:
-    slot_candidates = [
-        candidate
-        for candidate in candidates
-        if minimum_mana_value
-        < candidate.knowledge.analysis.mana_value
-        <= maximum_mana_value
-        and candidate.knowledge.analysis.name not in used_names
-    ]
-
-    slot_candidates.sort(
-        key=lambda candidate: (
-            -candidate.scoring.score,
-            candidate.knowledge.analysis.mana_value,
-            candidate.knowledge.analysis.name,
-        )
-    )
-
-    entries: list[DeckEntry] = []
-    remaining = cards_needed
-
-    for candidate in slot_candidates:
-        if remaining <= 0:
-            break
-
-        analysis = candidate.knowledge.analysis
-        quantity = min(max_copies, remaining)
-
-        entries.append(
-            DeckEntry(
-                name=analysis.name,
-                quantity=quantity,
-                mana_cost=candidate.mana_cost,
-                mana_value=analysis.mana_value,
-                type_line=analysis.type_line,
-                score=candidate.scoring.score,
-                reasons=candidate.scoring.reasons,
-            )
-        )
-
-        used_names.add(analysis.name)
-        remaining -= quantity
-
-    if remaining > 0:
-        raise ValueError(
-            "Nicht genügend Burn-Karten für den Kurvenbereich "
-            f">{minimum_mana_value} bis {maximum_mana_value} Mana. "
-            f"Es fehlen {remaining} Karten."
-        )
-
-    return entries
+def _score_for_composition(knowledge: CardKnowledge) -> tuple[float, tuple[str, ...]]:
+    scored = score_burn_card(knowledge.analysis)
+    score = scored.score
+    reasons = list(scored.reasons)
+    if "aggro_creature" in knowledge.roles:
+        score += 2
+        reasons.append("Frühe aggressive Kreatur")
+    if "card_draw" in knowledge.roles:
+        score += 1.5
+        reasons.append("Kartennachschub")
+    if not reasons:
+        reasons.append("Passt zum Burn-Profil")
+    return score, tuple(reasons)
 
 
 def generate_burn_deck(
@@ -200,27 +99,34 @@ def generate_burn_deck(
     skeleton: DeckSkeleton = BURN_SKELETON,
     max_copies: int = 3,
 ) -> GeneratedDeck:
-    candidates = _collect_candidates(knowledge_base)
+    # ``skeleton`` remains in the public API for compatibility. The profile is
+    # now the source of truth for composition; custom legacy skeletons retain
+    # their land count through a derived profile.
+    from thun_deckbuilder.composition_engine import build_composition
+    from thun_deckbuilder.deck_profile import BURN_PROFILE, DeckProfile
 
-    entries: list[DeckEntry] = []
-    used_names: set[str] = set()
-
-    previous_maximum = -1.0
-
-    for slot in skeleton.curve:
-        slot_entries = _select_cards_for_curve_slot(
-            candidates=candidates,
-            minimum_mana_value=previous_maximum,
-            maximum_mana_value=slot.max_mana_value,
-            cards_needed=slot.cards,
-            max_copies=max_copies,
-            used_names=used_names,
+    profile = BURN_PROFILE
+    if skeleton.lands != BURN_PROFILE.lands:
+        profile = DeckProfile(
+            name=BURN_PROFILE.name,
+            lands=skeleton.lands,
+            role_targets=BURN_PROFILE.role_targets,
+            curve_targets=BURN_PROFILE.curve_targets,
         )
-
-        entries.extend(slot_entries)
-        previous_maximum = float(slot.max_mana_value)
-
+    deck_size = profile.lands + sum(slot.cards for slot in skeleton.curve)
+    result = build_composition(
+        knowledge_base.cards,
+        profile=profile,
+        deck_size=deck_size,
+        max_copies=max_copies,
+        eligible=_is_reasonable_burn_card,
+        score_card=_score_for_composition,
+    )
     return GeneratedDeck(
-        mainboard=tuple(entries),
-        lands=skeleton.lands,
+        mainboard=result.entries,
+        lands=profile.lands,
+        profile_name=profile.name,
+        requested_roles=result.requested_roles,
+        fulfilled_roles=result.fulfilled_roles,
+        warnings=result.warnings,
     )

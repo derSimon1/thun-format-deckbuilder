@@ -1,13 +1,14 @@
 #!/usr/bin/env bash
+set -euo pipefail
 
-set -e
+cd "$(dirname "$0")/.."
 
 echo "======================================"
 echo "Setting up development environment"
 echo "======================================"
 
 python -m pip install --upgrade pip
-pip install -e .
+python -m pip install -e ".[dev]"
 
 echo ""
 echo "Done."
