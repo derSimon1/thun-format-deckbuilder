@@ -3,9 +3,10 @@ from __future__ import annotations
 import re
 
 from thun_deckbuilder.card_analyzer import CardAnalysis
+from thun_deckbuilder.card_role import CardRole
 
 
-def detect_roles(analysis: CardAnalysis) -> frozenset[str]:
+def detect_roles(analysis: CardAnalysis) -> frozenset[CardRole]:
     """Assign broad functional roles from Oracle text and card type.
 
     The detector intentionally uses conservative patterns. False positives are
@@ -14,21 +15,21 @@ def detect_roles(analysis: CardAnalysis) -> frozenset[str]:
     """
 
     text = analysis.oracle_text.lower()
-    roles: set[str] = set()
+    roles: set[CardRole] = set()
 
     if "draw" in analysis.features or "exile the top card" in text:
-        roles.add("card_draw")
+        roles.add(CardRole.CARD_DRAW)
 
     if "mana" in analysis.features or "search your library for a basic land" in text:
-        roles.add("ramp")
+        roles.add(CardRole.RAMP)
 
     if "token" in analysis.features:
-        roles.add("token_maker")
+        roles.add(CardRole.TOKEN_MAKER)
 
     if "destroy" in analysis.features or "exile" in analysis.features:
-        roles.add("removal")
+        roles.add(CardRole.REMOVAL)
     if re.search(r"deals? \d+ damage to target creature", text):
-        roles.add("removal")
+        roles.add(CardRole.REMOVAL)
 
     if "damage" in analysis.features and any(
         phrase in text
@@ -40,7 +41,7 @@ def detect_roles(analysis: CardAnalysis) -> frozenset[str]:
             "each player",
         )
     ):
-        roles.add("burn")
+        roles.add(CardRole.BURN)
 
     anthem_patterns = (
         "creatures you control get +",
@@ -50,8 +51,8 @@ def detect_roles(analysis: CardAnalysis) -> frozenset[str]:
         "put a +1/+1 counter on each",
     )
     if any(pattern in text for pattern in anthem_patterns):
-        roles.add("anthem")
-        roles.add("token_payoff")
+        roles.add(CardRole.ANTHEM)
+        roles.add(CardRole.TOKEN_PAYOFF)
 
     if any(
         phrase in text
@@ -63,7 +64,7 @@ def detect_roles(analysis: CardAnalysis) -> frozenset[str]:
             "creature tokens you control have",
         )
     ):
-        roles.add("token_payoff")
+        roles.add(CardRole.TOKEN_PAYOFF)
 
     if any(
         phrase in text
@@ -74,16 +75,16 @@ def detect_roles(analysis: CardAnalysis) -> frozenset[str]:
             "phase out",
         )
     ):
-        roles.add("protection")
+        roles.add(CardRole.PROTECTION)
 
     if "sacrifice" in text:
-        roles.add("sacrifice")
+        roles.add(CardRole.SACRIFICE)
 
     if analysis.is_creature and analysis.mana_value <= 2:
-        roles.add("aggro_creature")
+        roles.add(CardRole.AGGRO_CREATURE)
 
     if analysis.is_creature and analysis.mana_value >= 5:
-        roles.add("finisher")
+        roles.add(CardRole.FINISHER)
 
     if any(
         phrase in text
@@ -94,6 +95,6 @@ def detect_roles(analysis: CardAnalysis) -> frozenset[str]:
             "deals 4 damage to each creature",
         )
     ):
-        roles.add("board_wipe")
+        roles.add(CardRole.BOARD_WIPE)
 
     return frozenset(roles)

@@ -4,6 +4,7 @@ import re
 from dataclasses import dataclass
 from typing import Mapping
 
+from thun_deckbuilder.card_role import CardRole, normalize_role
 from thun_deckbuilder.knowledge_base import CardKnowledge
 
 
@@ -14,12 +15,11 @@ _COLOR_SYMBOL = re.compile(r"\{([WUBRG])(?:/[^}]*)?\}", re.IGNORECASE)
 class RoleContribution:
     """How strongly a card contributes to one functional deck role."""
 
-    role: str
+    role: CardRole
     strength: float = 1.0
 
     def __post_init__(self) -> None:
-        if not self.role:
-            raise ValueError("Role name cannot be empty.")
+        object.__setattr__(self, "role", normalize_role(self.role))
         if self.strength <= 0:
             raise ValueError("Role contribution strength must be positive.")
 
@@ -36,8 +36,9 @@ class CardContribution:
     is_land: bool = False
     is_legendary: bool = False
 
-    def strength_for(self, role: str) -> float:
-        return sum(item.strength for item in self.roles if item.role == role)
+    def strength_for(self, role: CardRole | str) -> float:
+        normalized = normalize_role(role)
+        return sum(item.strength for item in self.roles if item.role == normalized)
 
     def pip_count(self, color: str) -> int:
         normalized = color.upper()

@@ -2,16 +2,19 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from thun_deckbuilder.card_role import CardRole, normalize_role
+
 
 @dataclass(frozen=True)
 class RoleTarget:
     """Desired number of non-land cards for one strategic role."""
 
-    role: str
+    role: CardRole
     minimum: int
     target: int
 
     def __post_init__(self) -> None:
+        object.__setattr__(self, "role", normalize_role(self.role))
         if self.minimum < 0:
             raise ValueError("Role minimum cannot be negative.")
         if self.target < self.minimum:

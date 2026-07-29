@@ -174,3 +174,31 @@ def build_composition(
         fulfilled_roles=tuple((role, fulfilled[role]) for role in fulfilled),
         warnings=tuple(warnings),
     )
+
+
+class CompositionEngine:
+    """Stable object-oriented facade for the existing composition algorithm.
+
+    The current functional implementation remains the single source of truth.
+    Introducing this facade now lets later dynamic scoring replace internals
+    without forcing callers to change again.
+    """
+
+    def build(
+        self,
+        cards: Iterable[CardKnowledge],
+        *,
+        profile: DeckProfile,
+        deck_size: int,
+        max_copies: int,
+        eligible: EligibilityFunction,
+        score_card: ScoreFunction,
+    ) -> CompositionResult:
+        return build_composition(
+            cards,
+            profile=profile,
+            deck_size=deck_size,
+            max_copies=max_copies,
+            eligible=eligible,
+            score_card=score_card,
+        )
