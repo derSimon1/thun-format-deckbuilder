@@ -4,10 +4,19 @@ import argparse
 
 from thun_deckbuilder.card_database import CardDatabase
 from thun_deckbuilder.deck_builder import generate_deck
+from thun_deckbuilder.matchup_simulator import MatchupSimulator
+from thun_deckbuilder.meta_matrix import MetaMatrixAnalyzer, format_matchup_report, format_meta_matrix
 from thun_deckbuilder.prototype import format_deck
 
 
 ARCHETYPES = ("burn", "tokens", "artifacts", "shrines", "mill")
+DEFAULT_COLORS = {
+    "burn": ("R",),
+    "tokens": ("W",),
+    "artifacts": ("U", "R"),
+    "shrines": ("W", "U", "B", "R", "G"),
+    "mill": ("U", "B"),
+}
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -20,9 +29,26 @@ def build_parser() -> argparse.ArgumentParser:
     deck.add_argument("--explain", action="store_true", help="Show every iterative selection decision")
     deck.add_argument("--benchmark", action="store_true", help="Show calibration benchmark report")
 
+    matchup = subparsers.add_parser("matchup", help="Compare two generated archetypes")
+    matchup.add_argument("archetype_a", choices=ARCHETYPES)
+    matchup.add_argument("archetype_b", choices=ARCHETYPES)
+    matchup.add_argument("--samples", type=int, default=2000)
+
+    meta = subparsers.add_parser("meta", help="Run a round-robin archetype meta analysis")
+    meta.add_argument("archetypes", nargs="*", choices=ARCHETYPES, default=list(ARCHETYPES))
+    meta.add_argument("--samples", type=int, default=2000, help="Samples per matchup")
+
     legality = subparsers.add_parser("legal", help="Check one card")
     legality.add_argument("card_name")
     return parser
+
+
+def _generate_default(database: CardDatabase, archetype: str):
+    return generate_deck(
+        database=database,
+        archetype=archetype,
+        colors=DEFAULT_COLORS[archetype],
+    )
 
 
 def main() -> int:
@@ -36,6 +62,29 @@ def main() -> int:
             legal = database.is_card_legal_by_name(args.card_name)
             print(f"{card['name']}: {'LEGAL' if legal else 'NICHT LEGAL'}")
             return 0 if legal else 1
+
+        if args.command == "matchup":
+            deck_a = _generate_default(database, args.archetype_a)
+            deck_b = _generate_default(database, args.archetype_b)
+            report = MatchupSimulator().simulate(
+                deck_a,
+                deck_b,
+                archetype_a=args.archetype_a,
+                archetype_b=args.archetype_b,
+                samples=args.samples,
+            )
+            print(format_matchup_report(report))
+            return 0
+
+        if args.command == "meta":
+            archetypes = tuple(args.archetypes or ARCHETYPES)
+            if len(set(archetypes)) < 2:
+                parser = build_parser()
+                parser.error("meta requires at least two distinct archetypes")
+            decks = {archetype: _generate_default(database, archetype) for archetype in archetypes}
+            report = MetaMatrixAnalyzer().analyze(decks, samples_per_matchup=args.samples)
+            print(format_meta_matrix(report))
+            return 0
 
         deck = generate_deck(
             database=database,
