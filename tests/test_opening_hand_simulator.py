@@ -27,6 +27,19 @@ def test_simulation_is_deterministic():
     assert first == second
 
 
+def test_mulligan_improves_playable_hand_rate():
+    deck = GeneratedDeck(
+        mainboard=(
+            entry("Cheap Mill", 24, 2, reasons=("Millt Karten",)),
+            entry("Slow Support", 12, 5),
+        ),
+        lands=24,
+    )
+    report = OpeningHandSimulator().simulate(deck, archetype="mill", samples=2000)
+    assert report.mulligan_to_six_pct > 0
+    assert report.playable_after_mulligan_pct >= report.playable_hands_pct
+
+
 def test_low_curve_deck_has_more_early_plays_than_slow_deck():
     fast = GeneratedDeck(
         mainboard=(entry("Cheap", 36, 2),),
@@ -40,7 +53,7 @@ def test_low_curve_deck_has_more_early_plays_than_slow_deck():
     fast_report = simulator.simulate(fast, archetype="mill", samples=1000)
     slow_report = simulator.simulate(slow, archetype="mill", samples=1000)
     assert fast_report.early_play_pct > slow_report.early_play_pct
-    assert fast_report.playable_hands_pct > slow_report.playable_hands_pct
+    assert fast_report.playable_after_mulligan_pct > slow_report.playable_after_mulligan_pct
 
 
 def test_core_density_increases_turn_three_access():
@@ -64,7 +77,7 @@ def test_core_density_increases_turn_three_access():
     assert dense_report.core_by_turn_three_pct > thin_report.core_by_turn_three_pct
 
 
-def test_land_count_reports_screw_and_flood_risk():
+def test_land_count_reports_screw_and_flood_risk_after_mulligan():
     low_land = GeneratedDeck(mainboard=(entry("Spell", 44, 2),), lands=16)
     high_land = GeneratedDeck(mainboard=(entry("Spell", 28, 2),), lands=32)
     simulator = OpeningHandSimulator()
