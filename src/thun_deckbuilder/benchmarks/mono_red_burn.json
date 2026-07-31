@@ -1,0 +1,1 @@
+{"name":"Mono-Red Burn","archetype":"burn","colors":["R"],"lands":24,"roles":[{"role":"burn","minimum":18,"target":24},{"role":"aggro_creature","target":9},{"role":"card_draw","target":3}],"curve":[{"maximum_mana_value":1,"target":12},{"maximum_mana_value":2,"target":16},{"maximum_mana_value":3,"target":6},{"maximum_mana_value":99,"target":2}]}

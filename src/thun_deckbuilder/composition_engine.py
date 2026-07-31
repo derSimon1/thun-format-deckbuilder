@@ -3,16 +3,23 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Callable, Iterable
 
-from thun_deckbuilder.deck_generator import DeckEntry, ManaCost, parse_mana_cost
+from thun_deckbuilder.candidate_eligibility import CandidateEligibility
+from thun_deckbuilder.candidate_evaluator import CandidateEvaluator
+from thun_deckbuilder.candidate_score import CandidateScore
+from thun_deckbuilder.card_contribution import CardContribution, contribution_from_knowledge
+from thun_deckbuilder.deck_generator import DeckEntry, parse_mana_cost
+from thun_deckbuilder.deck_needs import DeckNeedsAnalyzer
+from thun_deckbuilder.deck_quality import DeckQualityAnalyzer, DeckQualityReport
 from thun_deckbuilder.deck_profile import DeckProfile
+from thun_deckbuilder.deck_state import DeckState
 from thun_deckbuilder.knowledge_base import CardKnowledge
+from thun_deckbuilder.selection_trace import SelectionTrace
 
 
 @dataclass(frozen=True)
 class CompositionCandidate:
     knowledge: CardKnowledge
-    score: float
-    reasons: tuple[str, ...]
+    contribution: CardContribution
 
     @property
     def name(self) -> str:
@@ -25,20 +32,19 @@ class CompositionResult:
     requested_roles: tuple[tuple[str, int], ...]
     fulfilled_roles: tuple[tuple[str, int], ...]
     warnings: tuple[str, ...]
+    selections: tuple[SelectionTrace, ...] = ()
+    quality_report: DeckQualityReport | None = None
 
 
 ScoreFunction = Callable[[CardKnowledge], tuple[float, tuple[str, ...]]]
 EligibilityFunction = Callable[[CardKnowledge], bool]
 
 
-def _curve_band(mana_value: float, profile: DeckProfile) -> int:
-    for index, target in enumerate(profile.curve_targets):
-        if mana_value <= target.maximum_mana_value:
-            return index
-    return len(profile.curve_targets)
-
-
-def _entry(candidate: CompositionCandidate, quantity: int) -> DeckEntry:
+def _entry(
+    candidate: CompositionCandidate,
+    quantity: int,
+    score: CandidateScore,
+) -> DeckEntry:
     analysis = candidate.knowledge.analysis
     mana_cost = parse_mana_cost(str(candidate.knowledge.card.get("mana_cost", "")))
     return DeckEntry(
@@ -47,10 +53,17 @@ def _entry(candidate: CompositionCandidate, quantity: int) -> DeckEntry:
         mana_cost=mana_cost,
         mana_value=analysis.mana_value,
         type_line=analysis.type_line,
-        score=candidate.score,
-        reasons=candidate.reasons,
-        roles=tuple(sorted(candidate.knowledge.roles)),
+        score=score.total,
+        reasons=tuple(component.reason for component in score.components),
+        roles=tuple(sorted(str(role) for role in candidate.knowledge.roles)),
     )
+
+
+def _primary_need(needs) -> str | None:
+    active = [need for need in needs.role_needs if need.missing_target > 0]
+    if not active:
+        return None
+    return max(active, key=lambda need: (need.urgency, need.missing_minimum, need.missing_target)).key
 
 
 def build_composition(
@@ -62,127 +75,127 @@ def build_composition(
     eligible: EligibilityFunction,
     score_card: ScoreFunction,
 ) -> CompositionResult:
-    """Select cards by strategic role, then fill remaining slots by quality.
+    """Build the spell section iteratively from current deck needs.
 
-    A card can satisfy more than one role, but its copies are added only once.
-    Missing optional roles produce warnings and are filled with the best eligible
-    cards. Missing mandatory role minimums fail loudly.
+    Every selected copy updates ``DeckState``. The same candidate can therefore
+    receive a different score later as role and curve targets become filled.
     """
 
     spell_slots = profile.spell_slots(deck_size)
-    candidates: list[CompositionCandidate] = []
-    for card in cards:
-        if not eligible(card):
-            continue
-        score, reasons = score_card(card)
-        candidates.append(
-            CompositionCandidate(
-                knowledge=card,
-                score=score,
-                reasons=reasons,
-            )
-        )
-    candidates.sort(
-        key=lambda item: (
-            -item.score,
-            item.knowledge.analysis.mana_value,
-            item.name,
-        )
+    candidates = tuple(
+        CompositionCandidate(card, contribution_from_knowledge(card))
+        for card in cards
     )
+    state = DeckState()
+    needs_analyzer = DeckNeedsAnalyzer()
+    eligibility = CandidateEligibility()
+    evaluator = CandidateEvaluator()
+    traces: list[SelectionTrace] = []
+    latest_scores: dict[str, CandidateScore] = {}
+    candidate_by_name = {candidate.name: candidate for candidate in candidates}
 
-    selected: dict[str, tuple[CompositionCandidate, int]] = {}
-    fulfilled: dict[str, int] = {target.role: 0 for target in profile.role_targets}
-    warnings: list[str] = []
-    band_counts = [0 for _ in profile.curve_targets]
+    while state.spell_count < spell_slots:
+        needs = needs_analyzer.analyze(state, profile, deck_size=deck_size)
+        scored: list[tuple[CompositionCandidate, CandidateScore]] = []
 
-    def remaining_slots() -> int:
-        return spell_slots - sum(quantity for _, quantity in selected.values())
+        unmet_required = needs.unmet_required_needs()
+        missing_required = sum(int(need.missing_minimum + 0.999999) for need in unmet_required)
+        reserve_required_slots = missing_required >= needs.remaining_spell_slots
 
-    def add(candidate: CompositionCandidate, quantity: int) -> int:
-        if quantity <= 0 or remaining_slots() <= 0:
-            return 0
-        previous = selected.get(candidate.name)
-        current_quantity = previous[1] if previous else 0
-        available = max_copies - current_quantity
-        amount = min(quantity, available, remaining_slots())
-        if amount <= 0:
-            return 0
-        selected[candidate.name] = (candidate, current_quantity + amount)
-        if profile.curve_targets:
-            band = _curve_band(candidate.knowledge.analysis.mana_value, profile)
-            if band < len(band_counts):
-                band_counts[band] += amount
-        for role in fulfilled:
-            if role in candidate.knowledge.roles:
-                fulfilled[role] += amount
-        return amount
+        for candidate in candidates:
+            check = eligibility.check(
+                candidate.knowledge,
+                candidate.contribution,
+                state,
+                deck_size=spell_slots,
+                max_copies=max_copies,
+                strategy_eligible=eligible,
+            )
+            if not check.eligible:
+                continue
+            if reserve_required_slots and not any(
+                candidate.contribution.strength_for(need.key) > 0
+                for need in unmet_required
+            ):
+                continue
+            score = evaluator.evaluate(
+                candidate.knowledge,
+                candidate.contribution,
+                state,
+                needs,
+                profile,
+                score_card=score_card,
+            )
+            scored.append((candidate, score))
 
-    # First satisfy role targets in profile priority order.
-    for role_target in profile.role_targets:
-        role_candidates = [item for item in candidates if role_target.role in item.knowledge.roles]
-        for candidate in role_candidates:
-            needed = role_target.target - fulfilled[role_target.role]
-            if needed <= 0 or remaining_slots() <= 0:
-                break
-            add(candidate, needed)
-
-        achieved = fulfilled[role_target.role]
-        if achieved < role_target.minimum:
+        if not scored:
             raise ValueError(
-                f"Not enough cards for mandatory role '{role_target.role}': "
-                f"required {role_target.minimum}, found {achieved}."
-            )
-        if achieved < role_target.target:
-            warnings.append(
-                f"Role '{role_target.role}' reached {achieved}/{role_target.target}; "
-                "remaining slots were filled by overall card quality."
+                f"Not enough eligible cards; {spell_slots - state.spell_count} spell slots remain."
             )
 
-    # Fill remaining slots with quality while preferring under-filled curve bands.
-    while remaining_slots() > 0:
-        available = [
-            item for item in candidates
-            if selected.get(item.name, (item, 0))[1] < max_copies
-        ]
-        if not available:
-            raise ValueError(f"Not enough eligible cards; {remaining_slots()} spell slots remain.")
-
-        def fill_priority(item: CompositionCandidate) -> tuple[int, float, float, str]:
-            if profile.curve_targets:
-                band = _curve_band(item.knowledge.analysis.mana_value, profile)
-                under_target = (
-                    band < len(profile.curve_targets)
-                    and band_counts[band] < profile.curve_targets[band].target
-                )
-            else:
-                under_target = False
-            return (0 if under_target else 1, -item.score, item.knowledge.analysis.mana_value, item.name)
-
-        candidate = min(available, key=fill_priority)
-        add(candidate, max_copies)
-
-    entries = tuple(
-        _entry(candidate, quantity)
-        for candidate, quantity in sorted(
-            selected.values(),
-            key=lambda value: (value[0].knowledge.analysis.mana_value, value[0].name),
+        candidate, score = max(
+            scored,
+            key=lambda item: (
+                item[1].total,
+                -item[0].knowledge.analysis.mana_value,
+                item[0].name,
+            ),
         )
+        state = state.with_card(
+            candidate.contribution,
+            1,
+            deck_size=spell_slots,
+            max_copies=max_copies,
+        )
+        latest_scores[candidate.name] = score
+        traces.append(
+            SelectionTrace(
+                step=len(traces) + 1,
+                card_name=candidate.name,
+                quantity_after_selection=state.quantity_of(candidate.name),
+                score=score,
+                primary_need=_primary_need(needs),
+            )
+        )
+
+    final_needs = needs_analyzer.analyze(state, profile, deck_size=deck_size)
+    unmet = final_needs.unmet_required_needs()
+    if unmet:
+        details = ", ".join(
+            f"{need.key}: {need.current:g}/{need.minimum}" for need in unmet
+        )
+        raise ValueError(f"Mandatory role minimums were not met: {details}.")
+
+    warnings = tuple(
+        f"Role '{need.key}' reached {need.current:g}/{need.target}; target not fully met."
+        for need in final_needs.role_needs
+        if need.missing_target > 0
     )
+    entries = tuple(
+        _entry(
+            candidate_by_name[entry.card_name],
+            entry.quantity,
+            latest_scores[entry.card_name],
+        )
+        for entry in state.entries
+    )
+    fulfilled = tuple(
+        (target.role, int(state.role_count(target.role)))
+        for target in profile.role_targets
+    )
+    quality_report = DeckQualityAnalyzer().analyze(state, profile)
     return CompositionResult(
         entries=entries,
         requested_roles=tuple((target.role, target.target) for target in profile.role_targets),
-        fulfilled_roles=tuple((role, fulfilled[role]) for role in fulfilled),
-        warnings=tuple(warnings),
+        fulfilled_roles=fulfilled,
+        warnings=warnings,
+        selections=tuple(traces),
+        quality_report=quality_report,
     )
 
 
 class CompositionEngine:
-    """Stable object-oriented facade for the existing composition algorithm.
-
-    The current functional implementation remains the single source of truth.
-    Introducing this facade now lets later dynamic scoring replace internals
-    without forcing callers to change again.
-    """
+    """Object-oriented facade for iterative deck composition."""
 
     def build(
         self,

@@ -6,6 +6,7 @@ from typing import Mapping
 
 from thun_deckbuilder.card_role import CardRole, normalize_role
 from thun_deckbuilder.knowledge_base import CardKnowledge
+from thun_deckbuilder.synergy_tag import SynergyTag, normalize_synergy_tag
 
 
 _COLOR_SYMBOL = re.compile(r"\{([WUBRG])(?:/[^}]*)?\}", re.IGNORECASE)
@@ -30,11 +31,18 @@ class CardContribution:
 
     card_name: str
     roles: tuple[RoleContribution, ...]
-    tags: frozenset[str]
+    tags: frozenset[SynergyTag | str]
     mana_value: float
     color_pips: tuple[tuple[str, int], ...] = ()
     is_land: bool = False
     is_legendary: bool = False
+
+    def __post_init__(self) -> None:
+        object.__setattr__(
+            self,
+            "tags",
+            frozenset(normalize_synergy_tag(tag) for tag in self.tags),
+        )
 
     def strength_for(self, role: CardRole | str) -> float:
         normalized = normalize_role(role)

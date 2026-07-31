@@ -1,72 +1,178 @@
 from __future__ import annotations
 
+import re
+
 from thun_deckbuilder.card_analyzer import CardAnalysis
 from thun_deckbuilder.card_scoring import ScoreBreakdown
 
 
-def score_token_card(
-    analysis: CardAnalysis,
-) -> ScoreBreakdown:
+_NUMBER_WORDS = {
+    "a": 1,
+    "an": 1,
+    "one": 1,
+    "two": 2,
+    "three": 3,
+    "four": 4,
+    "five": 5,
+    "six": 6,
+}
+
+
+def estimated_token_output(text: str) -> int | None:
+    """Return the smallest explicit number of tokens created by the card.
+
+    ``None`` represents variable output (for example ``create X`` or
+    ``for each``).  The conservative minimum is used because overestimating a
+    conditional token card was a recurring source of poor White Tokens picks.
+    """
+
+    lowered = text.lower()
+    if "create" not in lowered or "token" not in lowered:
+        return 0
+    if "create x" in lowered or "for each" in lowered:
+        return None
+
+    matches = re.findall(
+        r"create (?:up to )?(a|an|one|two|three|four|five|six|\d+) "
+        r"[^.\n]*?tokens?",
+        lowered,
+    )
+    if not matches:
+        return 1
+
+    values = [
+        _NUMBER_WORDS.get(token, int(token) if token.isdigit() else 1)
+        for token in matches
+    ]
+    return min(values)
+
+
+def _is_repeatable_token_source(text: str) -> bool:
+    return "create" in text and "token" in text and any(
+        phrase in text
+        for phrase in (
+            "at the beginning of",
+            "whenever one or more",
+            "whenever another",
+            "whenever a creature",
+            "whenever you attack",
+            "whenever this creature attacks",
+            "{t}: create",
+        )
+    )
+
+
+def _is_global_anthem(text: str) -> bool:
+    return any(
+        phrase in text
+        for phrase in (
+            "creatures you control get +",
+            "other creatures you control get +",
+            "tokens you control get +",
+            "creature tokens you control get +",
+        )
+    )
+
+
+def score_token_card(analysis: CardAnalysis) -> ScoreBreakdown:
+    """Score a card specifically for a mono-white go-wide token deck.
+
+    The calibration rewards reliable board development and persistent payoffs.
+    It deliberately discounts conditional copy effects, temporary pumps and
+    expensive cards that produce too little material.
+    """
+
     score = 0.0
     reasons: list[str] = []
-
     text = analysis.oracle_text.lower()
+    mana_value = analysis.mana_value
 
-    if analysis.mana_value <= 1:
-        score += 5
-        reasons.append("Mana Value ≤ 1")
-    elif analysis.mana_value == 2:
-        score += 4
-        reasons.append("Mana Value 2")
-    elif analysis.mana_value == 3:
-        score += 3
-        reasons.append("Mana Value 3")
-    elif analysis.mana_value == 4:
-        score += 2
-        reasons.append("Mana Value 4")
-    elif analysis.mana_value == 5:
-        score += 1
-        reasons.append("Mana Value 5")
+    curve_scores = {0: 2.0, 1: 5.0, 2: 5.0, 3: 3.5, 4: 1.5, 5: 0.0}
+    score += curve_scores.get(int(mana_value), -2.0 if mana_value >= 6 else 0.0)
+    if mana_value <= 2:
+        reasons.append("Effizienter früher Spielzug")
+    elif mana_value == 3:
+        reasons.append("Passt in den zentralen Kurvenbereich")
+    elif mana_value >= 5:
+        reasons.append("Hohe Manakosten")
 
-    if "create two" in text:
-        score += 3
-        reasons.append("Erzeugt mindestens zwei Tokens")
-    elif "create three" in text:
-        score += 4
+    token_output = estimated_token_output(text)
+    if token_output is None:
+        score += 2.0
+        reasons.append("Skalierende Token-Erzeugung")
+    elif token_output >= 3:
+        score += 5.0
         reasons.append("Erzeugt mindestens drei Tokens")
-    elif "create a" in text or "create one" in text:
-        score += 1
+    elif token_output == 2:
+        score += 4.0
+        reasons.append("Erzeugt zwei Tokens")
+    elif token_output == 1:
+        score += 1.0
         reasons.append("Erzeugt einen Token")
 
-    if "for each" in text:
-        score += 2
-        reasons.append("Skaliert mit dem Board")
+    if token_output and mana_value > 0:
+        token_rate = token_output / mana_value
+        if token_rate >= 1:
+            score += 2.0
+            reasons.append("Gute Token-Ausbeute pro Mana")
+        elif mana_value >= 4 and token_output == 1:
+            score -= 3.0
+            reasons.append("Zu wenig Board-Präsenz für die Manakosten")
 
-    if "+1/+1" in text:
-        score += 2
-        reasons.append("Verstärkt Kreaturen")
+    if _is_repeatable_token_source(text):
+        score += 4.0
+        reasons.append("Wiederholbare Token-Quelle")
 
-    if "creatures you control get" in text:
-        score += 3
-        reasons.append("Teamweiter Bonus")
+    if _is_global_anthem(text):
+        if "until end of turn" in text:
+            score += 1.0
+            reasons.append("Temporärer Team-Bonus")
+        else:
+            score += 4.0
+            reasons.append("Dauerhafter Team-Bonus")
 
-    if "lifelink" in text:
-        score += 1
-        reasons.append("Lifelink")
+    if "put a +1/+1 counter on each" in text:
+        score += 3.5
+        reasons.append("Dauerhafte Verstärkung des gesamten Boards")
 
-    if "vigilance" in text:
-        score += 1
-        reasons.append("Vigilance")
+    if any(
+        phrase in text
+        for phrase in (
+            "whenever a token enters",
+            "whenever one or more tokens",
+            "for each token you control",
+            "creature tokens you control have",
+        )
+    ):
+        score += 3.0
+        reasons.append("Direkter Token-Payoff")
+
+    if "draw a card" in text and any(
+        phrase in text for phrase in ("whenever", "when one or more", "for each")
+    ):
+        score += 2.5
+        reasons.append("Wiederholbarer Kartennachschub")
 
     if analysis.is_instant:
-        score += 1
-        reasons.append("Instant")
-
+        score += 0.5
+        reasons.append("Instant-Geschwindigkeit")
     if analysis.is_creature:
-        score += 1
-        reasons.append("Kreatur")
+        score += 1.0
+        reasons.append("Zusätzlicher Körper")
 
-    return ScoreBreakdown(
-        score=score,
-        reasons=tuple(reasons),
-    )
+    if any(phrase in text for phrase in ("destroy all creatures", "exile all creatures")):
+        score -= 7.0
+        reasons.append("Widerspricht dem eigenen Go-wide-Spielplan")
+
+    if "token that's a copy" in text and any(
+        phrase in text
+        for phrase in ("opponent", "you don't control", "target creature")
+    ):
+        score -= 5.0
+        reasons.append("Unzuverlässiger gegnerabhängiger Kopiereffekt")
+
+    if "sacrifice a creature" in text and "create" not in text:
+        score -= 2.0
+        reasons.append("Verbraucht das eigene Board ohne Token-Ersatz")
+
+    return ScoreBreakdown(score=score, reasons=tuple(reasons))

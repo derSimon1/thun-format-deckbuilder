@@ -23,8 +23,19 @@ def _is_reasonable_token_card(knowledge: CardKnowledge) -> bool:
         "token that's a copy of target opponent's",
         "token that's a copy of target creature you don't control",
         "create a token that's a copy of target artifact you don't control",
+        "destroy all creatures",
+        "exile all creatures",
     )
-    return not any(phrase in text for phrase in excluded_phrases)
+    if any(phrase in text for phrase in excluded_phrases):
+        return False
+
+    # Cards that merely mention or interact with tokens are not automatically
+    # suitable.  A token card must create material, reward a wide board, or
+    # provide one of the explicitly supported utility roles.
+    creates_tokens = "create" in text and "token" in text
+    token_payoff = "token_payoff" in knowledge.roles
+    utility = bool(knowledge.roles.intersection({"removal", "card_draw", "protection"}))
+    return creates_tokens or token_payoff or utility
 
 
 def _score_for_composition(knowledge: CardKnowledge) -> tuple[float, tuple[str, ...]]:
@@ -70,6 +81,12 @@ def generate_token_deck(
         eligible=_is_reasonable_token_card,
         score_card=_score_for_composition,
     )
+    from thun_deckbuilder.mana_base_builder import ManaBaseBuilder
+    from thun_deckbuilder.deck_quality import with_mana_quality
+
+    mana = ManaBaseBuilder().build(
+        result.entries, total_lands=profile.lands, deck_size=deck_size
+    )
     return GeneratedDeck(
         mainboard=result.entries,
         lands=profile.lands,
@@ -77,4 +94,8 @@ def generate_token_deck(
         requested_roles=result.requested_roles,
         fulfilled_roles=result.fulfilled_roles,
         warnings=result.warnings,
+        selections=result.selections,
+        quality_report=with_mana_quality(result.quality_report, mana.quality),
+        mana_base=mana.distribution,
+        mana_quality=mana.quality,
     )

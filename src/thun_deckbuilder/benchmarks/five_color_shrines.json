@@ -1,0 +1,1 @@
+{"name":"Five-Color Shrines","archetype":"shrines","colors":["W","U","B","R","G"],"lands":25,"roles":[{"role":"removal","target":5},{"role":"card_draw","target":5},{"role":"ramp","target":6}],"curve":[{"maximum_mana_value":1,"target":2},{"maximum_mana_value":2,"target":8},{"maximum_mana_value":3,"target":12},{"maximum_mana_value":99,"target":13}]}

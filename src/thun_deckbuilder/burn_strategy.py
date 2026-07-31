@@ -16,10 +16,18 @@ class BurnStrategy:
     ) -> GeneratedDeck:
         self._validate_request(request)
 
-        return generate_burn_deck(
+        deck = generate_burn_deck(
             knowledge_base=knowledge_base,
             max_copies=request.max_copies,
         )
+        from thun_deckbuilder.sideboard_builder import SideboardBuilder
+        from dataclasses import replace
+
+        sideboard = SideboardBuilder().build(
+            knowledge_base.cards, deck, archetype=request.archetype,
+            colors=request.colors, max_copies=request.max_copies,
+        )
+        return replace(deck, sideboard=sideboard)
 
     @staticmethod
     def _validate_request(

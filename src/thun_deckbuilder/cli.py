@@ -14,6 +14,8 @@ def build_parser() -> argparse.ArgumentParser:
     deck = subparsers.add_parser("build", help="Generate a prototype deck")
     deck.add_argument("archetype", choices=("burn", "tokens"))
     deck.add_argument("--colors", nargs="+", required=True)
+    deck.add_argument("--explain", action="store_true", help="Show every iterative selection decision")
+    deck.add_argument("--benchmark", action="store_true", help="Show calibration benchmark report")
 
     legality = subparsers.add_parser("legal", help="Check one card")
     legality.add_argument("card_name")
@@ -37,7 +39,16 @@ def main() -> int:
             archetype=args.archetype,
             colors=args.colors,
         )
-        print(format_deck(deck, archetype=args.archetype, colors=tuple(args.colors)))
+        if args.benchmark:
+            from dataclasses import replace
+            from thun_deckbuilder.benchmark import BenchmarkAnalyzer
+            deck = replace(deck, benchmark_report=BenchmarkAnalyzer().analyze(deck, args.archetype))
+        print(format_deck(
+            deck,
+            archetype=args.archetype,
+            colors=tuple(args.colors),
+            explain=args.explain,
+        ))
         return 0
 
 

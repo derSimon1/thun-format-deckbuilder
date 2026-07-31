@@ -2,6 +2,13 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from thun_deckbuilder.deck_quality import DeckQualityReport
+    from thun_deckbuilder.selection_trace import SelectionTrace
+    from thun_deckbuilder.mana_distribution import ManaDistribution
+    from thun_deckbuilder.mana_quality import ManaQualityReport
 
 from thun_deckbuilder.card_analyzer import CardAnalysis
 from thun_deckbuilder.card_scoring import ScoreBreakdown, score_burn_card
@@ -43,6 +50,12 @@ class GeneratedDeck:
     requested_roles: tuple[tuple[str, int], ...] = ()
     fulfilled_roles: tuple[tuple[str, int], ...] = ()
     warnings: tuple[str, ...] = ()
+    selections: tuple["SelectionTrace", ...] = ()
+    quality_report: "DeckQualityReport | None" = None
+    mana_base: "ManaDistribution | None" = None
+    mana_quality: "ManaQualityReport | None" = None
+    sideboard: tuple[DeckEntry, ...] = ()
+    benchmark_report: object | None = None
 
 
 def parse_mana_cost(raw_mana_cost: str) -> ManaCost:
@@ -122,6 +135,12 @@ def generate_burn_deck(
         eligible=_is_reasonable_burn_card,
         score_card=_score_for_composition,
     )
+    from thun_deckbuilder.mana_base_builder import ManaBaseBuilder
+    from thun_deckbuilder.deck_quality import with_mana_quality
+
+    mana = ManaBaseBuilder().build(
+        result.entries, total_lands=profile.lands, deck_size=deck_size
+    )
     return GeneratedDeck(
         mainboard=result.entries,
         lands=profile.lands,
@@ -129,4 +148,8 @@ def generate_burn_deck(
         requested_roles=result.requested_roles,
         fulfilled_roles=result.fulfilled_roles,
         warnings=result.warnings,
+        selections=result.selections,
+        quality_report=with_mana_quality(result.quality_report, mana.quality),
+        mana_base=mana.distribution,
+        mana_quality=mana.quality,
     )

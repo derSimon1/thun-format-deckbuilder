@@ -14,12 +14,20 @@ class TokenStrategy:
     ) -> GeneratedDeck:
         self._validate_request(request)
 
-        return generate_token_deck(
+        deck = generate_token_deck(
             knowledge_base=knowledge_base,
             deck_size=request.deck_size,
             lands=24,
             max_copies=request.max_copies,
         )
+        from thun_deckbuilder.sideboard_builder import SideboardBuilder
+        from dataclasses import replace
+
+        sideboard = SideboardBuilder().build(
+            knowledge_base.cards, deck, archetype=request.archetype,
+            colors=request.colors, max_copies=request.max_copies,
+        )
+        return replace(deck, sideboard=sideboard)
 
     @staticmethod
     def _validate_request(

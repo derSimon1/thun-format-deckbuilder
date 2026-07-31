@@ -1,0 +1,1 @@
+{"name":"Blue-Red Artifacts","archetype":"artifacts","colors":["U","R"],"lands":23,"roles":[{"role":"removal","target":5},{"role":"card_draw","target":5},{"role":"aggro_creature","target":12}],"curve":[{"maximum_mana_value":1,"target":8},{"maximum_mana_value":2,"target":14},{"maximum_mana_value":3,"target":10},{"maximum_mana_value":99,"target":5}]}
