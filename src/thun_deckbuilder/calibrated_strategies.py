@@ -7,9 +7,9 @@ from thun_deckbuilder.card_analyzer import CardAnalysis
 from thun_deckbuilder.card_scoring import (
     ScoreBreakdown,
     score_artifact_card,
-    score_mill_card,
     score_shrine_card,
 )
+from thun_deckbuilder.mill_scoring import score_mill_card
 from thun_deckbuilder.composition_engine import build_composition
 from thun_deckbuilder.deck_generator import GeneratedDeck
 from thun_deckbuilder.deck_profile import CurveTarget, DeckProfile, RoleTarget
