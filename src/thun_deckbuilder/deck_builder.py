@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Iterable
+from dataclasses import replace
 
 from thun_deckbuilder.burn_strategy import BurnStrategy
 from thun_deckbuilder.calibrated_strategies import (
@@ -12,6 +13,7 @@ from thun_deckbuilder.card_database import CardDatabase
 from thun_deckbuilder.deck_generator import GeneratedDeck
 from thun_deckbuilder.deck_request import DeckRequest
 from thun_deckbuilder.deck_strategy import DeckStrategy
+from thun_deckbuilder.goldfish_simulator import GoldfishSimulator
 from thun_deckbuilder.knowledge_base import KnowledgeBase
 from thun_deckbuilder.token_strategy import TokenStrategy
 
@@ -50,7 +52,12 @@ def generate_deck(
     knowledge_base = KnowledgeBase(database)
     knowledge_base.load()
 
-    return strategy.generate(
+    deck = strategy.generate(
         knowledge_base=knowledge_base,
         request=request,
     )
+    goldfish_report = GoldfishSimulator().simulate(
+        deck,
+        archetype=request.archetype,
+    )
+    return replace(deck, goldfish_report=goldfish_report)
