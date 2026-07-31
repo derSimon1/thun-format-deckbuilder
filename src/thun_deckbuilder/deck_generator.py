@@ -11,7 +11,8 @@ if TYPE_CHECKING:
     from thun_deckbuilder.mana_quality import ManaQualityReport
 
 from thun_deckbuilder.card_analyzer import CardAnalysis
-from thun_deckbuilder.card_scoring import ScoreBreakdown, score_burn_card
+from thun_deckbuilder.burn_scoring import score_burn_card
+from thun_deckbuilder.card_scoring import ScoreBreakdown
 from thun_deckbuilder.deck_skeleton import BURN_SKELETON, DeckSkeleton
 from thun_deckbuilder.knowledge_base import CardKnowledge, KnowledgeBase
 
@@ -75,6 +76,19 @@ def _is_mono_red(analysis: CardAnalysis) -> bool:
     return set(analysis.color_identity).issubset({"R"})
 
 
+def _can_damage_opponent(text: str) -> bool:
+    return any(
+        phrase in text
+        for phrase in (
+            "any target",
+            "target player",
+            "target opponent",
+            "each opponent",
+            "each player",
+        )
+    )
+
+
 def _is_reasonable_burn_card(knowledge: CardKnowledge) -> bool:
     analysis = knowledge.analysis
     text = analysis.oracle_text.lower()
@@ -83,28 +97,44 @@ def _is_reasonable_burn_card(knowledge: CardKnowledge) -> bool:
     if not knowledge.roles.intersection({"burn", "aggro_creature", "card_draw"}):
         return False
     bad_phrases = (
-        "deals damage to you",
         "damage to itself",
         "damage to target creature you control",
         "damage to each creature you control",
         "damage equal to its power to itself",
+        "destroy all creatures",
+        "exile all creatures",
     )
-    return not any(phrase in text for phrase in bad_phrases)
+    if any(phrase in text for phrase in bad_phrases):
+        return False
+
+    # Burn cards must either advance the opponent's life-total clock, provide a
+    # credible early attacker, or replace themselves. Creature-only removal is
+    # useful sideboard material but should not crowd the proactive main deck.
+    reaches_opponent = _can_damage_opponent(text)
+    aggressive_creature = (
+        analysis.is_creature
+        and analysis.mana_value <= 2
+        and (analysis.power or 0) >= 2
+    )
+    card_flow = "card_draw" in knowledge.roles
+    return reaches_opponent or aggressive_creature or card_flow
 
 
 def _score_for_composition(knowledge: CardKnowledge) -> tuple[float, tuple[str, ...]]:
     scored = score_burn_card(knowledge.analysis)
     score = scored.score
     reasons = list(scored.reasons)
-    if "aggro_creature" in knowledge.roles:
-        score += 2
-        reasons.append("Frühe aggressive Kreatur")
-    if "card_draw" in knowledge.roles:
-        score += 1.5
-        reasons.append("Kartennachschub")
-    if not reasons:
-        reasons.append("Passt zum Burn-Profil")
-    return score, tuple(reasons)
+    role_bonuses = {
+        "burn": (2.5, "Direkter Burn-Beitrag"),
+        "aggro_creature": (2.0, "Frühe aggressive Kreatur"),
+        "card_draw": (1.5, "Kartennachschub"),
+    }
+    for role, (bonus, reason) in role_bonuses.items():
+        if role in knowledge.roles:
+            score += bonus
+            if reason not in reasons:
+                reasons.append(reason)
+    return score, tuple(reasons or ["Passt zum Burn-Profil"])
 
 
 def generate_burn_deck(
