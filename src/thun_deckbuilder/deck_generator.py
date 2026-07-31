@@ -10,6 +10,7 @@ if TYPE_CHECKING:
     from thun_deckbuilder.mana_distribution import ManaDistribution
     from thun_deckbuilder.mana_quality import ManaQualityReport
     from thun_deckbuilder.opening_hand_simulator import OpeningHandReport
+    from thun_deckbuilder.goldfish_simulator import GoldfishReport
 
 from thun_deckbuilder.card_analyzer import CardAnalysis
 from thun_deckbuilder.card_scoring import ScoreBreakdown, score_burn_card
@@ -58,6 +59,7 @@ class GeneratedDeck:
     sideboard: tuple[DeckEntry, ...] = ()
     benchmark_report: object | None = None
     opening_hand_report: "OpeningHandReport | None" = None
+    goldfish_report: "GoldfishReport | None" = None
 
 
 def parse_mana_cost(raw_mana_cost: str) -> ManaCost:
