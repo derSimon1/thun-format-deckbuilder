@@ -57,6 +57,7 @@ def test_learned_strategy_builds_complete_legal_deck_and_prioritizes_core():
         card("Other Bolt", mv=2, roles=("burn",)),
         card("Fast Creature", mv=1, roles=("aggro_creature",), type_line="Creature"),
         card("Two Drop", mv=2, roles=("aggro_creature",), type_line="Creature"),
+        *(card(f"Legal Filler {index}", mv=2 + index % 2, roles=("burn",)) for index in range(12)),
         card("Off Color", mv=1, colors=("U",), roles=("burn",)),
     )
     strategy = LearnedArchetypeStrategy(
