@@ -19,9 +19,7 @@ from thun_deckbuilder.mana_base_builder import ManaBaseBuilder
 from thun_deckbuilder.deck_quality import with_mana_quality
 from thun_deckbuilder.sideboard_builder import SideboardBuilder
 
-
 Scorer = Callable[[CardAnalysis], ScoreBreakdown]
-
 
 ARTIFACT_PROFILE = DeckProfile(
     name="Artifact Synergy",
@@ -31,11 +29,8 @@ ARTIFACT_PROFILE = DeckProfile(
         RoleTarget("removal", minimum=2, target=5),
     ),
     curve_targets=(
-        CurveTarget(1, 10),
-        CurveTarget(2, 14),
-        CurveTarget(3, 9),
-        CurveTarget(4, 4),
-        CurveTarget(99, 1),
+        CurveTarget(1, 10), CurveTarget(2, 14), CurveTarget(3, 9),
+        CurveTarget(4, 4), CurveTarget(99, 1),
     ),
 )
 
@@ -48,11 +43,8 @@ SHRINE_PROFILE = DeckProfile(
         RoleTarget("removal", minimum=2, target=5),
     ),
     curve_targets=(
-        CurveTarget(2, 8),
-        CurveTarget(3, 11),
-        CurveTarget(4, 9),
-        CurveTarget(5, 5),
-        CurveTarget(99, 3),
+        CurveTarget(2, 8), CurveTarget(3, 11), CurveTarget(4, 9),
+        CurveTarget(5, 5), CurveTarget(99, 3),
     ),
 )
 
@@ -64,11 +56,8 @@ MILL_PROFILE = DeckProfile(
         RoleTarget("removal", minimum=5, target=8),
     ),
     curve_targets=(
-        CurveTarget(1, 6),
-        CurveTarget(2, 12),
-        CurveTarget(3, 10),
-        CurveTarget(4, 6),
-        CurveTarget(99, 2),
+        CurveTarget(1, 6), CurveTarget(2, 12), CurveTarget(3, 10),
+        CurveTarget(4, 6), CurveTarget(99, 2),
     ),
 )
 
@@ -173,22 +162,30 @@ class CalibratedStrategy:
             raise ValueError(f"Diese Strategie benötigt exakt die Farben {colors}.")
 
 
-ArtifactStrategy = lambda: CalibratedStrategy(
-    profile=ARTIFACT_PROFILE,
-    scorer=score_artifact_card,
-    eligibility=_artifact_eligible,
-)
+class ArtifactStrategy(CalibratedStrategy):
+    def __init__(self) -> None:
+        super().__init__(
+            profile=ARTIFACT_PROFILE,
+            scorer=score_artifact_card,
+            eligibility=_artifact_eligible,
+        )
 
-ShrineStrategy = lambda: CalibratedStrategy(
-    profile=SHRINE_PROFILE,
-    scorer=score_shrine_card,
-    eligibility=_shrine_eligible,
-    required_colors=frozenset({"W", "U", "B", "R", "G"}),
-)
 
-MillStrategy = lambda: CalibratedStrategy(
-    profile=MILL_PROFILE,
-    scorer=score_mill_card,
-    eligibility=_mill_eligible,
-    required_colors=frozenset({"U", "B"}),
-)
+class ShrineStrategy(CalibratedStrategy):
+    def __init__(self) -> None:
+        super().__init__(
+            profile=SHRINE_PROFILE,
+            scorer=score_shrine_card,
+            eligibility=_shrine_eligible,
+            required_colors=frozenset({"W", "U", "B", "R", "G"}),
+        )
+
+
+class MillStrategy(CalibratedStrategy):
+    def __init__(self) -> None:
+        super().__init__(
+            profile=MILL_PROFILE,
+            scorer=score_mill_card,
+            eligibility=_mill_eligible,
+            required_colors=frozenset({"U", "B"}),
+        )
