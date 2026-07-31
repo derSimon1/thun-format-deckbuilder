@@ -5,8 +5,10 @@ import argparse
 from thun_deckbuilder.card_database import CardDatabase
 from thun_deckbuilder.deck_builder import generate_deck
 from thun_deckbuilder.matchup_simulator import MatchupSimulator
+from thun_deckbuilder.meta_advisor import BestOfThreeMetaAnalyzer, format_meta_advice
 from thun_deckbuilder.meta_matrix import MetaMatrixAnalyzer, format_matchup_report, format_meta_matrix
 from thun_deckbuilder.prototype import format_deck
+from thun_deckbuilder.tournament_simulator import BestOfThreeSimulator, format_bo3_report
 
 
 ARCHETYPES = ("burn", "tokens", "artifacts", "shrines", "mill")
@@ -34,9 +36,18 @@ def build_parser() -> argparse.ArgumentParser:
     matchup.add_argument("archetype_b", choices=ARCHETYPES)
     matchup.add_argument("--samples", type=int, default=2000)
 
+    bo3 = subparsers.add_parser("bo3", help="Simulate a sideboard-aware best-of-three matchup")
+    bo3.add_argument("archetype_a", choices=ARCHETYPES)
+    bo3.add_argument("archetype_b", choices=ARCHETYPES)
+    bo3.add_argument("--samples", type=int, default=2000)
+
     meta = subparsers.add_parser("meta", help="Run a round-robin archetype meta analysis")
     meta.add_argument("archetypes", nargs="*", choices=ARCHETYPES, default=list(ARCHETYPES))
     meta.add_argument("--samples", type=int, default=2000, help="Samples per matchup")
+
+    meta_bo3 = subparsers.add_parser("meta-bo3", help="Run sideboard-aware meta analysis and advice")
+    meta_bo3.add_argument("archetypes", nargs="*", choices=ARCHETYPES, default=list(ARCHETYPES))
+    meta_bo3.add_argument("--samples", type=int, default=2000, help="Samples per matchup")
 
     legality = subparsers.add_parser("legal", help="Check one card")
     legality.add_argument("card_name")
@@ -51,6 +62,11 @@ def _generate_default(database: CardDatabase, archetype: str):
     )
 
 
+def _validate_meta_archetypes(archetypes: tuple[str, ...]) -> None:
+    if len(set(archetypes)) < 2:
+        build_parser().error("meta analysis requires at least two distinct archetypes")
+
+
 def main() -> int:
     args = build_parser().parse_args()
     with CardDatabase() as database:
@@ -63,27 +79,39 @@ def main() -> int:
             print(f"{card['name']}: {'LEGAL' if legal else 'NICHT LEGAL'}")
             return 0 if legal else 1
 
-        if args.command == "matchup":
+        if args.command in {"matchup", "bo3"}:
             deck_a = _generate_default(database, args.archetype_a)
             deck_b = _generate_default(database, args.archetype_b)
-            report = MatchupSimulator().simulate(
-                deck_a,
-                deck_b,
-                archetype_a=args.archetype_a,
-                archetype_b=args.archetype_b,
-                samples=args.samples,
-            )
-            print(format_matchup_report(report))
+            if args.command == "matchup":
+                report = MatchupSimulator().simulate(
+                    deck_a,
+                    deck_b,
+                    archetype_a=args.archetype_a,
+                    archetype_b=args.archetype_b,
+                    samples=args.samples,
+                )
+                print(format_matchup_report(report))
+            else:
+                report = BestOfThreeSimulator().simulate(
+                    deck_a,
+                    deck_b,
+                    archetype_a=args.archetype_a,
+                    archetype_b=args.archetype_b,
+                    samples=args.samples,
+                )
+                print(format_bo3_report(report))
             return 0
 
-        if args.command == "meta":
+        if args.command in {"meta", "meta-bo3"}:
             archetypes = tuple(args.archetypes or ARCHETYPES)
-            if len(set(archetypes)) < 2:
-                parser = build_parser()
-                parser.error("meta requires at least two distinct archetypes")
+            _validate_meta_archetypes(archetypes)
             decks = {archetype: _generate_default(database, archetype) for archetype in archetypes}
-            report = MetaMatrixAnalyzer().analyze(decks, samples_per_matchup=args.samples)
-            print(format_meta_matrix(report))
+            if args.command == "meta":
+                report = MetaMatrixAnalyzer().analyze(decks, samples_per_matchup=args.samples)
+                print(format_meta_matrix(report))
+            else:
+                report = BestOfThreeMetaAnalyzer().analyze(decks, samples_per_matchup=args.samples)
+                print(format_meta_advice(report))
             return 0
 
         deck = generate_deck(
