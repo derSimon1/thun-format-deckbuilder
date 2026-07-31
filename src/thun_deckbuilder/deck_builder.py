@@ -3,6 +3,11 @@ from __future__ import annotations
 from collections.abc import Iterable
 
 from thun_deckbuilder.burn_strategy import BurnStrategy
+from thun_deckbuilder.calibrated_strategies import (
+    ArtifactStrategy,
+    MillStrategy,
+    ShrineStrategy,
+)
 from thun_deckbuilder.card_database import CardDatabase
 from thun_deckbuilder.deck_generator import GeneratedDeck
 from thun_deckbuilder.deck_request import DeckRequest
@@ -14,6 +19,9 @@ from thun_deckbuilder.token_strategy import TokenStrategy
 STRATEGIES: dict[str, DeckStrategy] = {
     "burn": BurnStrategy(),
     "tokens": TokenStrategy(),
+    "artifacts": ArtifactStrategy(),
+    "shrines": ShrineStrategy(),
+    "mill": MillStrategy(),
 }
 
 
@@ -31,9 +39,7 @@ def generate_deck(
         max_copies=max_copies,
     )
 
-    strategy = STRATEGIES.get(
-        request.archetype
-    )
+    strategy = STRATEGIES.get(request.archetype)
 
     if strategy is None:
         raise ValueError(

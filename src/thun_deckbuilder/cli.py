@@ -7,12 +7,15 @@ from thun_deckbuilder.deck_builder import generate_deck
 from thun_deckbuilder.prototype import format_deck
 
 
+ARCHETYPES = ("burn", "tokens", "artifacts", "shrines", "mill")
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Magic Club Thun deckbuilder")
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     deck = subparsers.add_parser("build", help="Generate a prototype deck")
-    deck.add_argument("archetype", choices=("burn", "tokens"))
+    deck.add_argument("archetype", choices=ARCHETYPES)
     deck.add_argument("--colors", nargs="+", required=True)
     deck.add_argument("--explain", action="store_true", help="Show every iterative selection decision")
     deck.add_argument("--benchmark", action="store_true", help="Show calibration benchmark report")
