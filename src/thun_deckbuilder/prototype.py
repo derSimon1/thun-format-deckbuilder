@@ -83,6 +83,19 @@ def format_deck(
             f"(lands {deck.mana_quality.land_count}, recommended {deck.mana_quality.recommended_lands})"
         )
 
+    if deck.opening_hand_report is not None:
+        report = deck.opening_hand_report
+        lines.extend(["", "OPENING HAND SIMULATION", "-" * 88])
+        lines.append(f"Samples: {report.samples}")
+        lines.append(f"Playable seven-card hands: {report.playable_hands_pct}%")
+        lines.append(f"Playable after one London mulligan: {report.playable_after_mulligan_pct}%")
+        lines.append(f"Mulligan to six: {report.mulligan_to_six_pct}%")
+        lines.append(f"2–4 lands after mulligan: {report.two_to_four_lands_pct}%")
+        lines.append(f"Early play by turn 2: {report.early_play_pct}%")
+        lines.append(f"Core card by turn 3: {report.core_by_turn_three_pct}%")
+        lines.append(f"Mana screw: {report.mana_screw_pct}%")
+        lines.append(f"Mana flood: {report.mana_flood_pct}%")
+
     if deck.quality_report is not None:
         lines.extend(["", *format_quality_report(deck.quality_report)])
 

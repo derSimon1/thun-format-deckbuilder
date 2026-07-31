@@ -9,14 +9,17 @@ from thun_deckbuilder.card_scoring import (
     score_artifact_card,
     score_shrine_card,
 )
-from thun_deckbuilder.mill_scoring import score_mill_card
 from thun_deckbuilder.composition_engine import build_composition
 from thun_deckbuilder.deck_generator import GeneratedDeck
+from thun_deckbuilder.deck_optimizer import optimize_entries
 from thun_deckbuilder.deck_profile import CurveTarget, DeckProfile, RoleTarget
+from thun_deckbuilder.deck_quality import with_mana_quality
 from thun_deckbuilder.deck_request import DeckRequest
 from thun_deckbuilder.knowledge_base import CardKnowledge, KnowledgeBase
+from thun_deckbuilder.land_count_optimizer import LandCountCandidate, choose_land_count
 from thun_deckbuilder.mana_base_builder import ManaBaseBuilder
-from thun_deckbuilder.deck_quality import with_mana_quality
+from thun_deckbuilder.mill_scoring import score_mill_card
+from thun_deckbuilder.opening_hand_simulator import OpeningHandSimulator
 from thun_deckbuilder.sideboard_builder import SideboardBuilder
 
 Scorer = Callable[[CardAnalysis], ScoreBreakdown]
@@ -118,25 +121,63 @@ class CalibratedStrategy:
         self.eligibility = eligibility
         self.required_colors = required_colors
 
-    def generate(self, knowledge_base: KnowledgeBase, request: DeckRequest) -> GeneratedDeck:
-        self._validate_request(request)
+    def _build_candidate(
+        self,
+        knowledge_base: KnowledgeBase,
+        request: DeckRequest,
+        lands: int,
+    ) -> LandCountCandidate[tuple]:
+        profile = replace(self.profile, lands=lands)
         result = build_composition(
             knowledge_base.cards,
-            profile=self.profile,
+            profile=profile,
             deck_size=request.deck_size,
             max_copies=request.max_copies,
             eligible=lambda card: self.eligibility(card, request.colors),
             score_card=lambda card: _score(card, self.scorer),
         )
-        mana = ManaBaseBuilder().build(
+        optimized_entries = optimize_entries(
             result.entries,
-            total_lands=self.profile.lands,
+            knowledge_base.cards,
+            archetype=request.archetype,
+            colors=request.colors,
+            scorer=self.scorer,
+            eligible=self.eligibility,
+            max_copies=request.max_copies,
+        )
+        provisional = GeneratedDeck(mainboard=optimized_entries, lands=lands)
+        report = OpeningHandSimulator().simulate(
+            provisional,
+            archetype=request.archetype,
+        )
+        return LandCountCandidate(
+            lands=lands,
+            payload=(profile, result, optimized_entries),
+            report=report,
+        )
+
+    def generate(self, knowledge_base: KnowledgeBase, request: DeckRequest) -> GeneratedDeck:
+        self._validate_request(request)
+        land_options = range(
+            max(18, self.profile.lands - 2),
+            min(27, self.profile.lands + 2) + 1,
+        )
+        candidates = tuple(
+            self._build_candidate(knowledge_base, request, lands)
+            for lands in land_options
+        )
+        chosen = choose_land_count(candidates, preferred_lands=self.profile.lands)
+        profile, result, optimized_entries = chosen.payload
+
+        mana = ManaBaseBuilder().build(
+            optimized_entries,
+            total_lands=chosen.lands,
             deck_size=request.deck_size,
         )
         deck = GeneratedDeck(
-            mainboard=result.entries,
-            lands=self.profile.lands,
-            profile_name=self.profile.name,
+            mainboard=optimized_entries,
+            lands=chosen.lands,
+            profile_name=profile.name,
             requested_roles=result.requested_roles,
             fulfilled_roles=result.fulfilled_roles,
             warnings=result.warnings,
@@ -144,6 +185,7 @@ class CalibratedStrategy:
             quality_report=with_mana_quality(result.quality_report, mana.quality),
             mana_base=mana.distribution,
             mana_quality=mana.quality,
+            opening_hand_report=chosen.report,
         )
         sideboard = SideboardBuilder().build(
             knowledge_base.cards,
