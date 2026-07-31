@@ -94,6 +94,8 @@ def format_deck(
             lines.append(f"Role {item.key}: {item.actual}/{item.target} ({item.score}/100)")
         for item in report.curve_items:
             lines.append(f"Curve MV {item.key}: {item.actual}/{item.target} ({item.score}/100)")
+        for item in report.signature_items:
+            lines.append(f"Core {item.key}: {item.actual}/{item.target} ({item.score}/100)")
         lines.append(f"Lands: {report.land_item.actual}/{report.land_item.target} ({report.land_item.score}/100)")
         lines.append(f"Benchmark score: {report.score}/100")
 
