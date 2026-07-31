@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from statistics import mean
 from typing import Iterable
 
+from thun_deckbuilder.card_translator import TranslationResult, suggest_replacements
 from thun_deckbuilder.knowledge_base import CardKnowledge, KnowledgeBase
 from thun_deckbuilder.moxfield_import import ImportedDeck
 
@@ -134,3 +135,39 @@ def learn_archetype_profile(
         core_cards=core_cards,
         unresolved_cards=tuple(sorted(unresolved)),
     )
+
+
+def translate_unavailable_core_cards(
+    profile: LearnedArchetypeProfile,
+    source_catalog: Iterable[CardKnowledge],
+    legal_pool: KnowledgeBase | Iterable[CardKnowledge],
+    *,
+    limit_per_card: int = 3,
+) -> tuple[TranslationResult, ...]:
+    """Suggest legal replacements for learned core cards absent from the pool.
+
+    ``source_catalog`` may contain rare, mythic, old, or otherwise illegal cards;
+    it provides the functional metadata required for role-based translation.
+    """
+    source_by_name = {
+        card.analysis.name.casefold(): card for card in source_catalog
+    }
+    legal_cards = legal_pool.cards if isinstance(legal_pool, KnowledgeBase) else tuple(legal_pool)
+    legal_names = {card.analysis.name.casefold() for card in legal_cards}
+    results: list[TranslationResult] = []
+    for core in profile.core_cards:
+        normalized = core.name.casefold()
+        if normalized in legal_names:
+            continue
+        source = source_by_name.get(normalized)
+        if source is None:
+            continue
+        results.append(
+            suggest_replacements(
+                source,
+                legal_cards,
+                colors=profile.colors,
+                limit=limit_per_card,
+            )
+        )
+    return tuple(results)
