@@ -70,6 +70,34 @@ def _targets(archetype: str) -> dict[str, int]:
     }.get(archetype, {})
 
 
+def _curve_targets(archetype: str) -> tuple[int, int]:
+    """Return minimum early plays and maximum four-plus-mana spells."""
+    return {
+        "artifacts": (18, 5),
+        "shrines": (10, 10),
+        "mill": (14, 5),
+    }.get(archetype, (0, 99))
+
+
+def _structure_counts(
+    quantities: Counter[str],
+    analyses: dict[str, CardAnalysis],
+    archetype: str,
+) -> Counter[str]:
+    counts: Counter[str] = Counter()
+    for name, quantity in quantities.items():
+        if quantity <= 0:
+            continue
+        analysis = analyses[name]
+        for signal in _signals(archetype, analysis):
+            counts[signal] += quantity
+        if analysis.mana_value <= 2:
+            counts["early"] += quantity
+        if analysis.mana_value >= 4:
+            counts["expensive"] += quantity
+    return counts
+
+
 def _deck_score(
     quantities: Counter[str],
     entries: dict[str, DeckEntry],
@@ -77,20 +105,20 @@ def _deck_score(
     archetype: str,
 ) -> float:
     score = sum(entries[name].score * quantity for name, quantity in quantities.items())
-    counts: Counter[str] = Counter()
-    expensive = 0
-    for name, quantity in quantities.items():
-        analysis = analyses[name]
-        for signal in _signals(archetype, analysis):
-            counts[signal] += quantity
-        if analysis.mana_value >= 4:
-            expensive += quantity
+    counts = _structure_counts(quantities, analyses, archetype)
 
     for signal, target in _targets(archetype).items():
         current = counts[signal]
         score += min(current, target) * 1.25
         if current < target:
             score -= (target - current) * 2.25
+
+    early_target, expensive_cap = _curve_targets(archetype)
+    score += min(counts["early"], early_target) * 0.8
+    if counts["early"] < early_target:
+        score -= (early_target - counts["early"]) * 1.8
+    if counts["expensive"] > expensive_cap:
+        score -= (counts["expensive"] - expensive_cap) * 2.5
 
     # Pairwise deck synergies. These bonuses only exist when both halves are present.
     if archetype == "artifacts":
@@ -102,8 +130,30 @@ def _deck_score(
         score += min(counts["engine"], 8) * min(counts["core"], 24) * 0.10
         score += min(counts["interaction"], 8) * min(counts["core"], 24) * 0.04
 
-    score -= expensive * (1.1 if archetype == "mill" else 0.6)
+    score -= counts["expensive"] * (1.1 if archetype == "mill" else 0.6)
     return score
+
+
+def _respects_guardrails(
+    trial: Counter[str],
+    *,
+    baseline: Counter[str],
+    analyses: dict[str, CardAnalysis],
+    archetype: str,
+) -> bool:
+    counts = _structure_counts(trial, analyses, archetype)
+    core_target = _targets(archetype).get("core", 0)
+    early_target, expensive_cap = _curve_targets(archetype)
+
+    minimum_core = min(baseline["core"], core_target)
+    minimum_early = min(baseline["early"], early_target)
+    maximum_expensive = max(baseline["expensive"], expensive_cap)
+
+    return (
+        counts["core"] >= minimum_core
+        and counts["early"] >= minimum_early
+        and counts["expensive"] <= maximum_expensive
+    )
 
 
 def optimize_entries(
@@ -119,8 +169,9 @@ def optimize_entries(
 ) -> tuple[DeckEntry, ...]:
     """Improve a completed spell section with deterministic one-copy swaps.
 
-    The optimizer evaluates the deck as a whole. It rewards core-plan density and
-    pairwise synergy, then accepts only swaps that increase the total deck score.
+    The optimizer evaluates the deck as a whole. It rewards core-plan density,
+    early plays, and pairwise synergy. A swap is accepted only when it improves
+    the total score without weakening the starting deck's structural floor.
     """
     knowledge_by_name = {
         card.analysis.name: card
@@ -146,6 +197,7 @@ def optimize_entries(
         )
 
     quantities = Counter({entry.name: entry.quantity for entry in entries})
+    baseline = _structure_counts(quantities, analyses, archetype)
     current_score = _deck_score(quantities, entry_by_name, analyses, archetype)
 
     for _ in range(max_iterations):
@@ -159,10 +211,22 @@ def optimize_entries(
                 trial = quantities.copy()
                 trial[remove_name] -= 1
                 trial[add_name] += 1
+                if not _respects_guardrails(
+                    trial,
+                    baseline=baseline,
+                    analyses=analyses,
+                    archetype=archetype,
+                ):
+                    continue
                 trial_score = _deck_score(trial, entry_by_name, analyses, archetype)
                 if trial_score > current_score + 0.01:
-                    if best_swap is None or trial_score > best_swap[2]:
-                        best_swap = (remove_name, add_name, trial_score)
+                    candidate_swap = (remove_name, add_name, trial_score)
+                    if best_swap is None or (
+                        candidate_swap[2], candidate_swap[1], candidate_swap[0]
+                    ) > (
+                        best_swap[2], best_swap[1], best_swap[0]
+                    ):
+                        best_swap = candidate_swap
         if best_swap is None:
             break
         remove_name, add_name, current_score = best_swap
