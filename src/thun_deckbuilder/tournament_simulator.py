@@ -1,17 +1,15 @@
 from __future__ import annotations
 
 import random
-from dataclasses import dataclass, replace
+from dataclasses import dataclass
 
-from thun_deckbuilder.deck_generator import DeckEntry, GeneratedDeck
+from thun_deckbuilder.deck_generator import GeneratedDeck
 from thun_deckbuilder.matchup_simulator import MatchupReport, MatchupSimulator
-
-
-@dataclass(frozen=True)
-class SideboardPlan:
-    opponent_archetype: str
-    cards_in: tuple[tuple[str, int], ...]
-    cards_out: tuple[tuple[str, int], ...]
+from thun_deckbuilder.sideboard_optimizer import (
+    SideboardCardImpact,
+    SideboardPlan,
+    optimize_sideboard_plan,
+)
 
 
 @dataclass(frozen=True)
@@ -25,80 +23,11 @@ class BestOfThreeReport:
     postboard: MatchupReport
     plan_a: SideboardPlan
     plan_b: SideboardPlan
-
-
-def _entry_text(entry: DeckEntry) -> str:
-    return " ".join((entry.name, entry.type_line, *entry.roles, *entry.reasons)).lower()
-
-
-def _sideboard_value(entry: DeckEntry, opponent: str) -> float:
-    text = _entry_text(entry)
-    score = entry.score
-    if opponent in {"burn", "tokens"}:
-        if any(key in text for key in ("removal", "destroy", "exile", "lifegain", "life gain", "boardwipe", "each creature")):
-            score += 8
-    elif opponent == "mill":
-        if any(key in text for key in ("graveyard", "shuffle", "counter", "hexproof", "draw")):
-            score += 8
-    elif opponent == "artifacts":
-        if any(key in text for key in ("artifact", "destroy", "exile", "counter")):
-            score += 8
-    elif opponent == "shrines":
-        if any(key in text for key in ("enchantment", "destroy", "exile", "counter")):
-            score += 8
-    return score
-
-
-def _expand(entries: tuple[DeckEntry, ...]) -> list[DeckEntry]:
-    expanded: list[DeckEntry] = []
-    for entry in entries:
-        expanded.extend([replace(entry, quantity=1)] * entry.quantity)
-    return expanded
-
-
-def _compress(entries: list[DeckEntry]) -> tuple[DeckEntry, ...]:
-    grouped: dict[tuple, tuple[DeckEntry, int]] = {}
-    for entry in entries:
-        key = (entry.name, entry.mana_cost, entry.mana_value, entry.type_line, entry.score, entry.reasons, entry.roles)
-        original, quantity = grouped.get(key, (entry, 0))
-        grouped[key] = (original, quantity + 1)
-    return tuple(
-        replace(entry, quantity=quantity)
-        for entry, quantity in sorted(grouped.values(), key=lambda item: (-item[0].score, item[0].name))
-    )
-
-
-def board_for_matchup(
-    deck: GeneratedDeck,
-    *,
-    opponent_archetype: str,
-    max_swaps: int = 6,
-) -> tuple[GeneratedDeck, SideboardPlan]:
-    """Apply a small deterministic sideboard plan for one opposing archetype."""
-    if max_swaps < 0:
-        raise ValueError("max_swaps cannot be negative")
-    main = _expand(deck.mainboard)
-    side = sorted(
-        _expand(deck.sideboard),
-        key=lambda entry: (-_sideboard_value(entry, opponent_archetype), entry.name),
-    )
-    relevant = [entry for entry in side if _sideboard_value(entry, opponent_archetype) >= entry.score + 5]
-    incoming = relevant[: min(max_swaps, len(relevant), len(main))]
-    outgoing = sorted(main, key=lambda entry: (entry.score, -entry.mana_value, entry.name))[: len(incoming)]
-    for entry in outgoing:
-        main.remove(entry)
-    main.extend(incoming)
-    plan = SideboardPlan(
-        opponent_archetype=opponent_archetype,
-        cards_in=tuple(sorted(((entry.name, incoming.count(entry)) for entry in set(incoming)))),
-        cards_out=tuple(sorted(((entry.name, outgoing.count(entry)) for entry in set(outgoing)))),
-    )
-    return replace(deck, mainboard=_compress(main)), plan
+    impacts_a: tuple[SideboardCardImpact, ...] = ()
+    impacts_b: tuple[SideboardCardImpact, ...] = ()
 
 
 class BestOfThreeSimulator:
-    """Simulate one preboard game followed by up to two postboard games."""
-
     def simulate(
         self,
         deck_a: GeneratedDeck,
@@ -113,29 +42,41 @@ class BestOfThreeSimulator:
             raise ValueError("samples must be positive")
         simulator = MatchupSimulator()
         game_one = simulator.simulate(
-            deck_a, deck_b, archetype_a=archetype_a, archetype_b=archetype_b, samples=samples, seed=seed
+            deck_a, deck_b,
+            archetype_a=archetype_a,
+            archetype_b=archetype_b,
+            samples=samples,
+            seed=seed,
         )
-        boarded_a, plan_a = board_for_matchup(deck_a, opponent_archetype=archetype_b)
-        boarded_b, plan_b = board_for_matchup(deck_b, opponent_archetype=archetype_a)
+        tuned_a = optimize_sideboard_plan(
+            deck_a, deck_b,
+            archetype=archetype_a,
+            opponent_archetype=archetype_b,
+            samples=min(samples, 600),
+            seed=seed + 10,
+        )
+        tuned_b = optimize_sideboard_plan(
+            deck_b, deck_a,
+            archetype=archetype_b,
+            opponent_archetype=archetype_a,
+            samples=min(samples, 600),
+            seed=seed + 20,
+        )
         postboard = simulator.simulate(
-            boarded_a,
-            boarded_b,
+            tuned_a.deck, tuned_b.deck,
             archetype_a=archetype_a,
             archetype_b=archetype_b,
             samples=samples,
             seed=seed + 1,
         )
-
         rng = random.Random(seed + 2)
         wins_a = wins_b = 0
         p1 = game_one.wins_a_pct / max(1, game_one.wins_a_pct + game_one.wins_b_pct)
         pp = postboard.wins_a_pct / max(1, postboard.wins_a_pct + postboard.wins_b_pct)
         for _ in range(samples):
             score_a = score_b = 0
-            if rng.random() < p1:
-                score_a += 1
-            else:
-                score_b += 1
+            score_a += int(rng.random() < p1)
+            score_b = 1 - score_a
             while score_a < 2 and score_b < 2:
                 if rng.random() < pp:
                     score_a += 1
@@ -143,7 +84,6 @@ class BestOfThreeSimulator:
                     score_b += 1
             wins_a += int(score_a == 2)
             wins_b += int(score_b == 2)
-
         return BestOfThreeReport(
             archetype_a=archetype_a,
             archetype_b=archetype_b,
@@ -152,23 +92,27 @@ class BestOfThreeSimulator:
             match_wins_b_pct=round(wins_b * 100 / samples),
             game_one=game_one,
             postboard=postboard,
-            plan_a=plan_a,
-            plan_b=plan_b,
+            plan_a=tuned_a.plan,
+            plan_b=tuned_b.plan,
+            impacts_a=tuned_a.impacts,
+            impacts_b=tuned_b.impacts,
         )
 
 
 def format_bo3_report(report: BestOfThreeReport) -> str:
     lines = [
-        "THUN BEST-OF-THREE MATCHUP",
-        "=" * 72,
+        "THUN BEST-OF-THREE MATCHUP", "=" * 72,
         f"{report.archetype_a} vs. {report.archetype_b}",
         f"Match wins: {report.archetype_a} {report.match_wins_a_pct}% / {report.archetype_b} {report.match_wins_b_pct}%",
         f"Game 1: {report.game_one.wins_a_pct}% / {report.game_one.wins_b_pct}%",
-        f"Postboard games: {report.postboard.wins_a_pct}% / {report.postboard.wins_b_pct}%",
-        "",
-        f"{report.archetype_a} cards in: " + (", ".join(f"{qty} {name}" for name, qty in report.plan_a.cards_in) or "none"),
-        f"{report.archetype_a} cards out: " + (", ".join(f"{qty} {name}" for name, qty in report.plan_a.cards_out) or "none"),
-        f"{report.archetype_b} cards in: " + (", ".join(f"{qty} {name}" for name, qty in report.plan_b.cards_in) or "none"),
-        f"{report.archetype_b} cards out: " + (", ".join(f"{qty} {name}" for name, qty in report.plan_b.cards_out) or "none"),
+        f"Postboard games: {report.postboard.wins_a_pct}% / {report.postboard.wins_b_pct}%", "",
     ]
+    for archetype, plan, impacts in (
+        (report.archetype_a, report.plan_a, report.impacts_a),
+        (report.archetype_b, report.plan_b, report.impacts_b),
+    ):
+        lines.append(f"{archetype} cards in: " + (", ".join(f"{qty} {name}" for name, qty in plan.cards_in) or "none"))
+        lines.append(f"{archetype} cards out: " + (", ".join(f"{qty} {name}" for name, qty in plan.cards_out) or "none"))
+        for impact in impacts:
+            lines.append(f"  +{impact.win_rate_delta} pp: {impact.card_in} for {impact.card_out}")
     return "\n".join(lines)
