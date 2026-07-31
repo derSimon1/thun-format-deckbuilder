@@ -2,11 +2,16 @@ from types import SimpleNamespace
 
 from thun_deckbuilder.card_analyzer import analyze_card
 from thun_deckbuilder.knowledge_base import CardKnowledge
-from thun_deckbuilder.meta_analyzer import learn_archetype_profile
+from thun_deckbuilder.meta_analyzer import (
+    LearnedArchetypeProfile,
+    LearnedCoreCard,
+    learn_archetype_profile,
+    translate_unavailable_core_cards,
+)
 from thun_deckbuilder.moxfield_import import parse_moxfield_text
 
 
-def knowledge(name, *, mv, type_line, colors=(), text="", roles=()):
+def knowledge(name, *, mv, type_line, colors=(), text="", roles=(), synergies=()):
     card = {
         "name": name,
         "mana_value": mv,
@@ -20,7 +25,7 @@ def knowledge(name, *, mv, type_line, colors=(), text="", roles=()):
         card=card,
         analysis=analyze_card(card),
         roles=frozenset(roles),
-        synergies=frozenset(),
+        synergies=frozenset(synergies),
     )
 
 
@@ -103,3 +108,49 @@ def test_meta_analyzer_reports_unknown_cards_without_failing():
     )
 
     assert profile.unresolved_cards == ("Unknown Meta Card",)
+
+
+def test_unavailable_core_cards_receive_legal_functional_replacements():
+    profile = LearnedArchetypeProfile(
+        deck_count=3,
+        colors=("R",),
+        average_lands=20,
+        average_mana_value=1.8,
+        curve=((1, 12), (2, 14)),
+        role_targets=(("burn", 14),),
+        core_cards=(
+            LearnedCoreCard("Rare Bolt", inclusion_rate=1.0, average_copies=4.0),
+            LearnedCoreCard("Already Legal", inclusion_rate=1.0, average_copies=3.0),
+        ),
+        unresolved_cards=(),
+    )
+    source_catalog = (
+        knowledge(
+            "Rare Bolt", mv=1, type_line="Instant", colors=("R",),
+            text="Rare Bolt deals 3 damage to any target.", roles=("burn",),
+        ),
+    )
+    legal_pool = (
+        knowledge(
+            "Already Legal", mv=1, type_line="Creature", colors=("R",),
+            roles=("aggro_creature",),
+        ),
+        knowledge(
+            "Legal Burn", mv=2, type_line="Instant", colors=("R",),
+            text="Legal Burn deals 3 damage to any target.", roles=("burn",),
+        ),
+        knowledge(
+            "Off Plan", mv=2, type_line="Creature", colors=("R",),
+            roles=("aggro_creature",),
+        ),
+    )
+
+    translations = translate_unavailable_core_cards(
+        profile,
+        source_catalog,
+        legal_pool,
+    )
+
+    assert len(translations) == 1
+    assert translations[0].source_name == "Rare Bolt"
+    assert translations[0].candidates[0].replacement_name == "Legal Burn"
