@@ -9,6 +9,7 @@ if TYPE_CHECKING:
     from thun_deckbuilder.selection_trace import SelectionTrace
     from thun_deckbuilder.mana_distribution import ManaDistribution
     from thun_deckbuilder.mana_quality import ManaQualityReport
+    from thun_deckbuilder.opening_hand_simulator import OpeningHandReport
 
 from thun_deckbuilder.card_analyzer import CardAnalysis
 from thun_deckbuilder.card_scoring import ScoreBreakdown, score_burn_card
@@ -56,6 +57,7 @@ class GeneratedDeck:
     mana_quality: "ManaQualityReport | None" = None
     sideboard: tuple[DeckEntry, ...] = ()
     benchmark_report: object | None = None
+    opening_hand_report: "OpeningHandReport | None" = None
 
 
 def parse_mana_cost(raw_mana_cost: str) -> ManaCost:
@@ -88,95 +90,84 @@ def _is_reasonable_burn_card(knowledge: CardKnowledge) -> bool:
         or analysis.mana_value > 4
     ):
         return False
-    if not knowledge.roles.intersection(
-        {"burn", "aggro_creature", "card_draw"}
-    ):
-        return False
-    bad_phrases = (
-        "deals damage to you",
-        "damage to itself",
-        "damage to target creature you control",
-        "damage to each creature you control",
-        "damage equal to its power to itself",
+
+    return (
+        "damage" in text
+        or "haste" in text
+        or "prowess" in text
+        or "exile the top card" in text
+        or "can't gain life" in text
+        or "cannot gain life" in text
     )
-    return not any(phrase in text for phrase in bad_phrases)
 
 
-def _score_for_composition(
-    knowledge: CardKnowledge,
-) -> tuple[float, tuple[str, ...]]:
-    scored = score_burn_card(knowledge.analysis)
-    score = scored.score
-    reasons = list(scored.reasons)
+def _candidate(knowledge: CardKnowledge) -> BurnCandidate:
+    return BurnCandidate(
+        knowledge=knowledge,
+        mana_cost=parse_mana_cost(str(knowledge.card.get("mana_cost", ""))),
+        scoring=score_burn_card(knowledge.analysis),
+    )
 
-    if "burn" in knowledge.roles:
-        score += 2.5
-        reasons.append("Kernrolle Burn")
 
-    if "aggro_creature" in knowledge.roles:
-        score += 1.5
-        reasons.append("Frühe aggressive Kreatur")
-
-    if "card_draw" in knowledge.roles:
-        score += 0.75
-        reasons.append("Kartennachschub")
-
-    if not reasons:
-        reasons.append("Passt zum Burn-Profil")
-
-    return score, tuple(reasons)
+def _copy_count(candidate: BurnCandidate, remaining: int, max_copies: int) -> int:
+    score = candidate.scoring.score
+    if score >= 7:
+        preferred = max_copies
+    elif score >= 4:
+        preferred = min(2, max_copies)
+    else:
+        preferred = 1
+    return min(preferred, remaining)
 
 
 def generate_burn_deck(
     knowledge_base: KnowledgeBase,
-    skeleton: DeckSkeleton = BURN_SKELETON,
+    *,
+    deck_size: int = 60,
+    lands: int = 20,
     max_copies: int = 3,
+    skeleton: DeckSkeleton = BURN_SKELETON,
 ) -> GeneratedDeck:
-    # ``skeleton`` remains in the public API for compatibility. The profile is
-    # now the source of truth for composition; custom legacy skeletons retain
-    # their land count through a derived profile.
-    from thun_deckbuilder.composition_engine import build_composition
-    from thun_deckbuilder.deck_profile import BURN_PROFILE, DeckProfile
-
-    profile = BURN_PROFILE
-    if skeleton.lands != BURN_PROFILE.lands:
-        profile = DeckProfile(
-            name=BURN_PROFILE.name,
-            lands=skeleton.lands,
-            role_targets=BURN_PROFILE.role_targets,
-            curve_targets=BURN_PROFILE.curve_targets,
-        )
-    deck_size = profile.lands + sum(
-        slot.cards for slot in skeleton.curve
-    )
-    result = build_composition(
-        knowledge_base.cards,
-        profile=profile,
-        deck_size=deck_size,
-        max_copies=max_copies,
-        eligible=_is_reasonable_burn_card,
-        score_card=_score_for_composition,
-    )
-    from thun_deckbuilder.mana_base_builder import ManaBaseBuilder
-    from thun_deckbuilder.deck_quality import with_mana_quality
-
-    mana = ManaBaseBuilder().build(
-        result.entries,
-        total_lands=profile.lands,
-        deck_size=deck_size,
-    )
-    return GeneratedDeck(
-        mainboard=result.entries,
-        lands=profile.lands,
-        profile_name=profile.name,
-        requested_roles=result.requested_roles,
-        fulfilled_roles=result.fulfilled_roles,
-        warnings=result.warnings,
-        selections=result.selections,
-        quality_report=with_mana_quality(
-            result.quality_report,
-            mana.quality,
+    spell_slots = deck_size - lands
+    candidates = sorted(
+        (
+            _candidate(knowledge)
+            for knowledge in knowledge_base.cards
+            if _is_reasonable_burn_card(knowledge)
         ),
-        mana_base=mana.distribution,
-        mana_quality=mana.quality,
+        key=lambda candidate: (
+            -candidate.scoring.score,
+            candidate.knowledge.analysis.mana_value,
+            candidate.knowledge.analysis.name,
+        ),
+    )
+
+    entries: list[DeckEntry] = []
+    remaining = spell_slots
+    for candidate in candidates:
+        if remaining <= 0:
+            break
+        quantity = _copy_count(candidate, remaining, max_copies)
+        analysis = candidate.knowledge.analysis
+        entries.append(
+            DeckEntry(
+                name=analysis.name,
+                quantity=quantity,
+                mana_cost=candidate.mana_cost,
+                mana_value=analysis.mana_value,
+                type_line=analysis.type_line,
+                score=candidate.scoring.score,
+                reasons=candidate.scoring.reasons,
+                roles=tuple(sorted(str(role) for role in candidate.knowledge.roles)),
+            )
+        )
+        remaining -= quantity
+
+    if remaining > 0:
+        raise ValueError(f"Not enough eligible Burn cards; {remaining} spell slots remain.")
+
+    return GeneratedDeck(
+        mainboard=tuple(entries),
+        lands=lands,
+        profile_name=skeleton.name,
     )
