@@ -95,3 +95,54 @@ def test_artifact_payoff_receives_pairwise_density_bonus():
 
     names = {card.name for card in optimized}
     assert names.intersection({"Cheap Relic", "Artifact Payoff"})
+
+
+def test_optimizer_does_not_trade_away_existing_early_curve():
+    early_mill = knowledge(
+        "Early Mill", 2, "Sorcery", "Target opponent mills 4 cards."
+    )
+    slow_bomb = knowledge(
+        "Slow Bomb", 6, "Sorcery", "Draw four cards."
+    )
+    entries = (entry("Early Mill", 2, "Sorcery", score=2.0),)
+
+    optimized = optimize_entries(
+        entries,
+        (early_mill, slow_bomb),
+        archetype="mill",
+        colors=("U", "B"),
+        scorer=lambda analysis: ScoreBreakdown(
+            20.0 if analysis.name == "Slow Bomb" else 2.0,
+            ("test",),
+        ),
+        eligible=eligible,
+        max_copies=3,
+    )
+
+    counts = {card.name: card.quantity for card in optimized}
+    assert counts.get("Early Mill", 0) == 3
+    assert counts.get("Slow Bomb", 0) == 0
+
+
+def test_optimizer_does_not_reduce_existing_core_density():
+    core = knowledge(
+        "Core Mill", 3, "Sorcery", "Target opponent mills 5 cards."
+    )
+    generic = knowledge("Generic Draw", 3, "Sorcery", "Draw three cards.")
+    entries = (entry("Core Mill", 3, "Sorcery", score=1.0),)
+
+    optimized = optimize_entries(
+        entries,
+        (core, generic),
+        archetype="mill",
+        colors=("U", "B"),
+        scorer=lambda analysis: ScoreBreakdown(
+            15.0 if analysis.name == "Generic Draw" else 1.0,
+            ("test",),
+        ),
+        eligible=eligible,
+        max_copies=3,
+    )
+
+    counts = {card.name: card.quantity for card in optimized}
+    assert counts.get("Core Mill", 0) == 3
