@@ -96,6 +96,24 @@ def format_deck(
         lines.append(f"Mana screw: {report.mana_screw_pct}%")
         lines.append(f"Mana flood: {report.mana_flood_pct}%")
 
+    if deck.goldfish_report is not None:
+        report = deck.goldfish_report
+        lines.extend(["", "GOLDFISH SIMULATION", "-" * 88])
+        lines.append(f"Samples: {report.samples} over {report.turns} turns")
+        lines.append(f"Mulligan rate: {report.mulligan_rate_pct}%")
+        lines.append(f"Average spells cast: {report.average_spells_cast}")
+        lines.append(f"Average unused mana: {report.average_unused_mana}")
+        if archetype in {"burn", "tokens"}:
+            lines.append(f"Average damage: {report.average_damage}")
+            lines.append(f"Kill by turn {report.turns}: {report.kill_by_final_turn_pct}%")
+        if archetype == "mill":
+            lines.append(f"Average cards milled: {report.average_cards_milled}")
+            lines.append(f"Mill-out by turn {report.turns}: {report.mill_out_by_final_turn_pct}%")
+        if archetype == "artifacts":
+            lines.append(f"Average artifacts in play: {report.average_artifacts_in_play}")
+        if archetype == "shrines":
+            lines.append(f"Average shrines in play: {report.average_shrines_in_play}")
+
     if deck.quality_report is not None:
         lines.extend(["", *format_quality_report(deck.quality_report)])
 
