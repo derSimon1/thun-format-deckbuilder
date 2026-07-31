@@ -18,6 +18,7 @@ from thun_deckbuilder.deck_request import DeckRequest
 from thun_deckbuilder.knowledge_base import CardKnowledge, KnowledgeBase
 from thun_deckbuilder.mana_base_builder import ManaBaseBuilder
 from thun_deckbuilder.deck_quality import with_mana_quality
+from thun_deckbuilder.opening_hand_simulator import OpeningHandSimulator
 from thun_deckbuilder.sideboard_builder import SideboardBuilder
 
 Scorer = Callable[[CardAnalysis], ScoreBreakdown]
@@ -162,7 +163,15 @@ class CalibratedStrategy:
             colors=request.colors,
             max_copies=request.max_copies,
         )
-        return replace(deck, sideboard=sideboard)
+        opening_hand_report = OpeningHandSimulator().simulate(
+            deck,
+            archetype=request.archetype,
+        )
+        return replace(
+            deck,
+            sideboard=sideboard,
+            opening_hand_report=opening_hand_report,
+        )
 
     def _validate_request(self, request: DeckRequest) -> None:
         if request.deck_size != 60:
