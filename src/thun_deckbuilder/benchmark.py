@@ -1,9 +1,17 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 from collections import Counter
+from dataclasses import dataclass
 
 from thun_deckbuilder.deck_generator import GeneratedDeck
+
+
+@dataclass(frozen=True)
+class SignatureTarget:
+    key: str
+    target: int
+    type_phrases: tuple[str, ...] = ()
+    reason_phrases: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -13,6 +21,7 @@ class BenchmarkProfile:
     role_targets: tuple[tuple[str, int], ...]
     curve_targets: tuple[tuple[str, int], ...]
     lands: int
+    signature_targets: tuple[SignatureTarget, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -30,6 +39,7 @@ class BenchmarkReport:
     curve_items: tuple[BenchmarkItem, ...]
     land_item: BenchmarkItem
     score: int
+    signature_items: tuple[BenchmarkItem, ...] = ()
 
 
 BENCHMARKS: dict[str, BenchmarkProfile] = {
@@ -46,6 +56,71 @@ BENCHMARKS: dict[str, BenchmarkProfile] = {
         role_targets=(("token_maker", 18), ("token_payoff", 6), ("removal", 6), ("card_draw", 3)),
         curve_targets=(("1", 8), ("2", 12), ("3", 10), ("4+", 6)),
         lands=24,
+    ),
+    "artifacts": BenchmarkProfile(
+        archetype="artifacts",
+        display_name="Artifact Synergy",
+        role_targets=(("card_draw", 5), ("removal", 5)),
+        curve_targets=(("1", 10), ("2", 14), ("3", 9), ("4+", 5)),
+        lands=22,
+        signature_targets=(
+            SignatureTarget(
+                "artifact_cards",
+                28,
+                type_phrases=("artifact",),
+            ),
+            SignatureTarget(
+                "artifact_payoffs",
+                6,
+                reason_phrases=(
+                    "Affinity-Payoff",
+                    "Improvise-Payoff",
+                    "Metalcraft-Payoff",
+                    "Artifactfall-Payoff",
+                    "Artefakt-Skalierung",
+                    "Artefakt-Anthem",
+                ),
+            ),
+        ),
+    ),
+    "shrines": BenchmarkProfile(
+        archetype="shrines",
+        display_name="Five-Color Shrines",
+        role_targets=(("ramp", 7), ("card_draw", 5), ("removal", 5)),
+        curve_targets=(("1", 3), ("2", 8), ("3", 11), ("4+", 14)),
+        lands=24,
+        signature_targets=(
+            SignatureTarget(
+                "shrine_cards",
+                15,
+                type_phrases=("shrine",),
+            ),
+            SignatureTarget(
+                "fixing_sources",
+                7,
+                reason_phrases=("Fünffarben-Fixing", "Farben-Fixing"),
+            ),
+        ),
+    ),
+    "mill": BenchmarkProfile(
+        archetype="mill",
+        display_name="Dimir Mill",
+        role_targets=(("card_draw", 7), ("removal", 8)),
+        curve_targets=(("1", 6), ("2", 12), ("3", 10), ("4+", 8)),
+        lands=24,
+        signature_targets=(
+            SignatureTarget(
+                "mill_sources",
+                20,
+                reason_phrases=(
+                    "Millt ",
+                    "Wiederholbares Mill",
+                    "Skalierendes Mill",
+                    "Sehr effizientes Mill",
+                    "Effizientes Mill",
+                ),
+            ),
+        ),
     ),
 }
 
@@ -65,6 +140,18 @@ def _curve_band(mana_value: float) -> str:
     if mana_value <= 3:
         return "3"
     return "4+"
+
+
+def _matches_signature(entry, target: SignatureTarget) -> bool:
+    type_line = entry.type_line.lower()
+    reasons = tuple(reason.lower() for reason in entry.reasons)
+    return any(
+        phrase.lower() in type_line for phrase in target.type_phrases
+    ) or any(
+        phrase.lower() in reason
+        for phrase in target.reason_phrases
+        for reason in reasons
+    )
 
 
 class BenchmarkAnalyzer:
@@ -88,7 +175,44 @@ class BenchmarkAnalyzer:
             BenchmarkItem(band, target, curve_counts[band], _closeness(curve_counts[band], target))
             for band, target in profile.curve_targets
         )
-        land_item = BenchmarkItem("lands", profile.lands, deck.lands, _closeness(deck.lands, profile.lands))
-        all_scores = [item.score for item in role_items + curve_items] + [land_item.score]
+        signature_items = tuple(
+            BenchmarkItem(
+                target.key,
+                target.target,
+                sum(
+                    entry.quantity
+                    for entry in deck.mainboard
+                    if _matches_signature(entry, target)
+                ),
+                0,
+            )
+            for target in profile.signature_targets
+        )
+        signature_items = tuple(
+            BenchmarkItem(
+                item.key,
+                item.target,
+                item.actual,
+                _closeness(item.actual, item.target),
+            )
+            for item in signature_items
+        )
+        land_item = BenchmarkItem(
+            "lands",
+            profile.lands,
+            deck.lands,
+            _closeness(deck.lands, profile.lands),
+        )
+        all_scores = [
+            item.score
+            for item in role_items + curve_items + signature_items
+        ] + [land_item.score]
         score = round(sum(all_scores) / len(all_scores)) if all_scores else 0
-        return BenchmarkReport(profile.display_name, role_items, curve_items, land_item, score)
+        return BenchmarkReport(
+            profile.display_name,
+            role_items,
+            curve_items,
+            land_item,
+            score,
+            signature_items,
+        )
