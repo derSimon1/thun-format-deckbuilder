@@ -29,12 +29,9 @@ def _fixed_damage(text: str) -> int:
     return max(amounts, default=0)
 
 
-def score_burn_card(
-    analysis: CardAnalysis,
-) -> ScoreBreakdown:
+def score_burn_card(analysis: CardAnalysis) -> ScoreBreakdown:
     score = 0.0
     reasons: list[str] = []
-
     text = f" {analysis.oracle_text.lower()} "
     mana_value = max(analysis.mana_value, 0.0)
 
@@ -59,21 +56,8 @@ def score_burn_card(
         reasons.append("Sorcery")
 
     hits_any_target = "any target" in text
-    hits_player = any(
-        phrase in text
-        for phrase in (
-            "target player",
-            "target opponent",
-            "each opponent",
-        )
-    )
-    hits_creature = any(
-        phrase in text
-        for phrase in (
-            "target creature",
-            "each creature",
-        )
-    )
+    hits_player = any(phrase in text for phrase in ("target player", "target opponent", "each opponent"))
+    hits_creature = any(phrase in text for phrase in ("target creature", "each creature"))
 
     if hits_any_target:
         score += 4.0
@@ -89,7 +73,6 @@ def score_burn_card(
     if damage:
         score += float(damage)
         reasons.append(f"{damage} Schaden")
-
         efficiency = damage / max(mana_value, 1.0)
         if hits_any_target or hits_player:
             if efficiency >= 2.5:
@@ -109,59 +92,40 @@ def score_burn_card(
         if "haste" in text:
             score += 1.5
             reasons.append("Haste")
-
         if analysis.power is not None and mana_value > 0:
-            power_efficiency = analysis.power / mana_value
-            if power_efficiency >= 2.0:
+            efficiency = analysis.power / mana_value
+            if efficiency >= 2.0:
                 score += 2.0
                 reasons.append("Sehr effiziente Aggro-Kreatur")
-            elif power_efficiency >= 1.0:
+            elif efficiency >= 1.0:
                 score += 1.0
                 reasons.append("Effiziente Aggro-Kreatur")
-
-        if (
-            "whenever you cast" in text
-            and ("instant" in text or "noncreature" in text)
-        ):
+        if "whenever you cast" in text and ("instant" in text or "noncreature" in text):
             score += 1.5
             reasons.append("Burn-Synergie")
-
-        if (
-            "{t}:" in text
-            and "damage" in text
-            and (hits_player or hits_any_target)
-        ):
+        if "{t}:" in text and "damage" in text and (hits_player or hits_any_target):
             score += 2.0
             reasons.append("Wiederholbarer Schaden")
 
     if "can't gain life" in text:
         score += 1.0
         reasons.append("Verhindert Lifegain")
-
     if "exile it instead" in text:
         score += 0.5
         reasons.append("Exile-Effekt")
 
-    conditional_hits = sum(
-        phrase in text for phrase in _CONDITIONAL_PHRASES
-    )
+    conditional_hits = sum(phrase in text for phrase in _CONDITIONAL_PHRASES)
     if conditional_hits:
         score -= min(3.0, 1.5 * conditional_hits)
         reasons.append("Bedingter oder zusätzlicher Aufwand")
-
     if "damage to you" in text:
         score -= 2.0
         reasons.append("Eigenschaden")
 
-    return ScoreBreakdown(
-        score=score,
-        reasons=tuple(reasons),
-    )
+    return ScoreBreakdown(score=score, reasons=tuple(reasons))
 
 
-def score_artifact_card(
-    analysis: CardAnalysis,
-) -> ScoreBreakdown:
+def score_artifact_card(analysis: CardAnalysis) -> ScoreBreakdown:
     score = 0.0
     reasons: list[str] = []
     text = f" {analysis.oracle_text.lower()} "
@@ -195,55 +159,93 @@ def score_artifact_card(
             score += bonus
             reasons.append(reason)
 
-    token_types = tuple(
-        token
-        for token in ("treasure", "clue", "blood", "powerstone", "food")
-        if token in text
-    )
+    token_types = tuple(token for token in ("treasure", "clue", "blood", "powerstone", "food") if token in text)
     if "create" in text and token_types:
         score += 2.0 + min(1.5, 0.5 * len(token_types))
         reasons.append("Erzeugt Artefakt-Spielsteine")
-
     if analysis.is_artifact and "draw a card" in text:
         score += 1.5
         reasons.append("Artefakt mit Kartennachschub")
+    if analysis.is_creature and analysis.power is not None and mana_value > 0 and analysis.power / mana_value >= 1.0:
+        score += 1.0
+        reasons.append("Effizienter Körper")
 
-    if analysis.is_creature and analysis.power is not None and mana_value > 0:
-        if analysis.power / mana_value >= 1.0:
-            score += 1.0
-            reasons.append("Effizienter Körper")
-
-    payoff_phrases = (
-        "affinity for artifacts",
-        "improvise",
-        "metalcraft",
-        "whenever an artifact enters",
-        "whenever another artifact enters",
-        "for each artifact you control",
-        "artifacts you control get",
-        "sacrifice an artifact",
-    )
+    payoff_phrases = tuple(mechanic_hits)
     has_payoff = any(phrase in text for phrase in payoff_phrases)
-    has_utility = any(
-        phrase in text
-        for phrase in (
-            "draw a card",
-            "create",
-            "add {",
-            "destroy target",
-            "exile target",
-        )
-    )
-    if (
-        analysis.is_artifact
-        and mana_value >= 4
-        and not has_payoff
-        and not has_utility
-    ):
+    has_utility = any(phrase in text for phrase in ("draw a card", "create", "add {", "destroy target", "exile target"))
+    if analysis.is_artifact and mana_value >= 4 and not has_payoff and not has_utility:
         score -= 3.0
         reasons.append("Teures Artefakt ohne Synergie")
 
-    return ScoreBreakdown(
-        score=score,
-        reasons=tuple(reasons),
+    return ScoreBreakdown(score=score, reasons=tuple(reasons))
+
+
+def score_shrine_card(analysis: CardAnalysis) -> ScoreBreakdown:
+    score = 0.0
+    reasons: list[str] = []
+    text = f" {analysis.oracle_text.lower()} "
+    type_text = analysis.type_line.lower()
+    mana_value = max(analysis.mana_value, 0.0)
+    is_shrine = "shrine" in type_text
+
+    if is_shrine:
+        score += 5.0
+        reasons.append("Schrein")
+        if mana_value <= 2:
+            score += 2.0
+            reasons.append("Früher Schrein")
+        elif mana_value == 3:
+            score += 1.0
+            reasons.append("Effizienter Schrein")
+        elif mana_value >= 5:
+            score -= 1.5
+            reasons.append("Teurer Schrein")
+
+    shrine_scaling = any(
+        phrase in text
+        for phrase in (
+            "for each shrine you control",
+            "number of shrines you control",
+            "for each other shrine you control",
+        )
     )
+    if shrine_scaling:
+        score += 4.0
+        reasons.append("Skaliert mit Schreinen")
+
+    if "search your library" in text and "shrine" in text:
+        score += 3.5
+        reasons.append("Schrein-Tutor")
+    if "return target" in text and "shrine" in text:
+        score += 2.5
+        reasons.append("Schrein-Rekursion")
+    if "add one mana of any color" in text or "add one mana of any type" in text:
+        score += 3.0
+        reasons.append("Fünffarben-Fixing")
+    elif "add {" in text and ("any color" in text or "different colors" in text):
+        score += 2.0
+        reasons.append("Farben-Fixing")
+    if "draw a card" in text:
+        score += 1.5
+        reasons.append("Kartennachschub")
+    if "gain" in text and "life" in text and shrine_scaling:
+        score += 1.0
+        reasons.append("Skalierender Lifegain")
+    if "deals" in text and "damage" in text and shrine_scaling:
+        score += 2.0
+        reasons.append("Skalierender Schaden")
+    if "discard" in text and shrine_scaling:
+        score += 1.5
+        reasons.append("Skalierende Disruption")
+    if "create" in text and "token" in text and shrine_scaling:
+        score += 1.5
+        reasons.append("Skalierende Board-Präsenz")
+
+    if analysis.is_legendary and not is_shrine and mana_value >= 4 and not shrine_scaling:
+        score -= 1.0
+        reasons.append("Legendäre Karte ohne Schrein-Synergie")
+    if is_shrine and mana_value >= 5 and not shrine_scaling:
+        score -= 1.5
+        reasons.append("Teurer Schrein ohne Skalierung")
+
+    return ScoreBreakdown(score=score, reasons=tuple(reasons))
