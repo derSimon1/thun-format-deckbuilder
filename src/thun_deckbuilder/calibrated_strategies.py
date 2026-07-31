@@ -25,8 +25,8 @@ ARTIFACT_PROFILE = DeckProfile(
     name="Artifact Synergy",
     lands=22,
     role_targets=(
-        RoleTarget("card_draw", minimum=2, target=5),
-        RoleTarget("removal", minimum=2, target=5),
+        RoleTarget("card_draw", minimum=0, target=4),
+        RoleTarget("removal", minimum=0, target=4),
     ),
     curve_targets=(
         CurveTarget(1, 10), CurveTarget(2, 14), CurveTarget(3, 9),
@@ -38,9 +38,9 @@ SHRINE_PROFILE = DeckProfile(
     name="Five-Color Shrines",
     lands=24,
     role_targets=(
-        RoleTarget("ramp", minimum=4, target=7),
-        RoleTarget("card_draw", minimum=2, target=5),
-        RoleTarget("removal", minimum=2, target=5),
+        RoleTarget("ramp", minimum=0, target=6),
+        RoleTarget("card_draw", minimum=0, target=4),
+        RoleTarget("removal", minimum=0, target=3),
     ),
     curve_targets=(
         CurveTarget(2, 8), CurveTarget(3, 11), CurveTarget(4, 9),
@@ -52,8 +52,8 @@ MILL_PROFILE = DeckProfile(
     name="Dimir Mill",
     lands=24,
     role_targets=(
-        RoleTarget("card_draw", minimum=4, target=7),
-        RoleTarget("removal", minimum=5, target=8),
+        RoleTarget("card_draw", minimum=0, target=6),
+        RoleTarget("removal", minimum=0, target=7),
     ),
     curve_targets=(
         CurveTarget(1, 6), CurveTarget(2, 12), CurveTarget(3, 10),
@@ -84,12 +84,12 @@ def _shrine_eligible(knowledge: CardKnowledge, colors: tuple[str, ...]) -> bool:
     text = analysis.oracle_text.lower()
     if analysis.is_land or not _within_colors(analysis, colors):
         return False
-    return (
-        "shrine" in analysis.type_line.lower()
-        or "shrine" in text
-        or "any color" in text
-        or bool(knowledge.roles.intersection({"ramp", "card_draw", "removal"}))
+    is_core = "shrine" in analysis.type_line.lower() or "shrine" in text
+    is_fixing = "any color" in text or "any type" in text
+    is_compact_support = analysis.mana_value <= 3 and bool(
+        knowledge.roles.intersection({"ramp", "card_draw", "removal"})
     )
+    return is_core or is_fixing or is_compact_support
 
 
 def _mill_eligible(knowledge: CardKnowledge, colors: tuple[str, ...]) -> bool:
@@ -97,11 +97,11 @@ def _mill_eligible(knowledge: CardKnowledge, colors: tuple[str, ...]) -> bool:
     text = analysis.oracle_text.lower()
     if analysis.is_land or not _within_colors(analysis, colors):
         return False
-    return (
-        "mill" in text
-        or "library into" in text
-        or bool(knowledge.roles.intersection({"card_draw", "removal"}))
+    is_core = "mill" in text or "library into" in text
+    is_compact_support = analysis.mana_value <= 3 and bool(
+        knowledge.roles.intersection({"card_draw", "removal"})
     )
+    return is_core or is_compact_support
 
 
 class CalibratedStrategy:
