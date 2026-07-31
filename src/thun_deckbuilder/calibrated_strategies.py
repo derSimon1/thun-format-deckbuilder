@@ -12,6 +12,7 @@ from thun_deckbuilder.card_scoring import (
 from thun_deckbuilder.mill_scoring import score_mill_card
 from thun_deckbuilder.composition_engine import build_composition
 from thun_deckbuilder.deck_generator import GeneratedDeck
+from thun_deckbuilder.deck_optimizer import optimize_entries
 from thun_deckbuilder.deck_profile import CurveTarget, DeckProfile, RoleTarget
 from thun_deckbuilder.deck_request import DeckRequest
 from thun_deckbuilder.knowledge_base import CardKnowledge, KnowledgeBase
@@ -128,13 +129,22 @@ class CalibratedStrategy:
             eligible=lambda card: self.eligibility(card, request.colors),
             score_card=lambda card: _score(card, self.scorer),
         )
-        mana = ManaBaseBuilder().build(
+        optimized_entries = optimize_entries(
             result.entries,
+            knowledge_base.cards,
+            archetype=request.archetype,
+            colors=request.colors,
+            scorer=self.scorer,
+            eligible=self.eligibility,
+            max_copies=request.max_copies,
+        )
+        mana = ManaBaseBuilder().build(
+            optimized_entries,
             total_lands=self.profile.lands,
             deck_size=request.deck_size,
         )
         deck = GeneratedDeck(
-            mainboard=result.entries,
+            mainboard=optimized_entries,
             lands=self.profile.lands,
             profile_name=self.profile.name,
             requested_roles=result.requested_roles,
