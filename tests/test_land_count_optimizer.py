@@ -6,10 +6,24 @@ from thun_deckbuilder.land_count_optimizer import (
 from thun_deckbuilder.opening_hand_simulator import OpeningHandReport
 
 
-def report(*, playable, lands_ok, early=90, core=80, screw=5, flood=5):
+def report(
+    *,
+    playable,
+    lands_ok,
+    post_mulligan=None,
+    mulligan=20,
+    early=90,
+    core=80,
+    screw=5,
+    flood=5,
+):
     return OpeningHandReport(
         samples=2000,
         playable_hands_pct=playable,
+        playable_after_mulligan_pct=(
+            post_mulligan if post_mulligan is not None else min(100, playable + 10)
+        ),
+        mulligan_to_six_pct=mulligan,
         two_to_four_lands_pct=lands_ok,
         early_play_pct=early,
         core_by_turn_three_pct=core,
@@ -18,9 +32,9 @@ def report(*, playable, lands_ok, early=90, core=80, screw=5, flood=5):
     )
 
 
-def test_consistency_score_rewards_playable_hands_and_penalizes_mana_risk():
-    stable = report(playable=82, lands_ok=88, screw=4, flood=5)
-    risky = report(playable=70, lands_ok=75, screw=14, flood=10)
+def test_consistency_score_rewards_post_mulligan_playability_and_penalizes_risk():
+    stable = report(playable=82, post_mulligan=94, lands_ok=88, mulligan=18, screw=4, flood=5)
+    risky = report(playable=70, post_mulligan=82, lands_ok=75, mulligan=30, screw=14, flood=10)
     assert consistency_score(stable) > consistency_score(risky)
 
 
