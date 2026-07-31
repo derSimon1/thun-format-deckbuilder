@@ -10,6 +10,7 @@ Deckbuilding and legality engine for the Magic Club Thun format.
 - Reprint-aware legality
 - Mono-red Burn prototype
 - Mono-white Tokens prototype
+- Calibrated Artifact, Shrine, and Mill strategies
 - Reproducible tests using a small temporary SQLite database
 
 ## Installation
@@ -49,6 +50,9 @@ thun-deckbuilder legal "Lightning Strike"
 ```bash
 thun-deckbuilder build burn --colors R
 thun-deckbuilder build tokens --colors W
+thun-deckbuilder build artifacts --colors U R
+thun-deckbuilder build shrines --colors W U B R G
+thun-deckbuilder build mill --colors U B
 ```
 
 ## Important configuration
