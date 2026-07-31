@@ -19,10 +19,12 @@ class LandCountCandidate(Generic[T]):
 def consistency_score(report: OpeningHandReport) -> float:
     """Score an opening-hand report for practical early-game consistency."""
     return (
-        report.playable_hands_pct * 2.0
+        report.playable_after_mulligan_pct * 2.25
+        + report.playable_hands_pct * 0.75
         + report.two_to_four_lands_pct
         + report.early_play_pct * 0.75
         + report.core_by_turn_three_pct * 0.75
+        - report.mulligan_to_six_pct * 0.35
         - report.mana_screw_pct * 1.5
         - report.mana_flood_pct * 1.25
     )
