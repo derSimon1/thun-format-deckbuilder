@@ -1,10 +1,8 @@
 name: Test
 
 on:
-  push:
-    branches:
-      - "codex/**"
   pull_request:
+  workflow_dispatch:
 
 jobs:
   pytest:
@@ -19,3 +17,125 @@ jobs:
         run: python -m pip install -e ".[dev]"
       - name: Run tests
         run: python -m pytest
+      - name: Generate and validate Izzet Prowess V2
+        run: |
+          python - <<'PY'
+          from collections import Counter
+          from pathlib import Path
+
+          from thun_deckbuilder.arena_export import format_arena_export
+          from thun_deckbuilder.card_database import CardDatabase
+          from thun_deckbuilder.deck_builder import generate_deck
+
+          allowed_colors = {"U", "R"}
+
+          with CardDatabase() as database:
+              deck = generate_deck(
+                  database=database,
+                  archetype="prowess",
+                  colors=("U", "R"),
+              )
+
+              main_spells = sum(entry.quantity for entry in deck.mainboard)
+              mana_lands = (
+                  sum(land.quantity for land in deck.mana_base.lands)
+                  if deck.mana_base is not None
+                  else deck.lands
+              )
+              main_total = main_spells + mana_lands
+              sideboard_total = sum(entry.quantity for entry in deck.sideboard)
+
+              assert main_total == 60, f"Expected 60 mainboard cards, got {main_total}."
+              assert sideboard_total == 15, f"Expected 15 sideboard cards, got {sideboard_total}."
+
+              combined = Counter()
+              for entry in (*deck.mainboard, *deck.sideboard):
+                  combined[entry.name] += entry.quantity
+                  card = database.get_card_by_name(entry.name)
+                  assert card is not None, f"Unknown card: {entry.name}."
+                  assert database.is_card_legal_by_name(entry.name), f"Illegal card: {entry.name}."
+                  identity = set(card.get("color_identity", ()))
+                  assert identity.issubset(allowed_colors), (
+                      f"Off-color card {entry.name}: {sorted(identity)}."
+                  )
+
+              for name, quantity in combined.items():
+                  card = database.get_card_by_name(name)
+                  type_line = str(card.get("type_line", "")) if card else ""
+                  if "Basic Land" not in type_line:
+                      assert quantity <= 3, f"Copy limit exceeded: {quantity} {name}."
+
+              if deck.mana_base is not None:
+                  for land in deck.mana_base.lands:
+                      card = database.get_card_by_name(land.land_name)
+                      assert card is not None, f"Unknown land: {land.land_name}."
+                      assert database.is_card_legal_by_name(land.land_name), (
+                          f"Illegal land: {land.land_name}."
+                      )
+                      identity = set(card.get("color_identity", ()))
+                      assert identity.issubset(allowed_colors), (
+                          f"Off-color land {land.land_name}: {sorted(identity)}."
+                      )
+
+              threat_count = sum(
+                  entry.quantity
+                  for entry in deck.mainboard
+                  if "Creature" in entry.type_line
+              )
+              burn_count = sum(
+                  entry.quantity
+                  for entry in deck.mainboard
+                  if "burn" in entry.roles
+              )
+              draw_count = sum(
+                  entry.quantity
+                  for entry in deck.mainboard
+                  if "card_draw" in entry.roles
+              )
+              cheap_spell_count = sum(
+                  entry.quantity
+                  for entry in deck.mainboard
+                  if entry.mana_value <= 2
+              )
+
+              assert threat_count >= 10, f"Too few threats: {threat_count}."
+              assert burn_count >= 8, f"Too little burn/reach: {burn_count}."
+              assert draw_count >= 6, f"Too little card flow: {draw_count}."
+
+              arena_text = format_arena_export(deck)
+              Path("izzet-prowess-v2-arena.txt").write_text(
+                  arena_text + "\n",
+                  encoding="utf-8",
+              )
+
+              validation = "\n".join(
+                  (
+                      "Izzet Prowess V2 validation: PASS",
+                      f"Mainboard: {main_total}",
+                      f"Sideboard: {sideboard_total}",
+                      f"Lands: {mana_lands}",
+                      f"Threats: {threat_count}",
+                      f"Burn/reach cards: {burn_count}",
+                      f"Card-flow cards: {draw_count}",
+                      f"Cards at mana value 2 or less: {cheap_spell_count}",
+                      "Legality: PASS",
+                      "Color identity U/R: PASS",
+                      "Three-copy limit across mainboard and sideboard: PASS",
+                  )
+              )
+              Path("izzet-prowess-v2-validation.txt").write_text(
+                  validation + "\n",
+                  encoding="utf-8",
+              )
+              print(validation)
+              print("\n--- ARENA DECK LIST ---")
+              print(arena_text)
+          PY
+      - name: Upload Izzet Prowess V2
+        uses: actions/upload-artifact@v4
+        with:
+          name: izzet-prowess-v2
+          path: |
+            izzet-prowess-v2-arena.txt
+            izzet-prowess-v2-validation.txt
+          if-no-files-found: error
