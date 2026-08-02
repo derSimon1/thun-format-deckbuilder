@@ -148,9 +148,18 @@ def _prowess_eligible(knowledge: CardKnowledge, colors: tuple[str, ...]) -> bool
             "whenever you cast your second spell",
         )
     )
+    hits_face = any(
+        phrase in text
+        for phrase in (
+            "any target",
+            "target player",
+            "target opponent",
+            "each opponent",
+        )
+    )
     is_compact_spell = (analysis.is_instant or analysis.is_sorcery) and analysis.mana_value <= 2 and (
         "draw a card" in text
-        or "damage" in text
+        or ("damage" in text and hits_face)
         or "scry" in text
         or "surveil" in text
         or "counter target" in text
