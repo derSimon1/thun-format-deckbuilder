@@ -7,6 +7,10 @@ SUPPORTED_ARCHETYPES = frozenset(
     {
         "burn",
         "tokens",
+        "artifacts",
+        "shrines",
+        "mill",
+        "prowess",
     }
 )
 
