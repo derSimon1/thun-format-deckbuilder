@@ -16,8 +16,11 @@ from thun_deckbuilder.card_database import CardDatabase
 from thun_deckbuilder.deck_builder import generate_deck
 
 HEADERS = {
-    "User-Agent": "MagicClubThunDeckbuilder/0.1 (GitHub Actions)",
-    "Accept": "application/json",
+    "User-Agent": (
+        "MagicClubThunDeckbuilder/0.1 "
+        "(+https://github.com/derSimon1/thun-format-deckbuilder)"
+    ),
+    "Accept": "application/json;q=0.9,*/*;q=0.8",
 }
 ALLOWED_COLORS = {"U", "R"}
 
@@ -39,36 +42,66 @@ def _http_session() -> requests.Session:
     return session
 
 
+def _bulk_download_uri(session: requests.Session) -> str:
+    diagnostics: list[str] = []
+    endpoints = (
+        "https://api.scryfall.com/bulk-data/default_cards",
+        "https://api.scryfall.com/bulk-data",
+    )
+
+    for endpoint in endpoints:
+        try:
+            response = session.get(endpoint, timeout=(15, 60))
+            payload = response.json()
+        except (requests.RequestException, ValueError) as error:
+            diagnostics.append(f"{endpoint}: {type(error).__name__}: {error}")
+            continue
+
+        if isinstance(payload, dict):
+            direct_uri = payload.get("download_uri")
+            if isinstance(direct_uri, str) and direct_uri:
+                return direct_uri
+
+            entries = payload.get("data", [])
+            if isinstance(entries, list):
+                default_cards = next(
+                    (
+                        entry
+                        for entry in entries
+                        if isinstance(entry, dict)
+                        and entry.get("type") == "default_cards"
+                    ),
+                    None,
+                )
+                if isinstance(default_cards, dict):
+                    indexed_uri = default_cards.get("download_uri")
+                    if isinstance(indexed_uri, str) and indexed_uri:
+                        return indexed_uri
+
+            object_type = payload.get("object")
+            details = payload.get("details") or payload.get("error")
+            diagnostics.append(
+                f"{endpoint}: status={response.status_code}, "
+                f"object={object_type!r}, details={details!r}"
+            )
+        else:
+            diagnostics.append(
+                f"{endpoint}: status={response.status_code}, "
+                f"unexpected payload type={type(payload).__name__}"
+            )
+
+    raise RuntimeError(
+        "Unable to resolve the Scryfall default_cards bulk download. "
+        + " | ".join(diagnostics)
+    )
+
+
 def _download_default_cards(target: Path) -> None:
     temporary_target = target.with_suffix(target.suffix + ".download")
     temporary_target.unlink(missing_ok=True)
 
     with _http_session() as session:
-        response = session.get(
-            "https://api.scryfall.com/bulk-data",
-            timeout=(15, 60),
-        )
-        response.raise_for_status()
-        payload = response.json()
-        entries = payload.get("data", []) if isinstance(payload, dict) else []
-        default_cards = next(
-            (
-                entry
-                for entry in entries
-                if isinstance(entry, dict)
-                and entry.get("type") == "default_cards"
-            ),
-            None,
-        )
-        download_uri = (
-            default_cards.get("download_uri")
-            if isinstance(default_cards, dict)
-            else None
-        )
-        if not isinstance(download_uri, str) or not download_uri:
-            raise RuntimeError(
-                "Scryfall bulk index does not contain a default_cards download URI."
-            )
+        download_uri = _bulk_download_uri(session)
 
         try:
             with session.get(
