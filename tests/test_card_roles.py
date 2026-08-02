@@ -18,6 +18,25 @@ def test_damage_card_is_burn():
     assert "burn" in roles
 
 
+def test_any_target_damage_is_also_removal():
+    card = {
+        "name": "Vibrant Outburst",
+        "mana_value": 2,
+        "colors": ["U", "R"],
+        "color_identity": ["U", "R"],
+        "type_line": "Instant",
+        "oracle_text": (
+            "Vibrant Outburst deals 3 damage to any target. "
+            "Tap up to one target creature."
+        ),
+    }
+
+    roles = detect_roles(analyze_card(card))
+
+    assert "burn" in roles
+    assert "removal" in roles
+
+
 def test_draw_card_has_card_draw_role():
     card = {
         "name": "Test Insight",
@@ -84,6 +103,7 @@ def test_destroy_card_has_removal_role():
     roles = detect_roles(analysis)
 
     assert "removal" in roles
+
 
 def test_detects_token_payoff_and_anthem():
     card = {
