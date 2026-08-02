@@ -6,7 +6,9 @@ import os
 import shutil
 import sqlite3
 from collections import Counter
+from collections.abc import Iterator
 from pathlib import Path
+from typing import Any
 
 import ijson
 import requests
@@ -44,6 +46,18 @@ def _http_session() -> requests.Session:
     return session
 
 
+def _bulk_uri_from_record(record: dict[str, object]) -> tuple[str, str] | None:
+    jsonl_uri = record.get("jsonl_download_uri")
+    if isinstance(jsonl_uri, str) and jsonl_uri:
+        return jsonl_uri, "jsonl"
+
+    array_uri = record.get("download_uri")
+    if isinstance(array_uri, str) and array_uri:
+        return array_uri, "array"
+
+    return None
+
+
 def _find_default_cards_record(payload: object) -> dict[str, object] | None:
     stack: list[object] = [payload]
     while stack:
@@ -56,12 +70,11 @@ def _find_default_cards_record(payload: object) -> dict[str, object] | None:
 
         bulk_type = str(current.get("type", "")).lower()
         bulk_name = str(current.get("name", "")).lower()
-        download_uri = current.get("download_uri")
         is_default_cards = (
             bulk_type == "default_cards"
             or bulk_name == "default cards"
         )
-        if is_default_cards and isinstance(download_uri, str) and download_uri:
+        if is_default_cards and _bulk_uri_from_record(current) is not None:
             return current
 
         stack.extend(current.values())
@@ -133,10 +146,10 @@ def _normalize_bulk_file(raw_file: Path, target: Path) -> None:
         raise RuntimeError("Normalized Scryfall bulk file is unexpectedly small.")
 
     first_byte = _first_non_whitespace_byte(target)
-    if first_byte != b"[":
+    if first_byte not in {b"[", b"{"}:
         preview = target.read_bytes()[:32].hex()
         raise RuntimeError(
-            "Normalized Scryfall bulk file is not a JSON array. "
+            "Normalized Scryfall bulk file is neither a JSON array nor JSON Lines. "
             f"First bytes: {preview}"
         )
 
@@ -149,12 +162,15 @@ def _download_default_cards(target: Path) -> None:
 
     with _http_session() as session:
         record = _bulk_download_record(session)
-        download_uri = record["download_uri"]
-        assert isinstance(download_uri, str)
+        uri_and_format = _bulk_uri_from_record(record)
+        if uri_and_format is None:
+            raise RuntimeError("Scryfall default_cards record has no supported download URI.")
+        download_uri, bulk_format = uri_and_format
         declared_encoding = str(record.get("content_encoding", "") or "")
         declared_type = str(record.get("content_type", "") or "")
         print(
             "Downloading Scryfall default_cards: "
+            f"format={bulk_format}, "
             f"encoding={declared_encoding or 'unspecified'}, "
             f"content_type={declared_type or 'unspecified'}"
         )
@@ -190,6 +206,37 @@ def _download_default_cards(target: Path) -> None:
             raise
         finally:
             raw_file.unlink(missing_ok=True)
+
+
+def _iter_bulk_items(bulk_file: Path) -> Iterator[dict[str, Any]]:
+    first_byte = _first_non_whitespace_byte(bulk_file)
+    if first_byte == b"[":
+        with bulk_file.open("rb") as source:
+            for item in ijson.items(source, "item"):
+                if isinstance(item, dict):
+                    yield item
+        return
+
+    if first_byte == b"{":
+        with bulk_file.open("r", encoding="utf-8-sig") as source:
+            for line_number, line in enumerate(source, start=1):
+                stripped = line.strip()
+                if not stripped:
+                    continue
+                try:
+                    item = json.loads(stripped)
+                except json.JSONDecodeError as error:
+                    raise RuntimeError(
+                        f"Invalid Scryfall JSON Lines record at line {line_number}."
+                    ) from error
+                if not isinstance(item, dict):
+                    raise RuntimeError(
+                        f"Unexpected Scryfall JSON Lines value at line {line_number}."
+                    )
+                yield item
+        return
+
+    raise RuntimeError("Unsupported normalized Scryfall bulk format.")
 
 
 def _database_is_usable(database_file: Path) -> bool:
@@ -258,48 +305,47 @@ def _build_database(bulk_file: Path, database_file: Path) -> None:
 
         card_rows: dict[str, tuple[object, ...]] = {}
         print_rows: list[tuple[object, ...]] = []
-        with bulk_file.open("rb") as source:
-            for item in ijson.items(source, "item"):
-                oracle_id = item.get("oracle_id")
-                if not oracle_id:
-                    continue
-                faces = item.get("card_faces") or []
-                mana_cost = item.get("mana_cost") or " // ".join(
-                    str(face.get("mana_cost", "")) for face in faces
-                )
-                oracle_text = item.get("oracle_text") or " // ".join(
-                    str(face.get("oracle_text", "")) for face in faces
-                )
-                power = item.get("power")
-                toughness = item.get("toughness")
-                if faces and power is None:
-                    power = faces[0].get("power")
-                if faces and toughness is None:
-                    toughness = faces[0].get("toughness")
+        for item in _iter_bulk_items(bulk_file):
+            oracle_id = item.get("oracle_id")
+            if not oracle_id:
+                continue
+            faces = item.get("card_faces") or []
+            mana_cost = item.get("mana_cost") or " // ".join(
+                str(face.get("mana_cost", "")) for face in faces
+            )
+            oracle_text = item.get("oracle_text") or " // ".join(
+                str(face.get("oracle_text", "")) for face in faces
+            )
+            power = item.get("power")
+            toughness = item.get("toughness")
+            if faces and power is None:
+                power = faces[0].get("power")
+            if faces and toughness is None:
+                toughness = faces[0].get("toughness")
 
-                card_rows[str(oracle_id)] = (
+            card_rows[str(oracle_id)] = (
+                str(oracle_id),
+                item.get("name", ""),
+                mana_cost,
+                float(item.get("cmc", 0) or 0),
+                json.dumps(item.get("colors", [])),
+                json.dumps(item.get("color_identity", [])),
+                item.get("type_line", ""),
+                oracle_text,
+                json.dumps(item.get("keywords", [])),
+                power,
+                toughness,
+            )
+            print_rows.append(
+                (
                     str(oracle_id),
-                    item.get("name", ""),
-                    mana_cost,
-                    float(item.get("cmc", 0) or 0),
-                    json.dumps(item.get("colors", [])),
-                    json.dumps(item.get("color_identity", [])),
-                    item.get("type_line", ""),
-                    oracle_text,
-                    json.dumps(item.get("keywords", [])),
-                    power,
-                    toughness,
+                    str(item.get("set", "")).lower(),
+                    str(item.get("rarity", "")).lower(),
+                    int(bool(item.get("digital", False))),
+                    json.dumps(item.get("games", [])),
+                    item.get("released_at", ""),
                 )
-                print_rows.append(
-                    (
-                        str(oracle_id),
-                        str(item.get("set", "")).lower(),
-                        str(item.get("rarity", "")).lower(),
-                        int(bool(item.get("digital", False))),
-                        json.dumps(item.get("games", [])),
-                        item.get("released_at", ""),
-                    )
-                )
+            )
 
         if not card_rows or not print_rows:
             raise RuntimeError("Scryfall bulk file did not contain usable card data.")
