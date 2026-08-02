@@ -136,13 +136,18 @@ class CardDatabase:
         name: str,
         config: AppConfig | None = None,
     ) -> bool:
-        card = self.get_card_by_name(name)
-        if card is None:
-            return False
-        return is_card_legal(
-            self.get_prints(str(card["oracle_id"])),
-            config or load_config(),
-        ).legal
+        active_config = config or load_config()
+        rows = self.connection.execute(
+            "SELECT oracle_id FROM cards WHERE name = ? COLLATE NOCASE",
+            (name,),
+        ).fetchall()
+        return any(
+            is_card_legal(
+                self.get_prints(str(row["oracle_id"])),
+                active_config,
+            ).legal
+            for row in rows
+        )
 
     def __enter__(self) -> "CardDatabase":
         return self
