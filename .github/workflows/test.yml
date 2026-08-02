@@ -32,7 +32,7 @@ jobs:
       - name: Install project
         run: python -m pip install -e ".[dev]"
 
-      - name: Run tests, deck validation, and land diagnostics
+      - name: Run tests, deck validation, and diagnostics
         shell: bash
         run: |
           set +e
@@ -49,21 +49,29 @@ jobs:
             python scripts/ci_land_diagnostics.py 2>&1 \
               | tee artifacts/land-diagnostics.log
             DIAGNOSTICS_STATUS=${PIPESTATUS[0]}
+
+            python scripts/ci_diagnose_vibrant_outburst.py 2>&1 \
+              | tee artifacts/vibrant-outburst-diagnostics.log
+            VIBRANT_STATUS=${PIPESTATUS[0]}
           else
             echo "Land diagnostics skipped because deck generation failed." \
               | tee artifacts/land-diagnostics.log
+            echo "Vibrant Outburst diagnostics skipped because deck generation failed." \
+              | tee artifacts/vibrant-outburst-diagnostics.log
             DIAGNOSTICS_STATUS=1
+            VIBRANT_STATUS=1
           fi
 
           {
             echo "TEST_STATUS=${TEST_STATUS}"
             echo "GENERATION_STATUS=${GENERATION_STATUS}"
             echo "DIAGNOSTICS_STATUS=${DIAGNOSTICS_STATUS}"
+            echo "VIBRANT_STATUS=${VIBRANT_STATUS}"
           } > artifacts/status.env
 
-          printf 'tests=%s\ngeneration=%s\ndiagnostics=%s\n' \
+          printf 'tests=%s\ngeneration=%s\ndiagnostics=%s\nvibrant=%s\n' \
             "$TEST_STATUS" "$GENERATION_STATUS" "$DIAGNOSTICS_STATUS" \
-            > artifacts/status.txt
+            "$VIBRANT_STATUS" > artifacts/status.txt
           exit 0
 
       - name: Save card database cache
@@ -110,8 +118,9 @@ jobs:
           source artifacts/status.env
           if [ "$TEST_STATUS" -ne 0 ] \
             || [ "$GENERATION_STATUS" -ne 0 ] \
-            || [ "$DIAGNOSTICS_STATUS" -ne 0 ]; then
-            echo "Validation failed: tests=$TEST_STATUS generation=$GENERATION_STATUS diagnostics=$DIAGNOSTICS_STATUS"
+            || [ "$DIAGNOSTICS_STATUS" -ne 0 ] \
+            || [ "$VIBRANT_STATUS" -ne 0 ]; then
+            echo "Validation failed: tests=$TEST_STATUS generation=$GENERATION_STATUS diagnostics=$DIAGNOSTICS_STATUS vibrant=$VIBRANT_STATUS"
             exit 1
           fi
-          echo "Tests, Izzet Prowess validation, and land diagnostics passed."
+          echo "Tests, Izzet Prowess validation, and diagnostics passed."
