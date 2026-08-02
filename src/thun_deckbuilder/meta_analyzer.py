@@ -78,14 +78,15 @@ def learn_archetype_profile(
                 unresolved.add(imported.name)
                 continue
             analysis = knowledge.analysis
-            canonical_name = analysis.name
-            copies[canonical_name] += imported.quantity
-            seen.add(canonical_name)
             colors.update(analysis.color_identity)
 
             if analysis.is_land:
                 land_count += imported.quantity
                 continue
+
+            canonical_name = analysis.name
+            copies[canonical_name] += imported.quantity
+            seen.add(canonical_name)
             nonland_mvs.extend([analysis.mana_value] * imported.quantity)
             curve[_curve_band(analysis.mana_value)] += imported.quantity
             for role in knowledge.roles:
