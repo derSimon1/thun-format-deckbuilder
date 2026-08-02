@@ -17,6 +17,129 @@ jobs:
         run: python -m pip install -e ".[dev]"
       - name: Run tests
         run: python -m pytest
+      - name: Build current Scryfall card database
+        run: |
+          python - <<'PY'
+          import json
+          import sqlite3
+          from pathlib import Path
+
+          import ijson
+          import requests
+
+          headers = {
+              "User-Agent": "MagicClubThunDeckbuilder/0.1 (GitHub Actions)",
+              "Accept": "application/json",
+          }
+          metadata = requests.get(
+              "https://api.scryfall.com/bulk-data/default-cards",
+              headers=headers,
+              timeout=60,
+          )
+          metadata.raise_for_status()
+          download_uri = metadata.json()["download_uri"]
+
+          data_dir = Path("data")
+          data_dir.mkdir(exist_ok=True)
+          bulk_file = data_dir / "default_cards.json"
+          with requests.get(download_uri, headers=headers, stream=True, timeout=120) as response:
+              response.raise_for_status()
+              with bulk_file.open("wb") as target:
+                  for chunk in response.iter_content(chunk_size=1024 * 1024):
+                      if chunk:
+                          target.write(chunk)
+
+          database_file = data_dir / "cards.db"
+          database_file.unlink(missing_ok=True)
+          connection = sqlite3.connect(database_file)
+          connection.executescript(
+              """
+              CREATE TABLE cards (
+                  oracle_id TEXT PRIMARY KEY,
+                  name TEXT NOT NULL,
+                  mana_cost TEXT NOT NULL DEFAULT '',
+                  mana_value REAL NOT NULL DEFAULT 0,
+                  colors TEXT NOT NULL DEFAULT '[]',
+                  color_identity TEXT NOT NULL DEFAULT '[]',
+                  type_line TEXT NOT NULL DEFAULT '',
+                  oracle_text TEXT NOT NULL DEFAULT '',
+                  keywords TEXT NOT NULL DEFAULT '[]',
+                  power TEXT,
+                  toughness TEXT
+              );
+              CREATE TABLE prints (
+                  oracle_id TEXT NOT NULL,
+                  set_code TEXT NOT NULL,
+                  rarity TEXT NOT NULL,
+                  digital INTEGER NOT NULL DEFAULT 0,
+                  games TEXT NOT NULL DEFAULT '[]',
+                  released_at TEXT NOT NULL DEFAULT '',
+                  FOREIGN KEY (oracle_id) REFERENCES cards (oracle_id)
+              );
+              CREATE INDEX prints_oracle_id ON prints (oracle_id);
+              CREATE INDEX prints_set_code ON prints (set_code);
+              """
+          )
+
+          card_rows = {}
+          print_rows = []
+          with bulk_file.open("rb") as source:
+              for item in ijson.items(source, "item"):
+                  oracle_id = item.get("oracle_id")
+                  if not oracle_id:
+                      continue
+
+                  faces = item.get("card_faces") or []
+                  mana_cost = item.get("mana_cost") or " // ".join(
+                      str(face.get("mana_cost", "")) for face in faces
+                  )
+                  oracle_text = item.get("oracle_text") or " // ".join(
+                      str(face.get("oracle_text", "")) for face in faces
+                  )
+                  power = item.get("power")
+                  toughness = item.get("toughness")
+                  if faces and power is None:
+                      power = faces[0].get("power")
+                  if faces and toughness is None:
+                      toughness = faces[0].get("toughness")
+
+                  card_rows[oracle_id] = (
+                      oracle_id,
+                      item.get("name", ""),
+                      mana_cost,
+                      float(item.get("cmc", 0) or 0),
+                      json.dumps(item.get("colors", [])),
+                      json.dumps(item.get("color_identity", [])),
+                      item.get("type_line", ""),
+                      oracle_text,
+                      json.dumps(item.get("keywords", [])),
+                      power,
+                      toughness,
+                  )
+                  print_rows.append(
+                      (
+                          oracle_id,
+                          str(item.get("set", "")).lower(),
+                          str(item.get("rarity", "")).lower(),
+                          int(bool(item.get("digital", False))),
+                          json.dumps(item.get("games", [])),
+                          item.get("released_at", ""),
+                      )
+                  )
+
+          connection.executemany(
+              "INSERT INTO cards VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+              card_rows.values(),
+          )
+          connection.executemany(
+              "INSERT INTO prints VALUES (?, ?, ?, ?, ?, ?)",
+              print_rows,
+          )
+          connection.commit()
+          print(f"Built {database_file} with {len(card_rows)} cards and {len(print_rows)} prints.")
+          connection.close()
+          bulk_file.unlink()
+          PY
       - name: Generate and validate Izzet Prowess V2
         run: |
           python - <<'PY'
