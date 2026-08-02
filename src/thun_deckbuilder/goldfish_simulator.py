@@ -35,6 +35,13 @@ def _signals(entry: DeckEntry) -> frozenset[str]:
         found.add("shrine")
     if "creature" in entry.type_line.lower():
         found.add("creature")
+    roles = {role.lower() for role in entry.roles}
+    if "token_maker" in roles:
+        found.add("token_maker")
+    if "anthem" in roles:
+        found.add("anthem")
+    if roles.intersection({"token_payoff", "evasion", "aristocrats_payoff"}):
+        found.add("token_payoff")
     return frozenset(found)
 
 
@@ -76,6 +83,15 @@ def _spell_value(entry: DeckEntry, archetype: str) -> tuple[int, float, str]:
     if archetype == "shrines":
         value = 1.0 if "shrine" in signals else 0.0
         return mana, value, "shrine"
+    if archetype == "tokens":
+        if "token_maker" in signals:
+            return mana, 2.0, "token"
+        if "creature" in signals:
+            return mana, 1.0, "creature"
+        if "anthem" in signals:
+            return mana, 1.5, "anthem"
+        if "token_payoff" in signals:
+            return mana, 1.25, "token_payoff"
     return mana, 0.0, "none"
 
 
@@ -119,8 +135,13 @@ class GoldfishSimulator:
             damage = milled = artifacts = shrines = 0.0
             spells_cast = unused = 0
             creatures: list[float] = []
+            ready_tokens = pending_tokens = 0.0
+            anthem_bonus = payoff_bonus = 0.0
 
             for turn in range(1, turns + 1):
+                if archetype == "tokens":
+                    ready_tokens += pending_tokens
+                    pending_tokens = 0.0
                 if draw_index < len(shuffled):
                     hand.append(shuffled[draw_index])
                     draw_index += 1
@@ -154,12 +175,22 @@ class GoldfishSimulator:
                         artifacts += value
                     elif metric == "shrine":
                         shrines += value
+                    elif metric == "creature":
+                        pending_tokens += 1.0
+                    elif metric == "token":
+                        pending_tokens += 2.0
+                    elif metric == "anthem":
+                        anthem_bonus += 0.5
+                    elif metric == "token_payoff":
+                        payoff_bonus += 0.15
                 if archetype == "burn":
                     damage += sum(creatures)
                 elif archetype == "mill":
                     milled += max(0.0, milled * 0.05)
                 elif archetype == "shrines":
                     damage += shrines
+                elif archetype == "tokens":
+                    damage += ready_tokens * (1.0 + anthem_bonus + payoff_bonus)
                 unused += mana
 
             total_unused += unused
