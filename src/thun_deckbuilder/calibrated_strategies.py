@@ -132,7 +132,12 @@ def _prowess_eligible(knowledge: CardKnowledge, colors: tuple[str, ...]) -> bool
         "as an additional cost" in text
         and "sacrifice a creature" in text
     )
-    if has_creature_sacrifice_cost:
+    is_sorcery_speed_self_blink = (
+        analysis.is_sorcery
+        and "exile target creature you control" in text
+        and "return it to the battlefield" in text
+    )
+    if has_creature_sacrifice_cost or is_sorcery_speed_self_blink:
         return False
     is_threat = analysis.is_creature and any(
         phrase in text
