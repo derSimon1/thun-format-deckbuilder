@@ -12,10 +12,11 @@ from thun_deckbuilder.prototype import format_deck
 from thun_deckbuilder.tournament_simulator import BestOfThreeSimulator, format_bo3_report
 
 
-ARCHETYPES = ("burn", "tokens", "artifacts", "shrines", "mill")
+ARCHETYPES = ("burn", "tokens", "artifacts", "shrines", "mill", "prowess")
 DEFAULT_COLORS = {
     "burn": ("R",), "tokens": ("W",), "artifacts": ("U", "R"),
     "shrines": ("W", "U", "B", "R", "G"), "mill": ("U", "B"),
+    "prowess": ("U", "R"),
 }
 
 
