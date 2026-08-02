@@ -2,10 +2,12 @@ name: Global Deckbuilder Calibration
 
 on:
   schedule:
-    - cron: "*/15 * * * *"
+    - cron: "7,22,37,52 * * * *"
   push:
     branches:
-      - codex/global-deckbuilder-calibration
+      - main
+    paths:
+      - .github/workflows/global-deckbuilder-calibration.yml
   workflow_dispatch:
     inputs:
       validation_mode:
