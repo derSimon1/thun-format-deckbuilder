@@ -6,6 +6,9 @@ from typing import Iterable
 from thun_deckbuilder.knowledge_base import CardKnowledge, KnowledgeBase
 
 
+GENERIC_REPLACEMENT_ROLES = frozenset({"aggro_creature"})
+
+
 @dataclass(frozen=True)
 class ReplacementCandidate:
     source_name: str
@@ -45,15 +48,24 @@ def _rank_candidate(
     if not set(analysis.color_identity).issubset(colors):
         return None
 
+    shared_roles = source.roles.intersection(candidate.roles)
+    shared_synergies = source.synergies.intersection(candidate.synergies)
+    source_specific_roles = frozenset(source.roles) - GENERIC_REPLACEMENT_ROLES
+    shared_specific_roles = source_specific_roles.intersection(candidate.roles)
+
+    # A broad label such as ``aggro_creature`` must not be enough to replace a
+    # card whose actual purpose is card flow, removal, a payoff, or another
+    # specific function. Preserve function before type and mana similarity.
+    if source_specific_roles and not shared_specific_roles and not shared_synergies:
+        return None
+
     score = 0.0
     reasons: list[str] = []
 
-    shared_roles = source.roles.intersection(candidate.roles)
     if shared_roles:
         score += 5.0 * len(shared_roles)
         reasons.append("gleiche Rolle: " + ", ".join(sorted(str(role) for role in shared_roles)))
 
-    shared_synergies = source.synergies.intersection(candidate.synergies)
     if shared_synergies:
         score += 3.0 * len(shared_synergies)
         reasons.append("gleiche Synergie: " + ", ".join(sorted(str(item) for item in shared_synergies)))
