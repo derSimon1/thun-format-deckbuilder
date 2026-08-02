@@ -236,18 +236,26 @@ class SideboardBuilder:
             )
         )
         entries: list[DeckEntry] = []
+        selected_names: set[str] = set()
         remaining = size
-        for score, knowledge, reasons in scored:
-            if remaining <= 0:
-                break
+
+        def add_candidate(
+            score: float,
+            knowledge: CardKnowledge,
+            reasons: tuple[str, ...],
+        ) -> None:
+            nonlocal remaining
+            name = knowledge.analysis.name
             quantity = min(
-                max_copies - main_counts[knowledge.analysis.name],
+                max_copies - main_counts[name],
                 3,
                 remaining,
             )
+            if quantity <= 0:
+                return
             entries.append(
                 DeckEntry(
-                    name=knowledge.analysis.name,
+                    name=name,
                     quantity=quantity,
                     mana_cost=parse_mana_cost(str(knowledge.card.get("mana_cost", ""))),
                     mana_value=knowledge.analysis.mana_value,
@@ -257,5 +265,28 @@ class SideboardBuilder:
                     roles=tuple(sorted(str(role) for role in knowledge.roles)),
                 )
             )
+            selected_names.add(name)
             remaining -= quantity
+
+        # Cover distinct matchup needs before spending the remaining slots on
+        # additional cards from already represented categories. This prevents
+        # several similarly worded artifact answers from consuming all 15 slots.
+        for rule in rules:
+            if remaining <= 0:
+                break
+            for score, knowledge, reasons in scored:
+                if knowledge.analysis.name in selected_names:
+                    continue
+                if rule.label not in reasons:
+                    continue
+                add_candidate(score, knowledge, reasons)
+                break
+
+        for score, knowledge, reasons in scored:
+            if remaining <= 0:
+                break
+            if knowledge.analysis.name in selected_names:
+                continue
+            add_candidate(score, knowledge, reasons)
+
         return tuple(entries)
