@@ -132,6 +132,13 @@ def _closeness(actual: int, target: int) -> int:
     return max(0, round(100 * (1 - difference / target)))
 
 
+def _minimum_score(actual: int, target: int) -> int:
+    """Score a minimum requirement without penalizing useful excess."""
+    if target <= 0:
+        return 100
+    return min(100, round(100 * actual / target))
+
+
 def _curve_band(mana_value: float) -> str:
     if mana_value <= 1:
         return "1"
@@ -168,7 +175,7 @@ class BenchmarkAnalyzer:
             curve_counts[_curve_band(entry.mana_value)] += entry.quantity
 
         role_items = tuple(
-            BenchmarkItem(role, target, role_counts[role], _closeness(role_counts[role], target))
+            BenchmarkItem(role, target, role_counts[role], _minimum_score(role_counts[role], target))
             for role, target in profile.role_targets
         )
         curve_items = tuple(
@@ -193,7 +200,7 @@ class BenchmarkAnalyzer:
                 item.key,
                 item.target,
                 item.actual,
-                _closeness(item.actual, item.target),
+                _minimum_score(item.actual, item.target),
             )
             for item in signature_items
         )
