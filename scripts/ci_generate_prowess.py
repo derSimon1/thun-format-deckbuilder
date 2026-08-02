@@ -42,6 +42,36 @@ def _http_session() -> requests.Session:
     return session
 
 
+def _find_default_cards_download_uri(payload: object) -> str | None:
+    stack: list[object] = [payload]
+    while stack:
+        current = stack.pop()
+        if isinstance(current, list):
+            stack.extend(current)
+            continue
+        if not isinstance(current, dict):
+            continue
+
+        bulk_type = str(current.get("type", "")).lower()
+        bulk_name = str(current.get("name", "")).lower()
+        is_default_cards = (
+            bulk_type == "default_cards"
+            or bulk_name == "default cards"
+        )
+        if is_default_cards:
+            for key, value in current.items():
+                normalized_key = str(key).lower()
+                if not isinstance(value, str) or not value:
+                    continue
+                if "download" in normalized_key:
+                    return value
+                if value.startswith("https://data.scryfall.io/"):
+                    return value
+
+        stack.extend(current.values())
+    return None
+
+
 def _bulk_download_uri(session: requests.Session) -> str:
     diagnostics: list[str] = []
     endpoints = (
@@ -57,32 +87,17 @@ def _bulk_download_uri(session: requests.Session) -> str:
             diagnostics.append(f"{endpoint}: {type(error).__name__}: {error}")
             continue
 
+        download_uri = _find_default_cards_download_uri(payload)
+        if download_uri:
+            return download_uri
+
         if isinstance(payload, dict):
-            direct_uri = payload.get("download_uri")
-            if isinstance(direct_uri, str) and direct_uri:
-                return direct_uri
-
-            entries = payload.get("data", [])
-            if isinstance(entries, list):
-                default_cards = next(
-                    (
-                        entry
-                        for entry in entries
-                        if isinstance(entry, dict)
-                        and entry.get("type") == "default_cards"
-                    ),
-                    None,
-                )
-                if isinstance(default_cards, dict):
-                    indexed_uri = default_cards.get("download_uri")
-                    if isinstance(indexed_uri, str) and indexed_uri:
-                        return indexed_uri
-
             object_type = payload.get("object")
             details = payload.get("details") or payload.get("error")
+            keys = sorted(str(key) for key in payload)
             diagnostics.append(
                 f"{endpoint}: status={response.status_code}, "
-                f"object={object_type!r}, details={details!r}"
+                f"object={object_type!r}, details={details!r}, keys={keys!r}"
             )
         else:
             diagnostics.append(
