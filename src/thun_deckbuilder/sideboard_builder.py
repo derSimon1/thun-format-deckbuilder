@@ -151,6 +151,41 @@ RULES: dict[str, tuple[SideboardRule, ...]] = {
             priority=4,
         ),
     ),
+    "prowess": (
+        COUNTERSPELL,
+        GRAVEYARD_HATE,
+        SideboardRule(
+            "protect threats",
+            (
+                "target creature you control gains hexproof",
+                "target creature gains hexproof",
+                "return target creature you control to its owner's hand",
+                "phase out",
+            ),
+            roles=("protection",),
+            priority=5,
+        ),
+        SideboardRule(
+            "anti-lifegain",
+            (
+                "players can't gain life",
+                "your opponents can't gain life",
+                "life can't be gained",
+            ),
+            priority=5,
+        ),
+        SideboardRule(
+            "cheap creature interaction",
+            (
+                "damage to target creature",
+                "damage to any target",
+                "return target creature to its owner's hand",
+            ),
+            roles=("removal",),
+            priority=4.5,
+        ),
+        ARTIFACT_ENCHANTMENT_ANSWER,
+    ),
 }
 
 
@@ -214,18 +249,12 @@ class SideboardBuilder:
                 DeckEntry(
                     name=knowledge.analysis.name,
                     quantity=quantity,
-                    mana_cost=parse_mana_cost(
-                        str(knowledge.card.get("mana_cost", ""))
-                    ),
+                    mana_cost=parse_mana_cost(str(knowledge.card.get("mana_cost", ""))),
                     mana_value=knowledge.analysis.mana_value,
                     type_line=knowledge.analysis.type_line,
                     score=score,
-                    reasons=tuple(
-                        f"Sideboard: {reason}" for reason in reasons
-                    ),
-                    roles=tuple(
-                        sorted(str(role) for role in knowledge.roles)
-                    ),
+                    reasons=tuple(f"Sideboard: {reason}" for reason in reasons),
+                    roles=tuple(sorted(str(role) for role in knowledge.roles)),
                 )
             )
             remaining -= quantity
