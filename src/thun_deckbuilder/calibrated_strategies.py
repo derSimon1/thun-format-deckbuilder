@@ -90,6 +90,24 @@ def _within_colors(analysis: CardAnalysis, colors: tuple[str, ...]) -> bool:
     return set(analysis.color_identity).issubset(set(colors))
 
 
+def _has_reliable_draw(text: str) -> bool:
+    """Return whether at least one draw-a-card instruction is unconditional."""
+    normalized = text.replace("\n", " ")
+    for sentence in normalized.split("."):
+        sentence = sentence.strip()
+        if "draw a card" not in sentence:
+            continue
+        before_draw = sentence.split("draw a card", 1)[0]
+        if sentence.startswith(("if ", "when ", "whenever ")):
+            continue
+        if " if " in f" {before_draw} ":
+            continue
+        if "cycling" in sentence or "discard this card:" in sentence:
+            continue
+        return True
+    return False
+
+
 def _artifact_eligible(knowledge: CardKnowledge, colors: tuple[str, ...]) -> bool:
     analysis = knowledge.analysis
     text = analysis.oracle_text.lower()
@@ -157,11 +175,21 @@ def _prowess_eligible(knowledge: CardKnowledge, colors: tuple[str, ...]) -> bool
             "each opponent",
         )
     )
-    is_compact_spell = (analysis.is_instant or analysis.is_sorcery) and analysis.mana_value <= 2 and (
+    has_reliable_draw = _has_reliable_draw(text)
+    has_selection = "scry" in text or "surveil" in text
+    has_unreliable_draw_only = (
         "draw a card" in text
+        and not has_reliable_draw
+        and not hits_face
+        and not is_threat
+        and not has_selection
+    )
+    if has_unreliable_draw_only:
+        return False
+    is_compact_spell = (analysis.is_instant or analysis.is_sorcery) and analysis.mana_value <= 2 and (
+        has_reliable_draw
         or ("damage" in text and hits_face)
-        or "scry" in text
-        or "surveil" in text
+        or has_selection
         or "counter target" in text
         or "return target" in text
     )
