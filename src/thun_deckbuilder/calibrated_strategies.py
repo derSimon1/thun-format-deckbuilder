@@ -92,7 +92,7 @@ def _within_colors(analysis: CardAnalysis, colors: tuple[str, ...]) -> bool:
 
 def _has_reliable_draw(text: str) -> bool:
     """Return whether at least one draw-a-card instruction is unconditional."""
-    normalized = text.replace("\n", " ")
+    normalized = text.lower().replace("\n", " ")
     for sentence in normalized.split("."):
         sentence = sentence.strip()
         if "draw a card" not in sentence:
