@@ -2,28 +2,100 @@ name: Test
 
 on:
   pull_request:
+    types: [opened, synchronize, reopened]
   workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
   pytest:
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
           python-version: "3.12"
           cache: pip
-      - name: Install
+
+      - name: Restore card database cache
+        id: cards-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: data/cards.db
+          key: cards-db-v3-${{ runner.os }}-${{ hashFiles('config/thun.toml', 'scripts/ci_generate_prowess.py') }}
+
+      - name: Install project
         run: python -m pip install -e ".[dev]"
-      - name: Run tests
-        run: python -m pytest
-      - name: Generate and validate Izzet Prowess V2
-        run: python scripts/ci_generate_prowess.py
-      - name: Upload Izzet Prowess V2
+
+      - name: Run tests and deck validation
+        shell: bash
+        run: |
+          set +e
+          mkdir -p artifacts
+
+          python -m pytest 2>&1 | tee artifacts/pytest.log
+          TEST_STATUS=${PIPESTATUS[0]}
+
+          THUN_REUSE_CARD_DATABASE=1 python scripts/ci_generate_prowess.py 2>&1 \
+            | tee artifacts/generation.log
+          GENERATION_STATUS=${PIPESTATUS[0]}
+
+          {
+            echo "TEST_STATUS=${TEST_STATUS}"
+            echo "GENERATION_STATUS=${GENERATION_STATUS}"
+          } > artifacts/status.env
+
+          printf 'tests=%s\ngeneration=%s\n' \
+            "$TEST_STATUS" "$GENERATION_STATUS" > artifacts/status.txt
+          exit 0
+
+      - name: Save card database cache
+        if: steps.cards-cache.outputs.cache-hit != 'true' && hashFiles('data/cards.db') != ''
+        uses: actions/cache/save@v4
+        with:
+          path: data/cards.db
+          key: cards-db-v3-${{ runner.os }}-${{ hashFiles('config/thun.toml', 'scripts/ci_generate_prowess.py') }}
+
+      - name: Collect generated deck files
+        if: always()
+        shell: bash
+        run: |
+          for file in \
+            izzet-prowess-v2-arena.txt \
+            izzet-prowess-v2-validation.txt \
+            izzet-prowess-v2-validation.json
+          do
+            if [ -f "$file" ]; then
+              cp "$file" artifacts/
+            fi
+          done
+          git rev-parse HEAD > artifacts/branch-sha.txt
+
+      - name: Upload tests, deck, validation, and logs
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: izzet-prowess-v2
-          path: |
-            izzet-prowess-v2-arena.txt
-            izzet-prowess-v2-validation.txt
+          name: izzet-prowess-v2-${{ github.run_number }}
+          path: artifacts/
+          retention-days: 7
           if-no-files-found: error
+
+      - name: Enforce results
+        if: always()
+        shell: bash
+        run: |
+          if [ ! -f artifacts/status.env ]; then
+            echo "Validation did not produce a status file."
+            exit 1
+          fi
+          source artifacts/status.env
+          if [ "$TEST_STATUS" -ne 0 ] || [ "$GENERATION_STATUS" -ne 0 ]; then
+            echo "Validation failed: tests=$TEST_STATUS generation=$GENERATION_STATUS"
+            exit 1
+          fi
+          echo "Tests and Izzet Prowess validation passed."
