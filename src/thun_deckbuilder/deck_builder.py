@@ -7,6 +7,7 @@ from thun_deckbuilder.burn_strategy import BurnStrategy
 from thun_deckbuilder.calibrated_strategies import (
     ArtifactStrategy,
     MillStrategy,
+    ProwessStrategy,
     ShrineStrategy,
 )
 from thun_deckbuilder.card_database import CardDatabase
@@ -24,6 +25,7 @@ STRATEGIES: dict[str, DeckStrategy] = {
     "artifacts": ArtifactStrategy(),
     "shrines": ShrineStrategy(),
     "mill": MillStrategy(),
+    "prowess": ProwessStrategy(),
 }
 
 
