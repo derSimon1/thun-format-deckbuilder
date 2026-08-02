@@ -44,9 +44,10 @@ def generate_deck(
     strategy = STRATEGIES.get(request.archetype)
 
     if strategy is None:
+        supported = ", ".join(sorted(STRATEGIES))
         raise ValueError(
-            f"Für den Archetyp '{request.archetype}' "
-            "ist noch keine Strategie implementiert."
+            f"Unbekannter Archetyp: {request.archetype}. "
+            f"Unterstützt werden aktuell: {supported}."
         )
 
     knowledge_base = KnowledgeBase(database)
