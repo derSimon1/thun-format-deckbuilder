@@ -17,14 +17,20 @@ class LandCountCandidate(Generic[T]):
 
 
 def consistency_score(report: OpeningHandReport) -> float:
-    """Score an opening-hand report for practical early-game consistency."""
+    """Score practical early-game consistency without double-counting metrics.
+
+    ``mulligan_to_six_pct`` is the inverse of raw seven-card playability, while
+    ``two_to_four_lands_pct`` and ``early_play_pct`` are components of the
+    post-mulligan playability test. The score therefore uses the combined
+    post-mulligan result, gives natural seven-card playability a smaller bonus,
+    and independently balances access to the early/core plan against screw and
+    flood through turn three.
+    """
     return (
         report.playable_after_mulligan_pct * 2.25
-        + report.playable_hands_pct * 0.75
-        + report.two_to_four_lands_pct
+        + report.playable_hands_pct * 0.35
         + report.early_play_pct * 0.75
         + report.core_by_turn_three_pct * 0.75
-        - report.mulligan_to_six_pct * 0.35
         - report.mana_screw_pct * 1.5
         - report.mana_flood_pct * 1.25
     )
