@@ -30,6 +30,10 @@ def detect_roles(analysis: CardAnalysis) -> frozenset[CardRole]:
         roles.add(CardRole.REMOVAL)
     if re.search(r"deals? \d+ damage to target creature", text):
         roles.add(CardRole.REMOVAL)
+    # Damage to "any target" is flexible creature interaction as well as reach.
+    # Treating it only as burn undervalues modal cards such as Vibrant Outburst.
+    if "damage" in analysis.features and "any target" in text:
+        roles.add(CardRole.REMOVAL)
 
     if "damage" in analysis.features and any(
         phrase in text
