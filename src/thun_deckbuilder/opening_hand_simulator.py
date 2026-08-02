@@ -82,6 +82,8 @@ class OpeningHandSimulator:
 
     Unplayable seven-card hands take one London mulligan to six. The simulator
     draws a fresh seven and bottoms the card that produces the strongest six.
+    Mana screw and flood are measured after the first three draw steps so the
+    land-count optimizer can balance early casting reliability against flooding.
     """
 
     def simulate(
@@ -126,6 +128,7 @@ class OpeningHandSimulator:
             land_count = _land_count(kept)
             has_early = _has_early_play(kept)
             cards_seen_by_turn_three = draw_sequence[: len(kept) + 3]
+            turn_three_land_count = _land_count(cards_seen_by_turn_three)
             has_core = any(
                 kind == "spell" and is_core
                 for kind, _, is_core in cards_seen_by_turn_three
@@ -135,8 +138,8 @@ class OpeningHandSimulator:
             lands_ok += int(2 <= land_count <= 4)
             early += int(has_early)
             core += int(has_core)
-            screw += int(land_count <= 1)
-            flood += int(land_count >= 5)
+            screw += int(turn_three_land_count <= 1)
+            flood += int(turn_three_land_count >= 5)
 
         pct = lambda value: round(value * 100 / samples)
         return OpeningHandReport(
