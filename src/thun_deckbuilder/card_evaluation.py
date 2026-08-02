@@ -193,7 +193,7 @@ class CardEvaluationEngine:
             self._append(components, "interaction", value, "Provides direct damage interaction.")
 
         if taps_creature:
-            value = 0.75 + (0.25 if analysis.is_instant else 0.0)
+            value = 1.25 + (0.50 if analysis.is_instant else 0.0)
             value -= max(0.0, mv - 3.0) * 0.2
             self._append(
                 components,
