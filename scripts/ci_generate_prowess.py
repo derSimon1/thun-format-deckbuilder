@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import gzip
 import json
 import os
+import shutil
 import sqlite3
 from collections import Counter
 from pathlib import Path
@@ -42,7 +44,7 @@ def _http_session() -> requests.Session:
     return session
 
 
-def _find_default_cards_download_uri(payload: object) -> str | None:
+def _find_default_cards_record(payload: object) -> dict[str, object] | None:
     stack: list[object] = [payload]
     while stack:
         current = stack.pop()
@@ -54,25 +56,19 @@ def _find_default_cards_download_uri(payload: object) -> str | None:
 
         bulk_type = str(current.get("type", "")).lower()
         bulk_name = str(current.get("name", "")).lower()
+        download_uri = current.get("download_uri")
         is_default_cards = (
             bulk_type == "default_cards"
             or bulk_name == "default cards"
         )
-        if is_default_cards:
-            for key, value in current.items():
-                normalized_key = str(key).lower()
-                if not isinstance(value, str) or not value:
-                    continue
-                if "download" in normalized_key:
-                    return value
-                if value.startswith("https://data.scryfall.io/"):
-                    return value
+        if is_default_cards and isinstance(download_uri, str) and download_uri:
+            return current
 
         stack.extend(current.values())
     return None
 
 
-def _bulk_download_uri(session: requests.Session) -> str:
+def _bulk_download_record(session: requests.Session) -> dict[str, object]:
     diagnostics: list[str] = []
     endpoints = (
         "https://api.scryfall.com/bulk-data/default_cards",
@@ -82,14 +78,15 @@ def _bulk_download_uri(session: requests.Session) -> str:
     for endpoint in endpoints:
         try:
             response = session.get(endpoint, timeout=(15, 60))
+            response.raise_for_status()
             payload = response.json()
         except (requests.RequestException, ValueError) as error:
             diagnostics.append(f"{endpoint}: {type(error).__name__}: {error}")
             continue
 
-        download_uri = _find_default_cards_download_uri(payload)
-        if download_uri:
-            return download_uri
+        record = _find_default_cards_record(payload)
+        if record is not None:
+            return record
 
         if isinstance(payload, dict):
             object_type = payload.get("object")
@@ -111,12 +108,56 @@ def _bulk_download_uri(session: requests.Session) -> str:
     )
 
 
+def _first_non_whitespace_byte(path: Path) -> bytes:
+    with path.open("rb") as source:
+        while True:
+            value = source.read(1)
+            if not value:
+                return b""
+            if not value.isspace():
+                return value
+
+
+def _normalize_bulk_file(raw_file: Path, target: Path) -> None:
+    with raw_file.open("rb") as source:
+        magic = source.read(2)
+
+    if magic == b"\x1f\x8b":
+        print("Detected gzip-compressed Scryfall bulk file; decompressing it.")
+        with gzip.open(raw_file, "rb") as source, target.open("wb") as output:
+            shutil.copyfileobj(source, output, length=1024 * 1024)
+    else:
+        raw_file.replace(target)
+
+    if target.stat().st_size < 1_000_000:
+        raise RuntimeError("Normalized Scryfall bulk file is unexpectedly small.")
+
+    first_byte = _first_non_whitespace_byte(target)
+    if first_byte != b"[":
+        preview = target.read_bytes()[:32].hex()
+        raise RuntimeError(
+            "Normalized Scryfall bulk file is not a JSON array. "
+            f"First bytes: {preview}"
+        )
+
+
 def _download_default_cards(target: Path) -> None:
+    raw_file = target.with_suffix(target.suffix + ".raw")
     temporary_target = target.with_suffix(target.suffix + ".download")
+    raw_file.unlink(missing_ok=True)
     temporary_target.unlink(missing_ok=True)
 
     with _http_session() as session:
-        download_uri = _bulk_download_uri(session)
+        record = _bulk_download_record(session)
+        download_uri = record["download_uri"]
+        assert isinstance(download_uri, str)
+        declared_encoding = str(record.get("content_encoding", "") or "")
+        declared_type = str(record.get("content_type", "") or "")
+        print(
+            "Downloading Scryfall default_cards: "
+            f"encoding={declared_encoding or 'unspecified'}, "
+            f"content_type={declared_type or 'unspecified'}"
+        )
 
         try:
             with session.get(
@@ -125,27 +166,30 @@ def _download_default_cards(target: Path) -> None:
                 timeout=(15, 300),
             ) as download:
                 download.raise_for_status()
-                with temporary_target.open("wb") as output:
-                    for chunk in download.iter_content(chunk_size=1024 * 1024):
-                        if chunk:
-                            output.write(chunk)
+                download.raw.decode_content = False
+                print(
+                    "Bulk response: "
+                    f"status={download.status_code}, "
+                    f"content_type={download.headers.get('Content-Type')!r}, "
+                    f"content_encoding={download.headers.get('Content-Encoding')!r}"
+                )
+                with raw_file.open("wb") as output:
+                    shutil.copyfileobj(
+                        download.raw,
+                        output,
+                        length=1024 * 1024,
+                    )
 
-            if temporary_target.stat().st_size < 1_000_000:
+            if raw_file.stat().st_size < 1_000_000:
                 raise RuntimeError("Downloaded Scryfall bulk file is unexpectedly small.")
-            with temporary_target.open("rb") as source:
-                first_non_whitespace = b""
-                while not first_non_whitespace:
-                    first_non_whitespace = source.read(1)
-                    if not first_non_whitespace:
-                        break
-                    first_non_whitespace = first_non_whitespace.strip()
-            if first_non_whitespace != b"[":
-                raise RuntimeError("Downloaded Scryfall bulk file is not a JSON array.")
 
+            _normalize_bulk_file(raw_file, temporary_target)
             temporary_target.replace(target)
         except Exception:
             temporary_target.unlink(missing_ok=True)
             raise
+        finally:
+            raw_file.unlink(missing_ok=True)
 
 
 def _database_is_usable(database_file: Path) -> bool:
