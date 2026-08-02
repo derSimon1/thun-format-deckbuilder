@@ -49,6 +49,56 @@ def test_choose_land_count_uses_simulation_score():
     assert chosen.payload == "best"
 
 
+def test_low_curve_land_choice_balances_playability_against_turn_three_flood():
+    candidates = (
+        LandCountCandidate(
+            20,
+            "twenty",
+            report(
+                playable=70,
+                post_mulligan=92,
+                lands_ok=92,
+                mulligan=30,
+                early=100,
+                core=100,
+                screw=2,
+                flood=18,
+            ),
+        ),
+        LandCountCandidate(
+            21,
+            "twenty-one",
+            report(
+                playable=73,
+                post_mulligan=94,
+                lands_ok=94,
+                mulligan=27,
+                early=100,
+                core=100,
+                screw=2,
+                flood=21,
+            ),
+        ),
+        LandCountCandidate(
+            22,
+            "twenty-two",
+            report(
+                playable=76,
+                post_mulligan=95,
+                lands_ok=95,
+                mulligan=24,
+                early=100,
+                core=100,
+                screw=1,
+                flood=25,
+            ),
+        ),
+    )
+    chosen = choose_land_count(candidates, preferred_lands=20)
+    assert chosen.lands == 21
+    assert chosen.payload == "twenty-one"
+
+
 def test_choose_land_count_prefers_profile_land_count_on_equal_reports():
     same = report(playable=80, lands_ok=86)
     candidates = (
