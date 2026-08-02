@@ -69,6 +69,45 @@ def test_artifact_and_shrine_reports_track_board_progress():
     assert shrine_report.average_shrines_in_play > 0
 
 
+def test_token_payoffs_without_a_board_do_not_create_damage():
+    deck = GeneratedDeck(
+        mainboard=(entry("Empty Anthem", 36, 1, roles=("anthem",)),),
+        lands=24,
+    )
+    report = GoldfishSimulator().simulate(deck, archetype="tokens", samples=300)
+    assert report.average_damage == 0
+
+
+def test_token_makers_attack_only_after_summoning_sickness():
+    deck = GeneratedDeck(
+        mainboard=(entry("Raise the Team", 40, 1, roles=("token_maker",)),),
+        lands=20,
+    )
+    simulator = GoldfishSimulator()
+    turn_one = simulator.simulate(deck, archetype="tokens", samples=300, turns=1)
+    turn_two = simulator.simulate(deck, archetype="tokens", samples=300, turns=2)
+    assert turn_one.average_damage == 0
+    assert turn_two.average_damage > 0
+
+
+def test_token_payoffs_improve_existing_combat_progress():
+    plain = GeneratedDeck(
+        mainboard=(entry("Raise the Team", 30, 1, roles=("token_maker",)),),
+        lands=30,
+    )
+    supported = GeneratedDeck(
+        mainboard=(
+            entry("Raise the Team", 24, 1, roles=("token_maker",)),
+            entry("Battle Anthem", 6, 2, roles=("anthem", "token_payoff")),
+        ),
+        lands=30,
+    )
+    simulator = GoldfishSimulator()
+    plain_report = simulator.simulate(plain, archetype="tokens", samples=600)
+    supported_report = simulator.simulate(supported, archetype="tokens", samples=600)
+    assert supported_report.average_damage > plain_report.average_damage
+
+
 def test_invalid_simulation_arguments_are_rejected():
     deck = GeneratedDeck(mainboard=(entry("Bolt", 36, 1),), lands=24)
     try:
