@@ -77,6 +77,39 @@ def test_core_density_increases_turn_three_access():
     assert dense_report.core_by_turn_three_pct > thin_report.core_by_turn_three_pct
 
 
+def test_prowess_core_density_increases_turn_three_access():
+    dense = GeneratedDeck(
+        mainboard=(
+            entry(
+                "Prowess Threat",
+                18,
+                2,
+                "Creature",
+                ("Echte Prowess-Bedrohung",),
+            ),
+            entry("Support", 20, 1),
+        ),
+        lands=22,
+    )
+    thin = GeneratedDeck(
+        mainboard=(
+            entry(
+                "Prowess Threat",
+                3,
+                2,
+                "Creature",
+                ("Echte Prowess-Bedrohung",),
+            ),
+            entry("Support", 35, 1),
+        ),
+        lands=22,
+    )
+    simulator = OpeningHandSimulator()
+    dense_report = simulator.simulate(dense, archetype="prowess", samples=1000)
+    thin_report = simulator.simulate(thin, archetype="prowess", samples=1000)
+    assert dense_report.core_by_turn_three_pct > thin_report.core_by_turn_three_pct
+
+
 def test_land_count_reports_screw_and_flood_risk_after_mulligan():
     low_land = GeneratedDeck(mainboard=(entry("Spell", 44, 2),), lands=16)
     high_land = GeneratedDeck(mainboard=(entry("Spell", 28, 2),), lands=32)
