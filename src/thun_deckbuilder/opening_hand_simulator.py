@@ -26,6 +26,7 @@ CORE_PHRASES = {
     "artifacts": ("artifact", "affinity", "improvise", "metalcraft"),
     "shrines": ("shrine",),
     "mill": ("mill", "library into"),
+    "prowess": ("echte prowess-bedrohung", "prowess-bedrohung"),
 }
 
 
