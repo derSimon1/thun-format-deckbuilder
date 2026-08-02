@@ -147,6 +147,13 @@ class CardEvaluationEngine:
         damage = self._damage_amount(text)
         counterspell = "counter target spell" in text
         bounce = bool(re.search(r"return target .* to (?:its|their) owner'?s hand", text))
+        taps_creature = any(
+            phrase in text
+            for phrase in (
+                "tap up to one target creature",
+                "tap target creature an opponent controls",
+            )
+        )
         conditional = any(
             marker in text
             for marker in (
@@ -184,6 +191,16 @@ class CardEvaluationEngine:
             if "any target" in text or "target player" in text:
                 value += 0.35
             self._append(components, "interaction", value, "Provides direct damage interaction.")
+
+        if taps_creature:
+            value = 1.25 + (0.50 if analysis.is_instant else 0.0)
+            value -= max(0.0, mv - 3.0) * 0.2
+            self._append(
+                components,
+                "tempo",
+                max(0.25, value),
+                "Can tap an opposing creature to open a temporary combat window.",
+            )
 
     def _score_battlefield_impact(
         self,

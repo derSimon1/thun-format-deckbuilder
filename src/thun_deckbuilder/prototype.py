@@ -103,7 +103,7 @@ def format_deck(
         lines.append(f"Mulligan rate: {report.mulligan_rate_pct}%")
         lines.append(f"Average spells cast: {report.average_spells_cast}")
         lines.append(f"Average unused mana: {report.average_unused_mana}")
-        if archetype in {"burn", "tokens"}:
+        if archetype in {"burn", "tokens", "prowess"}:
             lines.append(f"Average damage: {report.average_damage}")
             lines.append(f"Kill by turn {report.turns}: {report.kill_by_final_turn_pct}%")
         if archetype == "mill":

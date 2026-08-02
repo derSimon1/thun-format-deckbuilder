@@ -3,13 +3,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 
-SUPPORTED_ARCHETYPES = frozenset(
-    {
-        "burn",
-        "tokens",
-    }
-)
-
 VALID_COLORS = frozenset(
     {
         "W",
@@ -29,49 +22,21 @@ class DeckRequest:
     max_copies: int = 3
 
     def __post_init__(self) -> None:
-        normalized_archetype = (
-            self.archetype
-            .strip()
-            .lower()
-        )
-
+        normalized_archetype = self.archetype.strip().lower()
         normalized_colors = tuple(
             color.strip().upper()
             for color in self.colors
         )
 
-        object.__setattr__(
-            self,
-            "archetype",
-            normalized_archetype,
-        )
+        object.__setattr__(self, "archetype", normalized_archetype)
+        object.__setattr__(self, "colors", normalized_colors)
 
-        object.__setattr__(
-            self,
-            "colors",
-            normalized_colors,
-        )
+        if not normalized_archetype:
+            raise ValueError("Der Archetyp darf nicht leer sein.")
 
-        if normalized_archetype not in SUPPORTED_ARCHETYPES:
-            supported = ", ".join(
-                sorted(SUPPORTED_ARCHETYPES)
-            )
-
-            raise ValueError(
-                f"Unbekannter Archetyp: {self.archetype}. "
-                f"Unterstützt werden aktuell: {supported}."
-            )
-
-        invalid_colors = (
-            set(normalized_colors)
-            - VALID_COLORS
-        )
-
+        invalid_colors = set(normalized_colors) - VALID_COLORS
         if invalid_colors:
-            invalid = ", ".join(
-                sorted(invalid_colors)
-            )
-
+            invalid = ", ".join(sorted(invalid_colors))
             raise ValueError(
                 "Ungültige Farbe oder Farbkombination: "
                 f"{invalid}."
@@ -82,9 +47,7 @@ class DeckRequest:
                 "Mindestens eine Farbe muss angegeben werden."
             )
 
-        if len(set(normalized_colors)) != len(
-            normalized_colors
-        ):
+        if len(set(normalized_colors)) != len(normalized_colors):
             raise ValueError(
                 "Eine Farbe darf nicht mehrfach angegeben werden."
             )

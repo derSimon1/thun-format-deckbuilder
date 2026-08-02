@@ -151,6 +151,41 @@ RULES: dict[str, tuple[SideboardRule, ...]] = {
             priority=4,
         ),
     ),
+    "prowess": (
+        COUNTERSPELL,
+        GRAVEYARD_HATE,
+        SideboardRule(
+            "protect threats",
+            (
+                "target creature you control gains hexproof",
+                "target creature gains hexproof",
+                "return target creature you control to its owner's hand",
+                "phase out",
+            ),
+            roles=("protection",),
+            priority=5,
+        ),
+        SideboardRule(
+            "anti-lifegain",
+            (
+                "players can't gain life",
+                "your opponents can't gain life",
+                "life can't be gained",
+            ),
+            priority=5,
+        ),
+        SideboardRule(
+            "cheap creature interaction",
+            (
+                "damage to target creature",
+                "damage to any target",
+                "return target creature to its owner's hand",
+            ),
+            roles=("removal",),
+            priority=4.5,
+        ),
+        ARTIFACT_ENCHANTMENT_ANSWER,
+    ),
 }
 
 
@@ -201,32 +236,57 @@ class SideboardBuilder:
             )
         )
         entries: list[DeckEntry] = []
+        selected_names: set[str] = set()
         remaining = size
-        for score, knowledge, reasons in scored:
-            if remaining <= 0:
-                break
+
+        def add_candidate(
+            score: float,
+            knowledge: CardKnowledge,
+            reasons: tuple[str, ...],
+        ) -> None:
+            nonlocal remaining
+            name = knowledge.analysis.name
             quantity = min(
-                max_copies - main_counts[knowledge.analysis.name],
+                max_copies - main_counts[name],
                 3,
                 remaining,
             )
+            if quantity <= 0:
+                return
             entries.append(
                 DeckEntry(
-                    name=knowledge.analysis.name,
+                    name=name,
                     quantity=quantity,
-                    mana_cost=parse_mana_cost(
-                        str(knowledge.card.get("mana_cost", ""))
-                    ),
+                    mana_cost=parse_mana_cost(str(knowledge.card.get("mana_cost", ""))),
                     mana_value=knowledge.analysis.mana_value,
                     type_line=knowledge.analysis.type_line,
                     score=score,
-                    reasons=tuple(
-                        f"Sideboard: {reason}" for reason in reasons
-                    ),
-                    roles=tuple(
-                        sorted(str(role) for role in knowledge.roles)
-                    ),
+                    reasons=tuple(f"Sideboard: {reason}" for reason in reasons),
+                    roles=tuple(sorted(str(role) for role in knowledge.roles)),
                 )
             )
+            selected_names.add(name)
             remaining -= quantity
+
+        # Cover distinct matchup needs before spending the remaining slots on
+        # additional cards from already represented categories. This prevents
+        # several similarly worded artifact answers from consuming all 15 slots.
+        for rule in rules:
+            if remaining <= 0:
+                break
+            for score, knowledge, reasons in scored:
+                if knowledge.analysis.name in selected_names:
+                    continue
+                if rule.label not in reasons:
+                    continue
+                add_candidate(score, knowledge, reasons)
+                break
+
+        for score, knowledge, reasons in scored:
+            if remaining <= 0:
+                break
+            if knowledge.analysis.name in selected_names:
+                continue
+            add_candidate(score, knowledge, reasons)
+
         return tuple(entries)

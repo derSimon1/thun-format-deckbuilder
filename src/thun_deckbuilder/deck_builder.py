@@ -7,6 +7,7 @@ from thun_deckbuilder.burn_strategy import BurnStrategy
 from thun_deckbuilder.calibrated_strategies import (
     ArtifactStrategy,
     MillStrategy,
+    ProwessStrategy,
     ShrineStrategy,
 )
 from thun_deckbuilder.card_database import CardDatabase
@@ -24,6 +25,7 @@ STRATEGIES: dict[str, DeckStrategy] = {
     "artifacts": ArtifactStrategy(),
     "shrines": ShrineStrategy(),
     "mill": MillStrategy(),
+    "prowess": ProwessStrategy(),
 }
 
 
@@ -34,20 +36,21 @@ def generate_deck(
     deck_size: int = 60,
     max_copies: int = 3,
 ) -> GeneratedDeck:
+    normalized_archetype = archetype.strip().lower()
+    strategy = STRATEGIES.get(normalized_archetype)
+    if strategy is None:
+        supported = ", ".join(sorted(STRATEGIES))
+        raise ValueError(
+            f"Unbekannter Archetyp: {normalized_archetype}. "
+            f"Unterstützt werden aktuell: {supported}."
+        )
+
     request = DeckRequest(
-        archetype=archetype,
+        archetype=normalized_archetype,
         colors=tuple(colors),
         deck_size=deck_size,
         max_copies=max_copies,
     )
-
-    strategy = STRATEGIES.get(request.archetype)
-
-    if strategy is None:
-        raise ValueError(
-            f"Für den Archetyp '{request.archetype}' "
-            "ist noch keine Strategie implementiert."
-        )
 
     knowledge_base = KnowledgeBase(database)
     knowledge_base.load()

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
-from math import ceil
+from dataclasses import dataclass, replace
 from typing import Iterable
 
 from thun_deckbuilder.composition_engine import build_composition
@@ -95,23 +94,44 @@ class LearnedArchetypeStrategy:
             value += max(0.0, 3.0 - card.analysis.mana_value * 0.35)
             return value, tuple(reasons or ("passt zum gelernten Profil",))
 
+        legal_cards = tuple(card for card in knowledge_base.cards if eligible(card))
+        adjusted_role_targets = tuple(
+            RoleTarget(
+                target.role,
+                minimum=min(
+                    target.minimum,
+                    sum(
+                        max_copies
+                        for card in legal_cards
+                        if target.role in card.roles
+                    ),
+                ),
+                target=target.target,
+            )
+            for target in self.deck_profile.role_targets
+        )
+        adjusted_profile = replace(
+            self.deck_profile,
+            role_targets=adjusted_role_targets,
+        )
+
         result = build_composition(
-            knowledge_base.cards,
-            profile=self.deck_profile,
+            legal_cards,
+            profile=adjusted_profile,
             deck_size=deck_size,
             max_copies=max_copies,
-            eligible=eligible,
+            eligible=lambda card: True,
             score_card=score,
         )
         mana = ManaBaseBuilder().build(
             result.entries,
-            total_lands=self.deck_profile.lands,
+            total_lands=adjusted_profile.lands,
             deck_size=deck_size,
         )
         return GeneratedDeck(
             mainboard=result.entries,
-            lands=self.deck_profile.lands,
-            profile_name=self.deck_profile.name,
+            lands=adjusted_profile.lands,
+            profile_name=adjusted_profile.name,
             requested_roles=result.requested_roles,
             fulfilled_roles=result.fulfilled_roles,
             warnings=result.warnings,

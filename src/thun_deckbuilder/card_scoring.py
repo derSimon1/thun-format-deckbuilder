@@ -249,3 +249,89 @@ def score_shrine_card(analysis: CardAnalysis) -> ScoreBreakdown:
         reasons.append("Teurer Schrein ohne Skalierung")
 
     return ScoreBreakdown(score=score, reasons=tuple(reasons))
+
+
+def score_prowess_card(analysis: CardAnalysis) -> ScoreBreakdown:
+    """Score Izzet Prowess cards using signals observed in Arena testing.
+
+    The calibration rewards cheap independent threats, repeated spell triggers,
+    cantrips and face reach. It deliberately penalizes slow chip-damage bodies,
+    narrow reactive cards and expensive spells that leave the deck without a
+    proactive clock after the first creature is answered.
+    """
+    score = 0.0
+    reasons: list[str] = []
+    text = f" {analysis.oracle_text.lower()} "
+    mana_value = max(analysis.mana_value, 0.0)
+
+    if mana_value <= 1:
+        score += 3.0
+        reasons.append("Sehr günstig")
+    elif mana_value == 2:
+        score += 2.0
+        reasons.append("Effizient für Prowess")
+    elif mana_value == 3:
+        score += 0.5
+        reasons.append("Noch kurventauglich")
+    elif mana_value >= 4:
+        score -= 3.0
+        reasons.append("Zu langsam für Prowess")
+
+    spell_trigger = any(
+        phrase in text
+        for phrase in (
+            "prowess",
+            "whenever you cast a noncreature spell",
+            "whenever you cast an instant or sorcery spell",
+            "whenever you cast your second spell",
+        )
+    )
+    if analysis.is_creature and spell_trigger:
+        score += 5.0
+        reasons.append("Echte Prowess-Bedrohung")
+        if "flying" in text or "can't be blocked" in text or "menace" in text:
+            score += 2.0
+            reasons.append("Evasion")
+        if "haste" in text:
+            score += 1.5
+            reasons.append("Sofortiger Druck")
+        if analysis.power is not None and mana_value > 0 and analysis.power / mana_value >= 1.0:
+            score += 1.0
+            reasons.append("Solider Grundkörper")
+
+    if analysis.is_instant or analysis.is_sorcery:
+        if mana_value <= 1:
+            score += 1.5
+            reasons.append("Günstiger Trigger")
+        if "draw a card" in text:
+            score += 2.5
+            reasons.append("Cantrip/Kartennachschub")
+        elif "look at the top" in text or "surveil" in text or "scry" in text:
+            score += 0.75
+            reasons.append("Kartenauswahl")
+        hits_face = any(phrase in text for phrase in ("any target", "target player", "target opponent", "each opponent"))
+        if "damage" in text and hits_face:
+            score += 3.0
+            reasons.append("Reichweite zum Gegner")
+            damage = _fixed_damage(text)
+            if damage >= 3 and mana_value <= 2:
+                score += 1.5
+                reasons.append("Effizienter Burn")
+        if any(phrase in text for phrase in ("counter target", "destroy target", "exile target")):
+            score += 0.5
+            reasons.append("Interaktion")
+            if not ("draw a card" in text or ("damage" in text and hits_face)):
+                score -= 1.5
+                reasons.append("Rein reaktiv")
+
+    if analysis.is_creature and "whenever you cast" in text and "deals 1 damage" in text and not spell_trigger:
+        score -= 1.0
+        reasons.append("Nur langsamer Chip-Damage")
+    if "gain life" in text and not analysis.is_creature:
+        score -= 0.5
+        reasons.append("Kein proaktiver Druck")
+    if mana_value >= 3 and analysis.is_instant and "counter target" in text:
+        score -= 1.5
+        reasons.append("Teure situative Antwort")
+
+    return ScoreBreakdown(score=score, reasons=tuple(reasons))

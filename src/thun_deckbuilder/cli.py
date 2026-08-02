@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 
+from thun_deckbuilder.arena_export import format_arena_export
 from thun_deckbuilder.calibration_advisor import format_calibration_recommendations
 from thun_deckbuilder.card_database import CardDatabase
 from thun_deckbuilder.deck_builder import generate_deck
@@ -12,10 +13,11 @@ from thun_deckbuilder.prototype import format_deck
 from thun_deckbuilder.tournament_simulator import BestOfThreeSimulator, format_bo3_report
 
 
-ARCHETYPES = ("burn", "tokens", "artifacts", "shrines", "mill")
+ARCHETYPES = ("burn", "tokens", "artifacts", "shrines", "mill", "prowess")
 DEFAULT_COLORS = {
     "burn": ("R",), "tokens": ("W",), "artifacts": ("U", "R"),
     "shrines": ("W", "U", "B", "R", "G"), "mill": ("U", "B"),
+    "prowess": ("U", "R"),
 }
 
 
@@ -27,6 +29,7 @@ def build_parser() -> argparse.ArgumentParser:
     deck.add_argument("--colors", nargs="+", required=True)
     deck.add_argument("--explain", action="store_true")
     deck.add_argument("--benchmark", action="store_true")
+    deck.add_argument("--arena", action="store_true", help="Output only an MTG Arena import list")
     matchup = subparsers.add_parser("matchup", help="Compare two generated archetypes")
     matchup.add_argument("archetype_a", choices=ARCHETYPES)
     matchup.add_argument("archetype_b", choices=ARCHETYPES)
@@ -88,6 +91,9 @@ def main() -> int:
                 print(format_meta_advice(BestOfThreeMetaAnalyzer().analyze(decks, samples_per_matchup=args.samples)))
             return 0
         deck = generate_deck(database=database, archetype=args.archetype, colors=args.colors)
+        if args.arena:
+            print(format_arena_export(deck))
+            return 0
         if args.benchmark:
             from dataclasses import replace
             from thun_deckbuilder.benchmark import BenchmarkAnalyzer

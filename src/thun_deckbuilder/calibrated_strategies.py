@@ -7,6 +7,7 @@ from thun_deckbuilder.card_analyzer import CardAnalysis
 from thun_deckbuilder.card_scoring import (
     ScoreBreakdown,
     score_artifact_card,
+    score_prowess_card,
     score_shrine_card,
 )
 from thun_deckbuilder.composition_engine import build_composition
@@ -64,6 +65,21 @@ MILL_PROFILE = DeckProfile(
     ),
 )
 
+PROWESS_PROFILE = DeckProfile(
+    name="Izzet Prowess V2",
+    lands=20,
+    role_targets=(
+        RoleTarget("aggro_creature", minimum=10, target=14),
+        RoleTarget("burn", minimum=8, target=12),
+        RoleTarget("card_draw", minimum=6, target=9),
+        RoleTarget("removal", minimum=0, target=4),
+    ),
+    curve_targets=(
+        CurveTarget(1, 16), CurveTarget(2, 17), CurveTarget(3, 6),
+        CurveTarget(99, 1),
+    ),
+)
+
 
 def _score(knowledge: CardKnowledge, scorer: Scorer) -> tuple[float, tuple[str, ...]]:
     result = scorer(knowledge.analysis)
@@ -72,6 +88,24 @@ def _score(knowledge: CardKnowledge, scorer: Scorer) -> tuple[float, tuple[str, 
 
 def _within_colors(analysis: CardAnalysis, colors: tuple[str, ...]) -> bool:
     return set(analysis.color_identity).issubset(set(colors))
+
+
+def _has_reliable_draw(text: str) -> bool:
+    """Return whether at least one draw-a-card instruction is unconditional."""
+    normalized = text.lower().replace("\n", " ")
+    for sentence in normalized.split("."):
+        sentence = sentence.strip()
+        if "draw a card" not in sentence:
+            continue
+        before_draw = sentence.split("draw a card", 1)[0]
+        if sentence.startswith(("if ", "when ", "whenever ")):
+            continue
+        if " if " in f" {before_draw} ":
+            continue
+        if "cycling" in sentence or "discard this card:" in sentence:
+            continue
+        return True
+    return False
 
 
 def _artifact_eligible(knowledge: CardKnowledge, colors: tuple[str, ...]) -> bool:
@@ -105,6 +139,61 @@ def _mill_eligible(knowledge: CardKnowledge, colors: tuple[str, ...]) -> bool:
         knowledge.roles.intersection({"card_draw", "removal"})
     )
     return is_core or is_compact_support
+
+
+def _prowess_eligible(knowledge: CardKnowledge, colors: tuple[str, ...]) -> bool:
+    analysis = knowledge.analysis
+    text = analysis.oracle_text.lower()
+    if analysis.is_land or not _within_colors(analysis, colors) or analysis.mana_value > 3:
+        return False
+    has_creature_sacrifice_cost = (
+        "as an additional cost" in text
+        and "sacrifice a creature" in text
+    )
+    is_sorcery_speed_self_blink = (
+        analysis.is_sorcery
+        and "exile target creature you control" in text
+        and "return it to the battlefield" in text
+    )
+    if has_creature_sacrifice_cost or is_sorcery_speed_self_blink:
+        return False
+    is_threat = analysis.is_creature and any(
+        phrase in text
+        for phrase in (
+            "prowess",
+            "whenever you cast a noncreature spell",
+            "whenever you cast an instant or sorcery spell",
+            "whenever you cast your second spell",
+        )
+    )
+    hits_face = any(
+        phrase in text
+        for phrase in (
+            "any target",
+            "target player",
+            "target opponent",
+            "each opponent",
+        )
+    )
+    has_reliable_draw = _has_reliable_draw(text)
+    has_selection = "scry" in text or "surveil" in text
+    has_unreliable_draw_only = (
+        "draw a card" in text
+        and not has_reliable_draw
+        and not hits_face
+        and not is_threat
+        and not has_selection
+    )
+    if has_unreliable_draw_only:
+        return False
+    is_compact_spell = (analysis.is_instant or analysis.is_sorcery) and analysis.mana_value <= 2 and (
+        has_reliable_draw
+        or ("damage" in text and hits_face)
+        or has_selection
+        or "counter target" in text
+        or "return target" in text
+    )
+    return is_threat or is_compact_spell or score_prowess_card(analysis).score >= 5
 
 
 class CalibratedStrategy:
@@ -206,11 +295,7 @@ class CalibratedStrategy:
 
 class ArtifactStrategy(CalibratedStrategy):
     def __init__(self) -> None:
-        super().__init__(
-            profile=ARTIFACT_PROFILE,
-            scorer=score_artifact_card,
-            eligibility=_artifact_eligible,
-        )
+        super().__init__(profile=ARTIFACT_PROFILE, scorer=score_artifact_card, eligibility=_artifact_eligible)
 
 
 class ShrineStrategy(CalibratedStrategy):
@@ -230,4 +315,14 @@ class MillStrategy(CalibratedStrategy):
             scorer=score_mill_card,
             eligibility=_mill_eligible,
             required_colors=frozenset({"U", "B"}),
+        )
+
+
+class ProwessStrategy(CalibratedStrategy):
+    def __init__(self) -> None:
+        super().__init__(
+            profile=PROWESS_PROFILE,
+            scorer=score_prowess_card,
+            eligibility=_prowess_eligible,
+            required_colors=frozenset({"U", "R"}),
         )

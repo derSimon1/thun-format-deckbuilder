@@ -31,6 +31,29 @@ def test_cheap_removal_scores_above_expensive_removal() -> None:
     assert component(cheap, "interaction") > component(expensive, "interaction")
 
 
+def test_vibrant_outburst_scores_above_lightning_strike() -> None:
+    lightning_strike = evaluate(
+        name="Lightning Strike",
+        colors=["R"],
+        color_identity=["R"],
+        type_line="Instant",
+        oracle_text="Lightning Strike deals 3 damage to any target.",
+    )
+    vibrant_outburst = evaluate(
+        name="Vibrant Outburst",
+        colors=["U", "R"],
+        color_identity=["U", "R"],
+        type_line="Instant",
+        oracle_text=(
+            "Vibrant Outburst deals 3 damage to any target. "
+            "Tap up to one target creature."
+        ),
+    )
+
+    assert component(vibrant_outburst, "tempo") > 0
+    assert vibrant_outburst.total > lightning_strike.total
+
+
 def test_cantrip_is_not_treated_as_true_card_advantage() -> None:
     cantrip = evaluate(type_line="Instant", oracle_text="Draw a card.")
     divination = evaluate(mana_value=3, colors=["U"], type_line="Sorcery", oracle_text="Draw two cards.")

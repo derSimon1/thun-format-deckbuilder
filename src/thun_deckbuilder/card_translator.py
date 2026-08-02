@@ -6,6 +6,9 @@ from typing import Iterable
 from thun_deckbuilder.knowledge_base import CardKnowledge, KnowledgeBase
 
 
+_GENERIC_ROLES = frozenset({"aggro_creature"})
+
+
 @dataclass(frozen=True)
 class ReplacementCandidate:
     source_name: str
@@ -45,15 +48,27 @@ def _rank_candidate(
     if not set(analysis.color_identity).issubset(colors):
         return None
 
+    shared_roles = source.roles.intersection(candidate.roles)
+    shared_synergies = source.synergies.intersection(candidate.synergies)
+    meaningful_roles = {
+        str(role)
+        for role in shared_roles
+        if str(role) not in _GENERIC_ROLES
+    }
+
+    # Card type, mana value and color are similarity signals, not proof that two
+    # cards serve the same strategic purpose. Require at least one meaningful
+    # shared role or synergy before ranking a replacement.
+    if not meaningful_roles and not shared_synergies:
+        return None
+
     score = 0.0
     reasons: list[str] = []
 
-    shared_roles = source.roles.intersection(candidate.roles)
     if shared_roles:
         score += 5.0 * len(shared_roles)
         reasons.append("gleiche Rolle: " + ", ".join(sorted(str(role) for role in shared_roles)))
 
-    shared_synergies = source.synergies.intersection(candidate.synergies)
     if shared_synergies:
         score += 3.0 * len(shared_synergies)
         reasons.append("gleiche Synergie: " + ", ".join(sorted(str(item) for item in shared_synergies)))
@@ -79,9 +94,6 @@ def _rank_candidate(
         reasons.append("gleiche Farbidentität")
     elif candidate_colors.issubset(source_colors):
         score += 0.75
-
-    if not shared_roles and not shared_synergies and not shared_types:
-        return None
 
     return ReplacementCandidate(
         source_name=source.analysis.name,
