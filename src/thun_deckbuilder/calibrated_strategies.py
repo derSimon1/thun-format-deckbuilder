@@ -128,6 +128,12 @@ def _prowess_eligible(knowledge: CardKnowledge, colors: tuple[str, ...]) -> bool
     text = analysis.oracle_text.lower()
     if analysis.is_land or not _within_colors(analysis, colors) or analysis.mana_value > 3:
         return False
+    has_creature_sacrifice_cost = (
+        "as an additional cost" in text
+        and "sacrifice a creature" in text
+    )
+    if has_creature_sacrifice_cost:
+        return False
     is_threat = analysis.is_creature and any(
         phrase in text
         for phrase in (
