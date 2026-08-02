@@ -11,12 +11,6 @@ on:
         options:
           - fast
           - full
-  schedule:
-    - cron: "*/15 * * * *"
-  push:
-    branches: [main]
-    paths:
-      - .github/workflows/global-deckbuilder-calibration.yml
 
 permissions:
   contents: read
