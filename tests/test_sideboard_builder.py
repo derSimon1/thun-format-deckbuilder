@@ -29,3 +29,33 @@ def test_sideboard_respects_combined_copy_limit():
 def test_sideboard_excludes_off_color_cards():
     result = SideboardBuilder().build((k("Blue", "Destroy target artifact.", colors=("U",)),), GeneratedDeck((), 24), archetype="burn", colors=("R",))
     assert result == ()
+
+
+def test_sideboard_covers_distinct_categories_before_filling_duplicates():
+    artifact_answers = tuple(
+        k(f"Artifact Answer {suffix}", "Destroy target artifact.")
+        for suffix in "ABCDE"
+    )
+    cards = artifact_answers + (
+        k("Counter", "Counter target spell.", colors=("U",)),
+        k("Graveyard", "Exile target card from a graveyard."),
+        k(
+            "Protection",
+            "Target creature you control gains hexproof until end of turn.",
+            colors=("U",),
+        ),
+        k("Interaction", "Deal 2 damage to any target."),
+    )
+
+    result = SideboardBuilder().build(
+        cards,
+        GeneratedDeck((), 20),
+        archetype="prowess",
+        colors=("U", "R"),
+        size=15,
+    )
+
+    names = {entry.name for entry in result}
+    assert {"Counter", "Graveyard", "Protection", "Interaction"}.issubset(names)
+    assert len(names.intersection({entry.analysis.name for entry in artifact_answers})) == 1
+    assert sum(entry.quantity for entry in result) == 15
