@@ -1,6 +1,11 @@
 name: Global Deckbuilder Calibration
 
 on:
+  schedule:
+    - cron: "*/15 * * * *"
+  push:
+    branches:
+      - codex/global-deckbuilder-calibration
   workflow_dispatch:
     inputs:
       validation_mode:
