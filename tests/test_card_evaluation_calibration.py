@@ -31,12 +31,13 @@ def test_cheap_removal_scores_above_expensive_removal() -> None:
     assert component(cheap, "interaction") > component(expensive, "interaction")
 
 
-def test_damage_plus_creature_tap_receives_additional_tempo_value() -> None:
-    plain_burn = evaluate(
+def test_vibrant_outburst_scores_above_lightning_strike() -> None:
+    lightning_strike = evaluate(
+        name="Lightning Strike",
         colors=["R"],
         color_identity=["R"],
         type_line="Instant",
-        oracle_text="Plain Burn deals 3 damage to any target.",
+        oracle_text="Lightning Strike deals 3 damage to any target.",
     )
     vibrant_outburst = evaluate(
         name="Vibrant Outburst",
@@ -50,7 +51,7 @@ def test_damage_plus_creature_tap_receives_additional_tempo_value() -> None:
     )
 
     assert component(vibrant_outburst, "tempo") > 0
-    assert vibrant_outburst.total > plain_burn.total
+    assert vibrant_outburst.total > lightning_strike.total
 
 
 def test_cantrip_is_not_treated_as_true_card_advantage() -> None:
