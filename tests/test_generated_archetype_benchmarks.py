@@ -62,6 +62,11 @@ def test_mill_benchmark_counts_real_mill_sources():
 
     report = BenchmarkAnalyzer().analyze(deck, "mill")
 
-    assert report.signature_items[0].key == "mill_sources"
-    assert report.signature_items[0].actual == 24
-    assert report.score >= 80
+    signature = report.signature_items[0]
+    assert signature.key == "mill_sources"
+    assert signature.actual == 24
+    assert signature.score == 80
+    # The synthetic deck intentionally puts every spell at mana value two, so
+    # its aggregate benchmark must remain free to penalize the unrealistic
+    # curve. This test covers mill-source recognition only.
+    assert report.land_item.score == 100
