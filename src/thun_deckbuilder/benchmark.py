@@ -132,6 +132,19 @@ def _closeness(actual: int, target: int) -> int:
     return max(0, round(100 * (1 - difference / target)))
 
 
+def _minimum_score(actual: int, target: int) -> int:
+    """Score minimum density targets without penalizing useful excess."""
+    if target <= 0:
+        return 100
+    return min(100, round(100 * actual / target))
+
+
+def _average_score(items: tuple[BenchmarkItem, ...]) -> float:
+    if not items:
+        return 100.0
+    return sum(item.score for item in items) / len(items)
+
+
 def _curve_band(mana_value: float) -> str:
     if mana_value <= 1:
         return "1"
@@ -193,7 +206,7 @@ class BenchmarkAnalyzer:
                 item.key,
                 item.target,
                 item.actual,
-                _closeness(item.actual, item.target),
+                _minimum_score(item.actual, item.target),
             )
             for item in signature_items
         )
@@ -203,11 +216,24 @@ class BenchmarkAnalyzer:
             deck.lands,
             _closeness(deck.lands, profile.lands),
         )
-        all_scores = [
-            item.score
-            for item in role_items + curve_items + signature_items
-        ] + [land_item.score]
-        score = round(sum(all_scores) / len(all_scores)) if all_scores else 0
+
+        if signature_items:
+            # The defining engine of a synergy deck is more important than an
+            # exact illustrative curve. Roles and mana still matter, while
+            # curve shape remains a useful but lower-weight diagnostic.
+            score = round(
+                0.50 * _average_score(signature_items)
+                + 0.25 * _average_score(role_items)
+                + 0.15 * land_item.score
+                + 0.10 * _average_score(curve_items)
+            )
+        else:
+            all_scores = [
+                item.score
+                for item in role_items + curve_items
+            ] + [land_item.score]
+            score = round(sum(all_scores) / len(all_scores)) if all_scores else 0
+
         return BenchmarkReport(
             profile.display_name,
             role_items,
