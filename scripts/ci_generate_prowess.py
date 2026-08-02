@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import sqlite3
 from collections import Counter
 from pathlib import Path
@@ -137,6 +138,17 @@ def _build_database(bulk_file: Path, database_file: Path) -> None:
     print(f"Built {database_file} with {len(card_rows)} cards and {len(print_rows)} prints.")
 
 
+def _validate_card(database: CardDatabase, name: str, *, kind: str) -> dict[str, object]:
+    card = database.get_card_by_name(name)
+    assert card is not None, f"Unknown {kind}: {name}."
+    assert database.is_card_legal_by_name(name), f"Illegal {kind}: {name}."
+    identity = set(card.get("color_identity", ()))
+    assert identity.issubset(ALLOWED_COLORS), (
+        f"Off-color {kind} {name}: {sorted(identity)}."
+    )
+    return card
+
+
 def _validate_and_export(database_file: Path) -> None:
     with CardDatabase(database_file) as database:
         deck = generate_deck(
@@ -154,21 +166,21 @@ def _validate_and_export(database_file: Path) -> None:
         sideboard_total = sum(entry.quantity for entry in deck.sideboard)
         assert main_total == 60, f"Expected 60 mainboard cards, got {main_total}."
         assert sideboard_total == 15, f"Expected 15 sideboard cards, got {sideboard_total}."
+        assert 18 <= mana_lands <= 22, f"Unexpected Prowess land count: {mana_lands}."
 
         combined: Counter[str] = Counter()
         for entry in (*deck.mainboard, *deck.sideboard):
             combined[entry.name] += entry.quantity
-            card = database.get_card_by_name(entry.name)
-            assert card is not None, f"Unknown card: {entry.name}."
-            assert database.is_card_legal_by_name(entry.name), f"Illegal card: {entry.name}."
-            assert set(card.get("color_identity", ())).issubset(ALLOWED_COLORS), (
-                f"Off-color card: {entry.name}."
-            )
+            _validate_card(database, entry.name, kind="card")
         for name, quantity in combined.items():
             card = database.get_card_by_name(name)
             type_line = str(card.get("type_line", "")) if card else ""
             if "Basic Land" not in type_line:
                 assert quantity <= 3, f"Copy limit exceeded: {quantity} {name}."
+
+        if deck.mana_base is not None:
+            for land in deck.mana_base.lands:
+                _validate_card(database, land.land_name, kind="land")
 
         threat_count = sum(
             entry.quantity for entry in deck.mainboard if "Creature" in entry.type_line
@@ -179,15 +191,59 @@ def _validate_and_export(database_file: Path) -> None:
         draw_count = sum(
             entry.quantity for entry in deck.mainboard if "card_draw" in entry.roles
         )
-        cheap_count = sum(
-            entry.quantity for entry in deck.mainboard if entry.mana_value <= 2
+        curve_one = sum(
+            entry.quantity for entry in deck.mainboard if entry.mana_value <= 1
         )
+        curve_two = sum(
+            entry.quantity
+            for entry in deck.mainboard
+            if 1 < entry.mana_value <= 2
+        )
+        curve_three = sum(
+            entry.quantity
+            for entry in deck.mainboard
+            if 2 < entry.mana_value <= 3
+        )
+        curve_four_plus = sum(
+            entry.quantity for entry in deck.mainboard if entry.mana_value > 3
+        )
+        cheap_count = curve_one + curve_two
+
         assert threat_count >= 10, f"Too few threats: {threat_count}."
         assert burn_count >= 8, f"Too little burn/reach: {burn_count}."
         assert draw_count >= 6, f"Too little card flow: {draw_count}."
+        assert cheap_count >= 28, f"Curve is too slow: only {cheap_count} cards cost two or less."
+        assert curve_four_plus <= 2, (
+            f"Curve is too top-heavy: {curve_four_plus} cards cost four or more."
+        )
 
         arena_text = format_arena_export(deck)
-        Path("izzet-prowess-v2-arena.txt").write_text(arena_text + "\n", encoding="utf-8")
+        Path("izzet-prowess-v2-arena.txt").write_text(
+            arena_text + "\n",
+            encoding="utf-8",
+        )
+        metrics = {
+            "status": "PASS",
+            "mainboard": main_total,
+            "sideboard": sideboard_total,
+            "lands": mana_lands,
+            "threats": threat_count,
+            "burn_reach": burn_count,
+            "card_flow": draw_count,
+            "curve": {
+                "mana_value_0_1": curve_one,
+                "mana_value_2": curve_two,
+                "mana_value_3": curve_three,
+                "mana_value_4_plus": curve_four_plus,
+            },
+            "legality": "PASS",
+            "color_identity": "U/R PASS",
+            "copy_limit": "PASS",
+        }
+        Path("izzet-prowess-v2-validation.json").write_text(
+            json.dumps(metrics, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
         validation = "\n".join(
             (
                 "Izzet Prowess V2 validation: PASS",
@@ -197,14 +253,17 @@ def _validate_and_export(database_file: Path) -> None:
                 f"Threats: {threat_count}",
                 f"Burn/reach cards: {burn_count}",
                 f"Card-flow cards: {draw_count}",
-                f"Cards at mana value 2 or less: {cheap_count}",
+                "Mana curve: "
+                f"MV0-1={curve_one}, MV2={curve_two}, MV3={curve_three}, "
+                f"MV4+={curve_four_plus}",
                 "Legality: PASS",
                 "Color identity U/R: PASS",
                 "Three-copy limit across mainboard and sideboard: PASS",
             )
         )
         Path("izzet-prowess-v2-validation.txt").write_text(
-            validation + "\n", encoding="utf-8"
+            validation + "\n",
+            encoding="utf-8",
         )
         print(validation)
         print("\n--- ARENA DECK LIST ---")
@@ -216,11 +275,20 @@ def main() -> None:
     data_dir.mkdir(exist_ok=True)
     bulk_file = data_dir / "default_cards.json"
     database_file = data_dir / "cards.db"
-    _download_default_cards(bulk_file)
-    try:
-        _build_database(bulk_file, database_file)
-    finally:
-        bulk_file.unlink(missing_ok=True)
+
+    reuse_database = (
+        os.environ.get("THUN_REUSE_CARD_DATABASE") == "1"
+        and database_file.is_file()
+    )
+    if reuse_database:
+        print(f"Reusing cached card database: {database_file}")
+    else:
+        _download_default_cards(bulk_file)
+        try:
+            _build_database(bulk_file, database_file)
+        finally:
+            bulk_file.unlink(missing_ok=True)
+
     _validate_and_export(database_file)
 
 
