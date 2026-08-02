@@ -7,6 +7,7 @@ from thun_deckbuilder.card_analyzer import CardAnalysis
 from thun_deckbuilder.card_scoring import (
     ScoreBreakdown,
     score_artifact_card,
+    score_prowess_card,
     score_shrine_card,
 )
 from thun_deckbuilder.composition_engine import build_composition
@@ -64,6 +65,21 @@ MILL_PROFILE = DeckProfile(
     ),
 )
 
+PROWESS_PROFILE = DeckProfile(
+    name="Izzet Prowess V2",
+    lands=20,
+    role_targets=(
+        RoleTarget("aggro_creature", minimum=10, target=14),
+        RoleTarget("burn", minimum=8, target=12),
+        RoleTarget("card_draw", minimum=6, target=9),
+        RoleTarget("removal", minimum=0, target=4),
+    ),
+    curve_targets=(
+        CurveTarget(1, 16), CurveTarget(2, 17), CurveTarget(3, 6),
+        CurveTarget(99, 1),
+    ),
+)
+
 
 def _score(knowledge: CardKnowledge, scorer: Scorer) -> tuple[float, tuple[str, ...]]:
     result = scorer(knowledge.analysis)
@@ -105,6 +121,31 @@ def _mill_eligible(knowledge: CardKnowledge, colors: tuple[str, ...]) -> bool:
         knowledge.roles.intersection({"card_draw", "removal"})
     )
     return is_core or is_compact_support
+
+
+def _prowess_eligible(knowledge: CardKnowledge, colors: tuple[str, ...]) -> bool:
+    analysis = knowledge.analysis
+    text = analysis.oracle_text.lower()
+    if analysis.is_land or not _within_colors(analysis, colors) or analysis.mana_value > 3:
+        return False
+    is_threat = analysis.is_creature and any(
+        phrase in text
+        for phrase in (
+            "prowess",
+            "whenever you cast a noncreature spell",
+            "whenever you cast an instant or sorcery spell",
+            "whenever you cast your second spell",
+        )
+    )
+    is_compact_spell = (analysis.is_instant or analysis.is_sorcery) and analysis.mana_value <= 2 and (
+        "draw a card" in text
+        or "damage" in text
+        or "scry" in text
+        or "surveil" in text
+        or "counter target" in text
+        or "return target" in text
+    )
+    return is_threat or is_compact_spell or score_prowess_card(analysis).score >= 5
 
 
 class CalibratedStrategy:
@@ -206,11 +247,7 @@ class CalibratedStrategy:
 
 class ArtifactStrategy(CalibratedStrategy):
     def __init__(self) -> None:
-        super().__init__(
-            profile=ARTIFACT_PROFILE,
-            scorer=score_artifact_card,
-            eligibility=_artifact_eligible,
-        )
+        super().__init__(profile=ARTIFACT_PROFILE, scorer=score_artifact_card, eligibility=_artifact_eligible)
 
 
 class ShrineStrategy(CalibratedStrategy):
@@ -230,4 +267,14 @@ class MillStrategy(CalibratedStrategy):
             scorer=score_mill_card,
             eligibility=_mill_eligible,
             required_colors=frozenset({"U", "B"}),
+        )
+
+
+class ProwessStrategy(CalibratedStrategy):
+    def __init__(self) -> None:
+        super().__init__(
+            profile=PROWESS_PROFILE,
+            scorer=score_prowess_card,
+            eligibility=_prowess_eligible,
+            required_colors=frozenset({"U", "R"}),
         )
