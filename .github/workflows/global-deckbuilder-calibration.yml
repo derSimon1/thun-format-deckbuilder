@@ -1,4 +1,5 @@
 name: Global Deckbuilder Calibration
+# Manual trigger verification: 2026-08-02 22:16 Europe/Zurich
 
 on:
   schedule:
