@@ -125,33 +125,41 @@ def _sideboard_markers(entry: DeckEntry) -> tuple[str, ...]:
 
 
 def _sideboard_relevant(entry: DeckEntry, opponent: str) -> bool:
-    """Return whether a sideboard card addresses the declared opponent plan.
-
-    Machine-readable sideboard role markers are authoritative and survive all
-    deck-entry transformations. Human-readable reasons remain supported for
-    older entries. Only unlabeled fixtures use conservative text fallback.
-    """
+    """Return whether a sideboard card addresses the declared opponent plan."""
 
     markers = _sideboard_markers(entry)
     if markers:
-        return any(
-            opponent in _MARKER_MATCHUPS.get(marker, frozenset())
-            for marker in markers
-        )
+        return any(opponent in _MARKER_MATCHUPS.get(marker, frozenset()) for marker in markers)
     labels = _sideboard_labels(entry)
     if labels:
-        return any(
-            opponent in _LABEL_MATCHUPS.get(label, frozenset())
-            for label in labels
-        )
+        return any(opponent in _LABEL_MATCHUPS.get(label, frozenset()) for label in labels)
     text = _text(entry)
-    return any(
-        phrase in text for phrase in _FALLBACK_SIGNALS.get(opponent, ())
-    )
+    return any(phrase in text for phrase in _FALLBACK_SIGNALS.get(opponent, ()))
 
 
 def _sideboard_value(entry: DeckEntry, opponent: str) -> float:
     return entry.score + (8 if _sideboard_relevant(entry, opponent) else 0)
+
+
+def _mainboard_cut_key(entry: DeckEntry, opponent: str) -> tuple:
+    """Prefer matchup-appropriate cuts before generic low-score cuts.
+
+    Against Burn, conditional and death-triggered token makers are the slowest
+    parts of the Go-Wide plan. Immediate/multi makers, anthems, card draw and
+    protection are preserved because they either race or stabilize directly.
+    """
+
+    roles = set(entry.roles)
+    if opponent == "burn":
+        if roles.intersection({"token_production_death", "token_production_conditional"}):
+            tempo_tier = 0
+        elif roles.intersection({"token_immediate_maker", "token_multi_maker"}):
+            tempo_tier = 2
+        else:
+            tempo_tier = 1
+        strategic_tier = int(bool(roles.intersection({"anthem", "card_draw", "protection"})))
+        return (tempo_tier, strategic_tier, entry.score, -entry.mana_value, entry.name)
+    return (1, 0, entry.score, -entry.mana_value, entry.name)
 
 
 def _expand(entries: tuple[DeckEntry, ...]) -> list[DeckEntry]:
@@ -182,11 +190,8 @@ def optimize_sideboard_plan(
 ) -> OptimizedSideboardPlan:
     simulator = MatchupSimulator()
     baseline = simulator.simulate(
-        deck, opponent,
-        archetype_a=archetype,
-        archetype_b=opponent_archetype,
-        samples=samples,
-        seed=seed,
+        deck, opponent, archetype_a=archetype, archetype_b=opponent_archetype,
+        samples=samples, seed=seed,
     ).wins_a_pct
     current = deck
     current_win = baseline
@@ -195,11 +200,7 @@ def optimize_sideboard_plan(
     used_in: list[DeckEntry] = []
     used_out: list[DeckEntry] = []
     available = sorted(
-        (
-            entry
-            for entry in _expand(deck.sideboard)
-            if _sideboard_relevant(entry, opponent_archetype)
-        ),
+        (entry for entry in _expand(deck.sideboard) if _sideboard_relevant(entry, opponent_archetype)),
         key=lambda entry: (-_sideboard_value(entry, opponent_archetype), entry.name),
     )
 
@@ -209,16 +210,14 @@ def optimize_sideboard_plan(
         for incoming in available:
             if incoming.name in used_names:
                 continue
-            for outgoing in sorted(main, key=lambda entry: (entry.score, -entry.mana_value, entry.name))[:8]:
+            for outgoing in sorted(main, key=lambda entry: _mainboard_cut_key(entry, opponent_archetype))[:8]:
                 trial_main = list(main)
                 trial_main.remove(outgoing)
                 trial_main.append(incoming)
                 trial = replace(current, mainboard=_compress(trial_main), goldfish_report=None)
                 win_pct = simulator.simulate(
-                    trial, opponent,
-                    archetype_a=archetype,
-                    archetype_b=opponent_archetype,
-                    samples=samples,
+                    trial, opponent, archetype_a=archetype,
+                    archetype_b=opponent_archetype, samples=samples,
                     seed=seed + step + 1,
                 ).wins_a_pct
                 candidate = (win_pct, incoming.name, outgoing.name, incoming, outgoing, trial)

@@ -2,6 +2,7 @@ from thun_deckbuilder.calibration_advisor import recommend_calibrations
 from thun_deckbuilder.deck_generator import DeckEntry, GeneratedDeck, ManaCost
 from thun_deckbuilder.goldfish_simulator import GoldfishReport
 from thun_deckbuilder.sideboard_optimizer import (
+    _mainboard_cut_key,
     _sideboard_relevant,
     optimize_sideboard_plan,
 )
@@ -52,12 +53,9 @@ def test_bo3_reports_impacts_and_advisor_uses_them():
 
 def test_graveyard_hate_marker_is_not_generic_exile_interaction():
     crypt = entry(
-        "Tormod's Crypt",
-        3,
-        score=4,
+        "Tormod's Crypt", 3, score=4,
         roles=("sideboard_graveyard_hate",),
-        reasons=("Sideboard: graveyard hate",),
-        type_line="Artifact",
+        reasons=("Sideboard: graveyard hate",), type_line="Artifact",
     )
     assert _sideboard_relevant(crypt, "mill")
     assert not _sideboard_relevant(crypt, "burn")
@@ -69,26 +67,24 @@ def test_fast_boarding_uses_only_matchup_relevant_sideboard_markers():
     player = deck(
         (entry("Weak", 6, score=0.1), entry("Answer", 30, score=3, roles=("removal",))),
         (
-            entry(
-                "Tormod's Crypt",
-                3,
-                score=6,
-                roles=("sideboard_graveyard_hate",),
-                reasons=("Sideboard: graveyard hate",),
-                type_line="Artifact",
-            ),
-            entry(
-                "Disfigure",
-                3,
-                score=4,
-                roles=("removal", "sideboard_anti_aggro_removal"),
-                reasons=("Sideboard: anti-aggro removal",),
-            ),
+            entry("Tormod's Crypt", 3, score=6, roles=("sideboard_graveyard_hate",), reasons=("Sideboard: graveyard hate",), type_line="Artifact"),
+            entry("Disfigure", 3, score=4, roles=("removal", "sideboard_anti_aggro_removal"), reasons=("Sideboard: anti-aggro removal",)),
         ),
-        "control",
-        4,
+        "control", 4,
     )
     _, plan = board_for_matchup(player, opponent_archetype="burn", max_swaps=3)
     incoming = dict(plan.cards_in)
     assert "Tormod's Crypt" not in incoming
     assert incoming == {"Disfigure": 3}
+
+
+def test_burn_cuts_slow_token_makers_before_go_wide_core():
+    death_maker = entry("Death Maker", 1, score=9, roles=("token_production_death", "token_creature_maker"))
+    conditional = entry("Conditional Maker", 1, score=8, roles=("token_production_conditional", "token_creature_maker"))
+    immediate = entry("Immediate Maker", 1, score=1, roles=("token_immediate_maker", "token_multi_maker"))
+    anthem = entry("Anthem", 1, score=0.5, roles=("anthem",))
+
+    ordered = sorted((anthem, immediate, conditional, death_maker), key=lambda item: _mainboard_cut_key(item, "burn"))
+
+    assert [item.name for item in ordered[:2]] == ["Conditional Maker", "Death Maker"]
+    assert ordered[-1].name == "Immediate Maker"
