@@ -2,14 +2,14 @@
 
 Dieses Dokument sammelt Referenzwissen für das Thun-Format. Es ersetzt keine Tests und keine Clubergebnisse. Externe Decklisten dienen zur Ableitung allgemeiner Regeln, nicht zum blinden Kopieren.
 
-## Aktuell relevante Archetypen
+## Verbindliche Referenzarchetypen
 
 ### Burn
 
 - sehr schneller Schadensplan
-- frühe Interaktion und direkte Reichweite
+- frühe Pressure- und Burn-Dichte
+- direkte Reichweite
 - bestraft langsame Engines und schlechte Manabasen
-- aktueller Token-Benchmark zeigt deutliche Schwäche
 
 ### Tokens
 
@@ -24,19 +24,28 @@ Ein Deck soll einen Hauptplan besitzen. Überschneidungen sind erlaubt, wenn sie
 ### Artifacts
 
 - Synergiedichte und günstige Permanents
-- Engine-Karten und Tempo
-- Token-Matchup aktuell deutlich besser als Burn, aber noch negativ
+- frühe Enabler
+- Engine-Karten und Payoffs
+- generische Artefakte ohne verwertbare Synergie genügen nicht
+
+### Control
+
+- verhindert den konkreten gegnerischen Plan durch relevante Interaktion
+- benötigt frühes Removal, Countermagic oder andere passende Antworten
+- muss nach der ersten Interaktion stabilisieren und Kartenvorteil erzeugen
+- situativ tote Antworten werden matchupabhängig bewertet
+- benötigt eine belastbare Wincondition und darf die Partie nicht nur verzögern
 
 ### Mill
 
 - alternative Wincondition
-- verlangt Druck oder spezifische Interaktion
-- aktuelle Simulation für Tokens wirkt mit 100 % wahrscheinlich zu extrem und muss verifiziert werden
+- benötigt eine frühe oder wiederholbare Mill-Engine
+- verlangt Schutz, Interaktion oder Tempo
+- extreme simulierte Matchup-Werte müssen mit realen Spielen oder besserer Simulation verifiziert werden
 
-### Shrines
+## Nicht verbindliche Spezialfälle
 
-- langsame, kumulative Value-Engine
-- derzeit Referenz für Regressionen, nicht aktive Optimierungspriorität
+Shrines ist kein allgemeiner Referenzarchetyp. Es darf nur optional als spezieller Regressionstest für mehrfarbige Engine-Decks verwendet werden, wenn konkrete Evidenz dies rechtfertigt.
 
 ## Referenzquellen – Grundregeln
 
@@ -60,7 +69,7 @@ Bei jeder übernommenen Erkenntnis sind zu dokumentieren:
 
 - konkrete Thun-Meta-Referenzdecks
 - Versionsstand jeder Referenzliste
-- Matchup-Matrix
+- Matchup-Matrix für Burn, Tokens, Artifacts, Control und Mill
 - Sideboard-Pläne
 - wiederkehrende Problemkarten und Strategien
 - Clubtestergebnisse mit Datum und Stichprobengröße
