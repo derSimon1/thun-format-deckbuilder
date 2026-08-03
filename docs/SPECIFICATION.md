@@ -1,6 +1,6 @@
 # Deckbuilder Development Specification
 
-**Version:** 1.0  
+**Version:** 2.0  
 **Stand:** 2026-08-03  
 **Status:** verbindliche Arbeitsgrundlage
 
@@ -20,7 +20,7 @@ Für Kalibrierungsarbeiten sind diese Dateien verbindlich:
 6. `docs/KNOWN_ISSUES.md`
 7. `docs/META.md`
 
-Bei Widersprüchen gilt folgende Reihenfolge: Spezifikation vor Prompt, Prompt vor Roadmap, dokumentierte Entscheidungen vor offenen Ideen.
+Bei Widersprüchen gilt: Spezifikation vor Prompt, Prompt vor Roadmap, dokumentierte Entscheidungen vor offenen Ideen. Ältere externe Aufgabenformulierungen treten hinter den aktuellen Repository-Dokumenten zurück.
 
 ## 2. Entwicklungsprinzipien
 
@@ -29,49 +29,81 @@ Bei Widersprüchen gilt folgende Reihenfolge: Spezifikation vor Prompt, Prompt v
 - Keine Grenzwerte nur zum Bestehen von Tests verschieben.
 - Keine unbelegten Optimierungen.
 - Keine Dummy-Commits nur zum Auslösen von CI.
-- Shrines dienen vorerst als Regressionstest und werden nicht gezielt optimiert, solange keine globale Ursache vorliegt.
-- Offene Izzet-Prowess-Arbeiten in PR #13 bleiben getrennt.
+- Offene Izzet-Prowess-Arbeiten in PR #13 bleiben getrennt und unangetastet.
 - Ein technischer Erfolg ist nicht automatisch ein spielerisch überzeugendes Deck.
+- Grüne CI allein beweist weder höhere Deckqualität noch eine neue Baseline.
+- Jede Verbesserung wird gegen die letzte Known Good Baseline bewertet.
 
-## 3. Arbeitsmodell einer Kalibrierung
+## 3. Referenzarchetypen
 
-Ein Kalibrierungszyklus besteht aus:
+Die fünf verbindlichen allgemeinen Referenzarchetypen sind:
 
-1. Repository-, Branch-, PR- und CI-Status prüfen.
-2. Letzten erfolgreichen Bericht und offene Prioritäten lesen.
-3. Eine konkrete, testbare Hypothese wählen.
-4. Höchstens drei eng gekoppelte Änderungen derselben Ursache umsetzen.
-5. Vollständige Testsuite und Fast-Validierung ausführen.
-6. Vor Commit Branch-Head und aktive CI erneut prüfen.
-7. Genau einen zusammenhängenden Commit erstellen.
-8. Neue Workflow-Run-ID verifizieren und Ergebnis auswerten.
-9. Erkenntnisse, Entscheidung und nächsten Schritt dokumentieren.
+- Burn
+- Tokens
+- Artifacts
+- Control
+- Mill
 
-## 4. Produktivität statt Leerlauf
+Tokens werden zusätzlich in Go Wide, Value Tokens und Aristocrats getrennt bewertet.
 
-Ein Zyklus darf ohne Codeänderung enden, wenn eine Sicherheitsbedingung greift oder keine belegte Verbesserung möglich ist. Dann sind jedoch zwingend zu dokumentieren:
+Shrines ist kein Pflicht- oder Referenzarchetyp. Es darf nur optional als spezieller Regressionstest für mehrfarbige Engine-Decks verwendet werden, wenn konkrete Evidenz dies begründet.
 
-- exakter Stopgrund,
+## 4. Mehrstundenbetrieb
+
+Der externe Auftrag nennt Repository, Branch/PR und die verfügbare Laufzeit `X` in Stunden.
+
+Während dieser Laufzeit werden so viele vollständige produktive Kalibrierungszyklen wie sinnvoll möglich durchgeführt. Es werden keine separaten 15-Minuten-Aufgaben benötigt. GitHub Actions ist Validator und kein Entwicklungsagent.
+
+Ein neuer Zyklus darf nur begonnen werden, wenn er innerhalb der verbleibenden Laufzeit voraussichtlich vollständig implementiert, getestet, validiert, dokumentiert und abgeschlossen werden kann. Restzeit wird für Abschlussvalidierung, CI-Auswertung, Artefaktprüfung, Logbook, Roadmap und Abschlussbericht verwendet.
+
+## 5. Arbeitsmodell eines Kalibrierungszyklus
+
+Ein vollständiger Zyklus besteht aus:
+
+1. Repository-, Branch-, PR-, Mergeability- und CI-Status prüfen.
+2. Letzten erfolgreichen Workflow, Jobs, Logs und Artefakte prüfen.
+3. Letzte Known Good Baseline und offenen nächsten Schritt lesen.
+4. Genau eine konkrete, testbare Hypothese mit hohem erwartetem globalem Qualitätsgewinn wählen.
+5. Höchstens drei eng gekoppelte Änderungen derselben Ursache umsetzen.
+6. Vollständige Testsuite, Fast-Validierung und Referenzvergleiche ausführen.
+7. Gegen die letzte Known Good Baseline vergleichen.
+8. Vor Commit Branch-Head, PR-Head, Mergeability und aktive CI erneut prüfen.
+9. Genau einen zusammenhängenden Commit erstellen.
+10. Neue Workflow-Run-ID verifizieren und Status, Jobs, Logs und Artefakte auswerten.
+11. Kritische Reflexion durchführen.
+12. Logbook und Roadmap aktualisieren und genau einen nächsten ausführbaren Schritt bestimmen.
+13. Entscheiden, ob eine neue Known Good Baseline entstanden ist.
+
+## 6. Produktivität, No-Change und Regressionen
+
+Ein Zyklus darf ohne Codeänderung enden, wenn eine Sicherheitsbedingung greift oder keine belegte Verbesserung möglich ist. Dann sind zwingend zu dokumentieren:
+
 - geprüfte Hypothese,
+- verwendete Daten,
+- exakter Stopgrund,
 - gewonnene Erkenntnis,
-- nächster ausführbarer Schritt.
+- Confidence,
+- mindestens zwei Folgeschritte,
+- genau ein priorisierter nächster ausführbarer Schritt.
 
-Nach zwei aufeinanderfolgenden No-Change-Zyklen mit derselben Ursache muss zum nächsten priorisierten Roadmap-Punkt gewechselt werden. Dieselben Prüfungen dürfen nicht endlos wiederholt werden.
+Nach zwei aufeinanderfolgenden No-Change-Zyklen derselben Ursache muss zum nächsten priorisierten Roadmap-Punkt gewechselt werden.
 
-## 5. CI und Workflow-Regeln
+Nach zwei aufeinanderfolgenden unbegründeten Regressionen derselben Hypothese wird diese Hypothese pausiert. Der nächste priorisierte Roadmap-Punkt wird bearbeitet; zur pausierten Hypothese darf erst bei neuer belegter Evidenz zurückgekehrt werden.
+
+## 7. CI- und Workflow-Regeln
 
 GitHub Actions validiert Änderungen; GitHub-Cron ist nicht der Motor der Entwicklung.
 
 - Ein neuer PR-Workflow wird nach einem sinnvollen Commit erwartet.
-- Zeitgesteuerte Läufe sind optional und dürfen nicht als Beweis produktiver Entwicklung gelten.
 - Nach Commit muss innerhalb von zehn Minuten geprüft werden, ob eine neue Run-ID entstanden ist.
 - Fehlt ein erwarteter Lauf, sind Workflow-Aktivierung, Trigger, Branch-/Pfadfilter, Workflowdatei auf `main`, `concurrency` und Trigger-Commit zu prüfen.
 - Es darf höchstens eine eindeutig belegte Infrastrukturursache pro Zyklus behoben werden.
 - Fast-Validierung soll unter zehn Minuten bleiben.
 - Full-Validierung erfolgt manuell oder als Abschlusslauf.
 - Bei aktiver CI, verändertem Head oder unklarer Ursache wird nicht committed.
+- Während ein Workflow läuft, darf nur an einem nachweislich unabhängigen Schritt gearbeitet werden.
 
-## 6. Qualitätsmodell
+## 8. Qualitätsmodell
 
 Ein Deck wird mindestens anhand folgender Ebenen bewertet:
 
@@ -88,56 +120,153 @@ Ein Deck wird mindestens anhand folgender Ebenen bewertet:
 
 Eine hohe Rollenzahl allein ist kein Qualitätsnachweis.
 
-## 7. Token-Priorität
+## 9. Verbindliche Starthand- und Sequenzanalyse
 
-Tokens sind derzeit der priorisierte Archetyp. Vor Kartenauswahl muss ein Hauptplan erkannt werden:
+Für jede erzeugte oder als aktuelle Referenz verwendete Deckliste sind genau 100 reproduzierbare Sieben-Karten-Starthände mit dokumentiertem festem Zufallsseed zu analysieren.
 
-- Go Wide
-- Value Tokens
-- Aristocrats
+Die Bewertung muss archetypen- und planabhängig sein und mindestens prüfen:
 
-Zu prüfen sind insbesondere:
+- verfügbare und farblich passende Manaquellen,
+- spielbare Züge 1, 2 und 3,
+- frühe Bedrohung oder Enabler,
+- Engine-, Payoff- und Finisher-Zugang,
+- notwendige frühe Interaktion,
+- tote oder widersprüchliche Karten,
+- ob der deklarierte Hauptplan realistisch anlaufen kann.
 
-- frühe Token-Maker,
-- passende Payoffs,
-- Engine-Dichte,
-- klare Finisher,
-- Card Advantage,
-- Interaktion,
-- kohärente Rollenverteilung.
+Jede Hand wird als `planfähig`, `marginal` oder `nicht planfähig` klassifiziert. Keepability, Early Play und Planfähigkeit werden getrennt ausgewiesen.
 
-Rollen-Mischmasch ohne klaren Hauptplan ist ein Qualitätsproblem. Erfolgreiche Standard- und Pioneer-Konzepte dürfen als Referenz für allgemeine Regeln dienen, aber nicht blind kopiert werden.
+Aggregierte Daten dürfen niemals nachträglich als simulierte Einzelhände dargestellt werden. Wenn eine echte Simulation nicht möglich ist, muss der exakte technische Stopgrund dokumentiert werden.
 
-## 8. Hypothesen und Confidence
+Maschinenlesbare Rohdaten oder eine kompakte Zusammenfassung werden unter `artifacts/global` oder `docs/reports` gespeichert.
 
-Jede Optimierung erhält eine Einschätzung:
+## 10. Archetypabhängige Mindestlogik
 
-- **hoch:** durch Tests oder mehrere Datenquellen klar bestätigt
-- **mittel:** mehrere belastbare Indizien
-- **niedrig:** plausible, noch nicht ausreichend geprüfte Hypothese
+- **Burn:** frühe Pressure- oder Burn-Dichte und realistische Schadenssequenz.
+- **Tokens – Go Wide:** frühe Maker plus realistisches Payoff- oder Scaling-Fenster.
+- **Tokens – Value Tokens:** frühe Token-Erzeugung plus wiederholbare Value-Engine.
+- **Tokens – Aristocrats:** Material plus Outlet plus Death-/Drain-/Sacrifice-Payoff.
+- **Artifacts:** früher Enabler plus Synergie-Piece, Engine oder Payoff.
+- **Control:** relevante frühe Interaktion gegen den konkreten gegnerischen Plan, anschließende Stabilisierung, Kartenvorteil und belastbare Wincondition.
+- **Mill:** frühe Mill-Engine oder wiederholbare Mill-Quelle plus Schutz, Interaktion oder Tempo.
 
-Niedrige Confidence rechtfertigt Experimente und Tests, aber keine weitreichende Produktionsregel ohne zusätzliche Evidenz.
+Control-Antworten dürfen nicht nur generisch als Interaktion gezählt werden. Sie müssen gegen den konkreten gegnerischen Plan wirksam sein. Ein Control-Deck muss eine Partie nicht nur verzögern, sondern nach Stabilisierung auch beenden können.
 
-## 9. Dokumentationspflicht
+## 11. Known Good Baseline Policy
+
+Eine **Known Good Baseline (KGB)** ist ein ausdrücklich dokumentierter Commit, der als letzter belastbarer Vergleichsstand gilt.
+
+Ein Commit darf nur als neue KGB akzeptiert werden, wenn:
+
+- vollständige Testsuite erfolgreich,
+- Fast-Validierung erfolgreich,
+- erforderliche Referenzvergleiche erfolgreich,
+- CI erfolgreich,
+- keine unbegründeten Regressionen gegenüber der bisherigen KGB,
+- Qualitätsvergleich für Burn, Tokens, Artifacts, Control und Mill dokumentiert,
+- Reflexion und Confidence dokumentiert.
+
+Grüne CI allein reicht nicht aus.
+
+Jeder Zyklus beginnt mit der Ermittlung der letzten KGB und endet mit einer expliziten Entscheidung:
+
+- neue KGB,
+- keine neue KGB,
+- Regression festgestellt.
+
+Ist der neue Stand insgesamt nur gleichwertig, darf er nur dann KGB werden, wenn er Messbarkeit, Reproduzierbarkeit, Wartbarkeit oder Sicherheit nachweislich verbessert und keine spielerische Verschlechterung verursacht.
+
+## 12. Baseline-Vergleich und Regression
+
+Jeder neue Zyklus vergleicht mindestens:
+
+- Commit-SHA der KGB,
+- Tests und Laufzeit,
+- Referenzarchetypen,
+- Starthandmetriken,
+- Matchups und BO3,
+- Strategy Commitment,
+- Engine Density,
+- Finish Density, sofern vorhanden,
+- bekannte Risiken.
+
+Unbegründete signifikante Verschlechterungen verhindern die Ernennung zur neuen KGB und müssen im Logbook dokumentiert werden. Es darf nicht auf einer nachweislich schlechteren Version einfach weiterentwickelt werden, solange kein klarer experimenteller Grund und kein Rückkehrpfad dokumentiert ist.
+
+## 13. Git-Tag-Policy
+
+Nicht jede KGB benötigt einen Git-Tag. Ein Tag wird geprüft, wenn ein größerer Meilenstein erreicht ist, beispielsweise:
+
+- neue allgemeine Qualitätsmetrik,
+- neuer Referenzarchetyp vollständig integriert,
+- Baseline- oder Reporting-System grundlegend verbessert,
+- bedeutende stabile Version vor einem neuen Entwicklungsabschnitt.
+
+Tags folgen dem Muster `calibration-vX.Y`. Tag, Anlass und referenzierter Commit werden im Logbook dokumentiert.
+
+## 14. Rollback-Policy
+
+Wird eine KGB später als fehlerhaft erkannt, wird bewusst auf die letzte belastbare KGB zurückgegangen oder von ihr weiterentwickelt.
+
+Ein Rollback muss dokumentieren:
+
+- fehlerhafte KGB,
+- Ziel-KGB,
+- konkrete Ursache,
+- betroffene Metriken oder Funktionen,
+- Tests und CI des Rückkehrstands,
+- nächsten Schritt.
+
+Ein Rollback ist eine bewusste Qualitätsentscheidung und kein Entwicklungsfehler.
+
+## 15. Session-Recovery
+
+Nach Zeitlimit, Verbindungsabbruch oder externem Abbruch beginnt der nächste Lauf mit:
+
+1. vollständigem Lesen der verbindlichen Repository-Dokumente,
+2. Prüfung des aktuellen Branch- und PR-Heads,
+3. Ermittlung der letzten KGB,
+4. Prüfung, ob der zuletzt begonnene Zyklus vollständig abgeschlossen wurde,
+5. Fortsetzung beim im Logbook und in der Roadmap dokumentierten nächsten ausführbaren Schritt.
+
+Ein teilweise bearbeiteter Zyklus darf nicht stillschweigend wiederholt, übersprungen oder als abgeschlossen dargestellt werden.
+
+## 16. Reflexionspflicht
+
+Jeder Zyklus endet mit einer kritischen Reflexion:
+
+- Welche Annahme könnte falsch sein?
+- Welche alternative Erklärung passt ebenfalls zu den Messwerten?
+- Wurde auf Tests, Fixtures oder Simulationen überangepasst?
+- Welche Mess- oder Datenlücke bleibt?
+- Bedeutet grüne CI tatsächlich bessere spielerische Qualität?
+- Welche unbeabsichtigte Regression könnte unentdeckt sein?
+- Welche Klassifikationsregel könnte zu streng oder zu locker sein?
+
+Danach wird Confidence neu bewertet. Mindestens zwei Folgeschritte werden nach erwartetem globalem Qualitätsgewinn, Evidenz, Aufwand und Risiko verglichen. Genau ein nächster ausführbarer Schritt wird in Logbook und Roadmap festgeschrieben.
+
+## 17. Dokumentationspflicht
 
 Nach jedem produktiven Zyklus sind mindestens zu aktualisieren:
 
-- `DEVELOPMENT_LOGBOOK.md` bei neuen Erkenntnissen,
+- `DEVELOPMENT_LOGBOOK.md` bei neuen Erkenntnissen und KGB-Entscheidungen,
+- `ROADMAP.md` bei nächstem Schritt und geänderter Priorität,
 - `DECISIONS.md` bei dauerhaften Architektur- oder Prozessentscheidungen,
 - `KNOWN_ISSUES.md` bei neu entdeckten Problemen,
-- `ROADMAP.md` bei geänderter Priorität,
 - `CHANGELOG_SPECIFICATION.md` bei Änderungen dieser Spezifikation.
 
-Die Spezifikation darf nur bei belegten neuen Erkenntnissen geändert werden. Keine stillen Regeländerungen.
+Keine stillen Regeländerungen.
 
-## 10. Abschlusskriterien
+## 18. Abschluss eines mehrstündigen Laufs
 
-Eine Kalibrierungsrunde endet mit:
+Der Abschlussbericht enthält:
 
-1. Was wurde verbessert?
-2. Was wurde gelernt?
-3. Was ist der nächste priorisierte Schritt?
-4. Welche Tests und Workflows liefen mit welchen Run-IDs?
-5. Welche Regressionen oder offenen Risiken bleiben?
+1. alle Commits und Workflow-Run-IDs,
+2. Status, Jobs, Logs und Artefakte des letzten relevanten Runs,
+3. Qualitätsentwicklung je Referenzarchetyp,
+4. KGB-Ausgangsstand und KGB-Endentscheidung,
+5. bestätigte und widerlegte Hypothesen,
+6. Regressionen, Risiken und Datenlücken,
+7. aktualisiertes Logbook und aktualisierte Roadmap,
+8. genau einen priorisierten nächsten ausführbaren Schritt.
 
-Der Abschlussbericht muss klar zwischen tatsächlichen Ergebnissen, Schlussfolgerungen und offenen Hypothesen unterscheiden.
+Ergebnisse, Schlussfolgerungen und offene Hypothesen sind klar zu trennen. Es dürfen keine Ergebnisse, Workflow-Runs, Artefakte oder simulierten Hände erfunden werden.
