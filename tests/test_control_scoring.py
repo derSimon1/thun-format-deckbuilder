@@ -1,5 +1,6 @@
 from thun_deckbuilder.card_analyzer import analyze_card
 from thun_deckbuilder.control_scoring import score_control_card
+from thun_deckbuilder.control_strategy import CONTROL_PROFILE
 
 
 def _card(name, mana_value, type_line, oracle_text):
@@ -52,3 +53,11 @@ def test_reasonable_large_threat_is_marked_as_control_finisher():
     )
     assert "Control-Finisher" in result.reasons
     assert "Zu teurer Finisher" not in result.reasons
+
+
+def test_control_profile_reserves_three_finishers():
+    finisher = next(
+        target for target in CONTROL_PROFILE.role_targets if target.role == "finisher"
+    )
+    assert finisher.minimum == 3
+    assert finisher.target == 3

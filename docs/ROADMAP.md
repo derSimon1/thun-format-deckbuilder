@@ -15,11 +15,11 @@ Referenzarchetypen: Burn, Tokens, Artifacts, Control und Mill. Shrines bleibt nu
 - [x] Control-Scoring, Dimir-Strategie, Sideboard, Benchmark und v2-Validator implementiert
 - [x] Pflichtvalidator erzeugt Burn, Tokens, Artifacts, Control und Mill
 - [x] Fast-Validator prüft drei Token- und drei Control-Matchups
+- [x] veralteten Unknown-Archetype-Test aktualisiert; Run `30796896850` grün
 
 ## Offen – Control
 
-- [ ] veralteten Unknown-Archetype-Test aktualisieren und grünen Control-Basislauf bestätigen
-- [ ] mindestens drei belastbare Control-Finisher im Mainboard sicherstellen
+- [ ] mindestens drei belastbare Control-Finisher im final optimierten Mainboard sicherstellen
 - [ ] Wincondition-Zugang nach Stabilisierung messen
 - [ ] relevante Antworten matchupabhängig statt nur über Dichte bewerten
 - [ ] Stabilisierung bis Zug 4 oder 5 explizit modellieren
@@ -35,12 +35,13 @@ Referenzarchetypen: Burn, Tokens, Artifacts, Control und Mill. Shrines bleibt nu
 
 ## Aktuelle Priorität
 
-1. Run nach dem Test-Hotfix vollständig auswerten
-2. Control-Finisher-Dichte ohne künstliche Schwellenwertverschiebung korrigieren
-3. Control-Hände und BO3 erneut prüfen
-4. Mill-Messauffälligkeit untersuchen
-5. Token-Subarchetypen separat benchmarken
-6. erste v2-KGB dokumentieren
+1. Workflow der Control-Finisher-Mindestdichte vollständig auswerten
+2. falls nötig Optimierer-Guardrail für drei Finisher ergänzen
+3. Control-Hände, Early Play, Mana, Benchmark und BO3 gegen Run 45 vergleichen
+4. matchupabhängige Control-Antwortabdeckung modellieren
+5. Mill-Messauffälligkeit untersuchen
+6. Token-Subarchetypen separat benchmarken
+7. erste v2-KGB dokumentieren
 
 ## Definition of Done für den nächsten Zyklus
 
@@ -50,6 +51,7 @@ Referenzarchetypen: Burn, Tokens, Artifacts, Control und Mill. Shrines bleibt nu
 - Fast-Lauf unter zehn Minuten
 - je Deck exakt 100 Hände mit Seed `1701`
 - Control ist legal 60/15
-- Control-Finisher-Befund ist dokumentiert
-- keine unbegründeten Regressionen
+- finales Control-Mainboard enthält mindestens drei Finisher
+- Control-Finisher-Zugang ist größer als 0 %
+- Early Play, Mana und Matchups zeigen keine unbegründete Regression
 - Logbook enthält KGB-Entscheidung und nächsten Schritt

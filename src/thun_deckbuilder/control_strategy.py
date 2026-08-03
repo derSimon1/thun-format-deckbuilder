@@ -19,6 +19,7 @@ CONTROL_PROFILE = DeckProfile(
     role_targets=(
         RoleTarget("removal", minimum=0, target=9),
         RoleTarget("card_draw", minimum=0, target=7),
+        RoleTarget("finisher", minimum=3, target=3),
     ),
     curve_targets=(
         CurveTarget(1, 4),
