@@ -1,14 +1,6 @@
 name: Global Deckbuilder Calibration
-# Manual trigger verification: 2026-08-02 22:16 Europe/Zurich
 
 on:
-  schedule:
-    - cron: "7,22,37,52 * * * *"
-  push:
-    branches:
-      - main
-    paths:
-      - .github/workflows/global-deckbuilder-calibration.yml
   workflow_dispatch:
     inputs:
       validation_mode:
