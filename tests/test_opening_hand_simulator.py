@@ -5,6 +5,9 @@ from thun_deckbuilder.mana_distribution import LandAllocation, ManaDistribution
 from thun_deckbuilder.opening_hand_simulator import (
     HandPlanClassification,
     OpeningHandSimulator,
+    _PlanCard,
+    _can_cast_with_sources,
+    _mana_symbols,
 )
 
 
@@ -484,6 +487,30 @@ def test_color_mismatch_is_reported_separately_from_land_count():
     assert any(
         "color_mismatch" in hand.failure_reasons for hand in report.hands
     )
+
+
+def test_true_colorless_spell_requires_real_colorless_source():
+    card = _PlanCard(
+        "Colorless Spell",
+        "spell",
+        mana_value=2,
+        color_requirements=_mana_symbols("{1}{C}", "C"),
+    )
+
+    assert _can_cast_with_sources(card, ("W", "C"), turn=2)
+    assert not _can_cast_with_sources(card, ("W", "W"), turn=2)
+    assert not _can_cast_with_sources(card, ("W", "*"), turn=2)
+
+
+def test_regular_colored_spell_keeps_wildcard_source_behavior():
+    card = _PlanCard(
+        "White Spell",
+        "spell",
+        mana_value=2,
+        color_requirements=_mana_symbols("{1}{W}", "W"),
+    )
+
+    assert _can_cast_with_sources(card, ("W", "*"), turn=2)
 
 
 def test_mana_error_hands_are_never_classified_as_plan_capable():

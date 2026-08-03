@@ -21,15 +21,19 @@ Eine vollständig qualifizierte v2-KGB existiert noch nicht. `baseline: none` be
 - Plan: 3 `Dawnbringer Cleric` hinein; 2 `Descendant of Storms` und 1 `Duty Beyond Death` heraus.
 - Artifacts/Mill bleiben 64/100 %; KGB: keine neue KGB.
 
-## Aktueller Zyklus – Burn Sideboard Cuts
+## Castability-Zyklus – lokale Evidenz vor CI
 
-- **Ursache:** Die drei Burn-Cuts sind fachlich plausibel, entstehen aber nur durch den generischen niedrigen Kartenscore. Damit ist nicht garantiert, dass spätere Deckversionen weiterhin langsame bedingte oder Death-Maker vor dem Go-Wide-Kern entfernen.
-- **Hypothese:** Eine explizite Burn-Cut-Priorität entfernt zuerst `token_production_conditional` und `token_production_death`, bewahrt danach sofortige/Multi-Maker sowie Anthem, Card Draw und Protection und lässt Nicht-Burn-Matchups unverändert.
-- **Änderungen:** matchupabhängiger Cut-Key im Sideboard-Optimierer; Regressionstest für die Rollenreihenfolge; Workflow `Token Go Wide – Burn Sideboard Cuts`.
-- **Erfolg:** vollständige Testsuite, Fast und Diagnose grün; Burn-Plan bleibt bei `Descendant of Storms`/`Duty Beyond Death`; Benchmarks, Mainboard-Hash und andere Matchups bleiben stabil.
-- **Rollback:** wenn der Burn-Plan sofortige Maker oder Anthems entfernt, Nicht-Burn-Pläne ändern oder Benchmarks regressieren.
-- **KGB-Entscheidung vor Push:** keine neue KGB, da `baseline: none` fortbesteht.
+- **Ursache:** Explizite `{C}`-Kosten wurden von Candidate Eligibility pauschal abgelehnt, weil der Basic-Land-Builder keine echte farblose Quelle modellierte. Der begonnene Ersatz verteilte die neue Semantik zunächst auf mehrere Module und ließ Eligibility ohne gemeinsame Quellengarantie durch.
+- **Hypothese:** Eine zentrale Mana-Symbol- und Zahlungsdefinition sowie ein Mindestquellen-Floor erlauben `{C}` nur bei echter farbloser Quellenunterstützung, erzeugen ausreichend Wastes und verhindern, dass farbige oder Wildcard-Quellen `{C}` bezahlen.
+- **Änderungen:** zentrale Parser-/Payment-Invariante in `mana_requirement`; `Wastes` und Mindestquellen in der Basic-Land-Verteilung; Candidate Eligibility und Opening-Hand-Simulation verwenden dieselbe Definition. Der Workflow heißt `Token Go Wide – Castability`.
+- **Ursprünglicher Testfehler:** Der Test erwartete noch das frühere pauschale Verbot jeder `{C}`-Karte. Diese Erwartung ist nach Wastes-Unterstützung nicht mehr korrekt. Sie wurde nicht gelockert, sondern in Gegenbeispiele für fehlende echte Quellen, farbige Quellen und Wildcards sowie positive Wastes-Fälle aufgeteilt.
+- **Lokale Validierung:** 33 gezielte Tests und 322 Gesamttests grün; Fast-Validierung `PASS`; Benchmarks Burn/Tokens/Artifacts/Control/Mill unverändert `83/98/90/85/80`; keine gemeldete Regression.
+- **Castability:** Token-Manabasis vorher `24 Plains`, nachher `22 Plains + 2 Wastes`; W/C-Quellen jeweils 100 % ausreichend, Manaqualität unverändert 97. Von 100 Händen mit Seed `1701` enthalten 20 `Warping Wail`; 3 sind damit spielbar und keine ohne echte C-Quelle.
+- **Opening Hands und Arena:** 60/15 bestanden; Keepability/Planfähigkeit unverändert 77/77 %, Mana-/Farbfehler 22/0 %. Early Play bis Zug 2/3 sinkt von 94/96 auf 93/95 %. Deck-Hash wechselt von `133e45be5a4ca94dc6bb8dddeb6c811db9e2889ced915f54c018898441668815` auf `a9fbd8b2b767a92df82f564474565db1d44bbccd66c9af948869ec2375d8cced`.
+- **Spielerische Deltas:** Goldfish 24,94 → 24,84 Schaden, Killrate 66 → 65 %, Board 9,10 → 9,02. Burn-Matchwinrate bleibt 48 %, Artifacts 98 %, Mill 100 %; der Fast-Regression-Validator meldet keine Regression.
+- **Alternative Erklärung/Risiko:** Die kleinen Goldfish- und Early-Play-Deltas entstehen wahrscheinlich aus der nun legalen Auswahl von zwei `Warping Wail` und der zugehörigen Wastes-Manabasis, nicht aus einem Fehler der Zahlungslogik. Die Simulation modelliert andere nichtbasische echte farblose Quellen nur dann korrekt, wenn sie als Quelle `C` übergeben werden; reale Spiele bleiben ungeprüft.
+- **KGB-Entscheidung vor Push:** keine neue KGB. `baseline: none` besteht fort; der Zyklus verbessert Korrektheit und Reproduzierbarkeit, bringt aber keine belegte spielerische Verbesserung.
 
 ## Nächster ausführbarer Schritt
 
-Burn-Cut-Priorität veröffentlichen und CI-/BO3-Artefakt vollständig auswerten. Danach Arena-Import und 100 Hände final prüfen.
+In einem separaten späteren Zyklus den kleinen Early-Play-/Goldfish-Verlust der nun zugelassenen `Warping Wail`-Auswahl gegen alternative castbare Go-Wide-Kandidaten isoliert bewerten.

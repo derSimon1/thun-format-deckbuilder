@@ -113,3 +113,14 @@ Vor jeder Codeänderung werden Ursache, Hypothese, erwartete Metriken, Invariant
 Bei fachlicher Klassifikation haben spezifische Oracle-Text-Signale Vorrang vor breiten Rollen wie `removal`, `card_draw` oder `finisher`. Breite Rollen dienen als Fallback, wenn keine spezifische Kategorie erkannt wurde.
 
 **Begründung:** `Tormod's Crypt` wurde aufgrund des Wortes `exile` global als Removal erkannt und dadurch zusätzlich fälschlich als Anti-Aggro-Sideboardkarte klassifiziert.
+
+## D-015 – Echte farblose Manaanforderungen bleiben eigenständig
+
+**Datum:** 2026-08-03
+**Status:** akzeptiert
+
+`{C}` ist eine eigene Zahlungsanforderung und darf weder durch farbiges Mana noch durch eine generische Wildcard-Quelle erfüllt werden. Mana-Parser, Candidate Eligibility, Basic-Land-Verteilung und Opening-Hand-Castability verwenden dieselbe zentrale Definition.
+
+Eine `{C}`-Karte ist nur zulässig, wenn der konfigurierte Mana-Builder echte farblose Quellen erzeugen kann. Die Basic-Land-Manabasis verwendet dafür `Wastes` und reserviert mindestens so viele passende Quellen, wie ein einzelner Zauber an strikten gleichartigen Symbolen verlangt.
+
+**Begründung:** Das frühere pauschale Verbot verhinderte legale, castbare Kandidaten. Eine bloße Entfernung des Verbots hätte dagegen unspielbare Karten ohne echte farblose Quellen zugelassen.

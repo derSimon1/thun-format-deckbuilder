@@ -6,6 +6,11 @@ from typing import Callable
 from thun_deckbuilder.card_contribution import CardContribution
 from thun_deckbuilder.deck_state import DeckState
 from thun_deckbuilder.knowledge_base import CardKnowledge
+from thun_deckbuilder.mana_requirement import (
+    BASIC_LANDS,
+    mana_symbol_requirements,
+    source_types_support,
+)
 
 
 EligibilityFunction = Callable[[CardKnowledge], bool]
@@ -24,6 +29,13 @@ class CandidateEligibility:
     constraints live here so every archetype handles them consistently.
     """
 
+    def __init__(self, supported_source_types: frozenset[str] | None = None) -> None:
+        self.supported_source_types = (
+            frozenset(BASIC_LANDS)
+            if supported_source_types is None
+            else frozenset(source.upper() for source in supported_source_types)
+        )
+
     def check(
         self,
         knowledge: CardKnowledge,
@@ -36,10 +48,13 @@ class CandidateEligibility:
     ) -> EligibilityResult:
         if contribution.is_land:
             return EligibilityResult(False, "Lands are added after spell composition.")
-        if "{C}" in str(knowledge.card.get("mana_cost", "")).upper():
+        requirements = mana_symbol_requirements(
+            str(knowledge.card.get("mana_cost", ""))
+        )
+        if not source_types_support(requirements, self.supported_source_types):
             return EligibilityResult(
                 False,
-                "Explicit colorless mana is unsupported by the basic-land mana builder.",
+                "The configured mana builder cannot provide every required mana source.",
             )
         if state.total_cards >= deck_size:
             return EligibilityResult(False, "The deck is already full.")

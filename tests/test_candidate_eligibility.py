@@ -51,7 +51,22 @@ def test_rejects_strategy_ineligible_candidate() -> None:
     assert "strategy" in result.reason.lower()
 
 
-def test_rejects_explicit_colorless_cost_without_colorless_land_support() -> None:
+def test_rejects_explicit_colorless_cost_without_colorless_source_support() -> None:
+    card = knowledge(name="Colorless Spell", mana_cost="{1}{C}")
+    result = CandidateEligibility(frozenset({"W", "*"})).check(
+        card,
+        contribution_from_knowledge(card),
+        DeckState(),
+        deck_size=36,
+        max_copies=3,
+        strategy_eligible=lambda item: True,
+    )
+
+    assert not result.eligible
+    assert "mana source" in result.reason.lower()
+
+
+def test_accepts_explicit_colorless_cost_when_builder_supports_wastes() -> None:
     card = knowledge(name="Colorless Spell", mana_cost="{1}{C}")
     result = CandidateEligibility().check(
         card,
@@ -62,5 +77,18 @@ def test_rejects_explicit_colorless_cost_without_colorless_land_support() -> Non
         strategy_eligible=lambda item: True,
     )
 
-    assert not result.eligible
-    assert "colorless mana" in result.reason.lower()
+    assert result.eligible
+
+
+def test_non_colorless_candidate_keeps_existing_eligibility_behavior() -> None:
+    card = knowledge(mana_cost="{1}{W}")
+    result = CandidateEligibility(frozenset({"W"})).check(
+        card,
+        contribution_from_knowledge(card),
+        DeckState(),
+        deck_size=36,
+        max_copies=3,
+        strategy_eligible=lambda item: True,
+    )
+
+    assert result.eligible

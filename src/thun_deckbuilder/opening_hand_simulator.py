@@ -4,13 +4,16 @@ import hashlib
 import json
 import math
 import random
-import re
 from collections import Counter
 from dataclasses import dataclass
 from enum import StrEnum
 from itertools import combinations
 
 from thun_deckbuilder.deck_generator import GeneratedDeck
+from thun_deckbuilder.mana_requirement import (
+    can_pay_mana_requirements,
+    mana_symbol_requirements,
+)
 
 
 CardSample = tuple[str, float, bool]
@@ -175,20 +178,7 @@ def _bottom_choice(opening: list[CardSample]) -> int:
 
 
 def _mana_symbols(raw: str, colored: str) -> tuple[frozenset[str], ...]:
-    symbols = re.findall(r"\{([^}]+)\}", raw.upper())
-    if not symbols and colored:
-        symbols = colored.upper().split()
-    requirements: list[frozenset[str]] = []
-    for symbol in symbols:
-        normalized = symbol.strip().upper()
-        if normalized.isdigit() or normalized in {"X", "Y", "Z", "S"}:
-            continue
-        options = frozenset(part for part in normalized.split("/") if part in _COLORS)
-        if options:
-            requirements.append(options)
-        elif normalized == "C":
-            requirements.append(frozenset({"C"}))
-    return tuple(requirements)
+    return mana_symbol_requirements(raw, colored)
 
 
 def _spell_color_weights(deck: GeneratedDeck) -> dict[str, int]:
@@ -273,26 +263,7 @@ def _match_color_requirements(
     requirements: tuple[frozenset[str], ...],
     sources: tuple[str, ...],
 ) -> bool:
-    if not requirements:
-        return True
-    used = [False] * len(sources)
-
-    def assign(index: int) -> bool:
-        if index >= len(requirements):
-            return True
-        options = requirements[index]
-        for source_index, source in enumerate(sources):
-            if used[source_index]:
-                continue
-            if source == "*" or source in options:
-                used[source_index] = True
-                if assign(index + 1):
-                    return True
-                used[source_index] = False
-        return False
-
-    requirements = tuple(sorted(requirements, key=len))
-    return assign(0)
+    return can_pay_mana_requirements(requirements, sources)
 
 
 def _can_cast_with_sources(card: _PlanCard, sources: tuple[str, ...], turn: int) -> bool:

@@ -1,5 +1,5 @@
 name: Global Calibration PR
-run-name: Token Go Wide – Burn Sideboard Cuts
+run-name: Token Go Wide – Castability
 
 on:
   pull_request:
