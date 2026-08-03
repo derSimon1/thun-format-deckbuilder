@@ -1,6 +1,6 @@
 # Global Calibration Prompt
 
-**Version:** 1.1  
+**Version:** 1.2  
 **Verbindliche Grundlage:** `docs/SPECIFICATION.md`
 
 ## Verwendung
@@ -44,11 +44,16 @@ Wähle anhand der aktuellen Roadmap genau eine testbare Hypothese mit hohem erwa
 Aktuelle Priorität:
 
 1. belastbare Token-Subarchetyp-Erkennung für Go Wide, Value Tokens und Aristocrats
-2. planabhängige Starthand- und Sequenzbewertung
-3. Strategy Commitment
-4. Engine Density
-5. Finish Density
-6. Baseline
+2. Control als allgemeiner Referenzarchetyp für das Verhindern gegnerischer Pläne
+3. Burn als Referenz für frühen Druck und Reach
+4. Artifacts als Referenz für Synergie- und Engine-Erkennung
+5. Mill als alternative Wincondition
+6. Strategy Commitment
+7. Engine Density
+8. Finish Density
+9. Baseline und Meta-Benchmark
+
+Die fünf verbindlichen Referenzarchetypen sind Burn, Tokens, Artifacts, Control und Mill. Shrines ist kein Pflicht- oder Referenzarchetyp mehr. Es darf höchstens optional als spezieller Regressionstest für mehrfarbige Engine-Decks verwendet werden, wenn dies durch konkrete Evidenz begründet ist.
 
 Wiederhole nicht lediglich Statusprüfungen. Nach zwei dokumentierten No-Change-Zyklen derselben Ursache musst du zum nächsten Roadmap-Punkt wechseln.
 
@@ -152,6 +157,32 @@ Prüfe insbesondere:
 - Hände mit generischen Artefakten ohne Synergie
 - Hände mit Payoffs ohne ausreichende Artefaktbasis
 
+### Control
+
+Eine Hand ist nur dann planfähig, wenn sie den gegnerischen frühen Plan realistisch verlangsamen oder beantworten, anschließend Ressourcen aufholen und schließlich über eine belastbare Wincondition gewinnen kann.
+
+Control wird nicht anhand einer hohen Anzahl reaktiver Karten allein bewertet. Die Hand muss eine sinnvolle zeitliche Abfolge aus Mana, früher Interaktion, Stabilisierung, Kartenvorteil und späterem Abschluss ermöglichen.
+
+Prüfe insbesondere:
+
+- belastbare und farblich passende Manaquellen
+- verfügbare Interaktion in Zug 1 oder 2
+- Removal gegen frühe Kreaturen
+- Countermagic oder andere Antworten gegen Nichtkreaturen-Pläne
+- Schutz vor mehreren Bedrohungen oder Go-Wide-Boards
+- Sweeper-Zugang, wenn er im Matchup notwendig ist
+- Kartenvorteil oder Selection nach der ersten Interaktion
+- realistische Stabilisierung bis Zug 4 oder 5
+- Zugang zu einer Wincondition nach der Stabilisierung
+- Hände mit nur Countern gegen frühes Creature-Aggro
+- Hände mit nur Removal gegen Engines, Combo oder alternative Winconditions
+- Hände mit vielen Antworten, aber ohne Kartenfluss
+- Hände mit Kartenvorteil und Finishern, aber ohne frühe Antworten
+- zu viele teure Karten oder situative Antworten
+- widersprüchliche Tap-out- und Draw-go-Pakete
+
+Die Control-Bewertung muss matchupsensitiv sein. Eine Antwort gilt nur dann als relevante Interaktion, wenn sie den erwarteten gegnerischen Plan tatsächlich beeinflussen kann.
+
 ### Mill
 
 Eine Hand ist nur dann planfähig, wenn sie eine frühe Mill-Engine oder belastbare wiederholbare Mill-Quelle besitzt und ausreichenden Schutz, Interaktion oder Tempozugang hat.
@@ -164,20 +195,6 @@ Prüfe insbesondere:
 - Mana und Farben
 - Hände mit einmaligem Mill ohne Folgedruck
 - Hände mit Interaktion, aber ohne realistische Mill-Clock
-
-### Shrines
-
-Eine Hand ist nur dann planfähig, wenn sie belastbare Farben, frühen Aufbau und einen realistischen Zugang zu mindestens einem Schrein oder einer Schrein-Engine besitzt.
-
-Prüfe insbesondere:
-
-- verfügbare Farben
-- Farbsequenz für Zug 1 bis 3
-- früher Schrein oder Setup
-- Zugang zu zusätzlicher Engine oder Value
-- Hände mit passenden Karten, aber unbrauchbarer Farbreihenfolge
-- Hände mit Manafixing ohne Aufbau
-- Hände mit Schreinen, die absehbar nicht ausgespielt werden können
 
 ## 4. Reproduzierbarkeit und Rohdaten
 
@@ -231,9 +248,19 @@ Berichte mindestens:
 - Quote widersprüchlicher oder toter Karten
 - drei häufigste Problemtypen
 
+Für Control sind zusätzlich mindestens zu berichten:
+
+- frühe relevante Interaktionsrate bis Zug 2
+- Abdeckungsrate gegen Kreaturenpläne
+- Abdeckungsrate gegen Nichtkreaturen-Pläne
+- Stabilisierungschance bis Zug 4 oder 5
+- Kartenvorteil-Zugang nach früher Interaktion
+- Wincondition-Zugang nach Stabilisierung
+- Quote situativ toter Antworten je Matchup
+
 Keepability und Planfähigkeit müssen getrennte Metriken bleiben. Eine Hand kann formal keepbar sein und trotzdem den Hauptplan nicht zuverlässig unterstützen.
 
-Eine allgemeine Early-Play-Rate darf nicht als Beweis für einen funktionierenden Matchplan verwendet werden.
+Eine allgemeine Early-Play-Rate darf nicht als Beweis für einen funktionierenden Matchplan verwendet werden. Bei Control darf die reine Anzahl verfügbarer Antworten nicht mit tatsächlicher Matchup-Abdeckung gleichgesetzt werden.
 
 Falls sinnvoll, simuliere zusätzlich Ziehschritte bis Zug 4 oder 5. Trenne diese Ergebnisse klar von der reinen Sieben-Karten-Starthandbewertung.
 
@@ -249,12 +276,13 @@ Ergänze gezielte Tests für mindestens:
 - Tokens Go Wide
 - Tokens Value Tokens
 - Tokens Aristocrats
-- mindestens einen Nicht-Token-Archetyp
+- Control mit früher relevanter Interaktion und späterem Kartenvorteil
+- Control mit formal vorhandenen, aber im Matchup toten Antworten
 - Trennung von Early Play und Planfähigkeit
 - Trennung von Keepability und Planfähigkeit
 - vollständige maschinenlesbare Ausgabe
 
-Vermeide Tests, die ausschließlich die aktuelle Implementierung spiegeln. Verwende kleine, kontrollierte Deck- oder Hand-Fixtures mit fachlich eindeutigem erwartetem Ergebnis.
+Vermeide Tests, die ausschließlich die aktuelle Implementierung spiegeln. Verwende kleine, kontrollierte Deck- oder Hand-Fixtures mit fachlich eindeutigem erwarteten Ergebnis.
 
 ## 7. Gesamtvalidierung
 
@@ -265,6 +293,7 @@ Führe nach der Implementierung aus:
 - Vergleich von fünf Archetypen
 - Vergleich der drei Token-Subarchetypen
 - drei relevante Token-Matchups
+- Control-Berichte gegen mindestens Aggro, Tokens und einen Nichtkreaturen- oder Engine-Plan
 - BO3-Berichte
 - Laufzeitprüfung unter zehn Minuten
 - Prüfung auf unbegründete Regressionen
@@ -274,12 +303,14 @@ Vergleiche mindestens:
 - Burn
 - Tokens
 - Artifacts
+- Control
 - Mill
-- Shrines
 
 Innerhalb Tokens müssen Go Wide, Value Tokens und Aristocrats getrennt ausgewertet werden.
 
 Prüfe, ob sich bestehende Kennzahlen wie Strategy Commitment oder Engine Density scheinbar verbessern, während die planfähige Starthandrate unverändert schlecht bleibt. Dokumentiere solche Widersprüche ausdrücklich.
+
+Prüfe bei Control zusätzlich, ob eine hohe Interaktionsdichte nur durch situative oder im jeweiligen Matchup tote Antworten entsteht. Eine grüne Control-Kennzahl darf nicht allein aus der Anzahl von Removal- oder Counter-Karten abgeleitet werden.
 
 ## 8. Vor dem Commit
 
@@ -335,6 +366,8 @@ Beantworte mindestens:
 - Bilden die Referenzdecks echte Deckbuilder-Ausgaben oder nur kuratierte Beispiele ab?
 - Werden Kartentexte, Rollen und Synergien zuverlässig genug erkannt?
 - Ist eine gute Starthandrate möglicherweise nur Folge einer schwachen oder zu allgemeinen Planbeschreibung?
+- Werden Control-Antworten gegen den konkreten gegnerischen Plan bewertet oder nur generisch als Interaktion gezählt?
+- Wird eine kontrollierte Partie tatsächlich beendet oder lediglich verzögert?
 
 Bewerte danach die Erkenntnis neu mit einer expliziten Confidence-Angabe.
 
@@ -366,6 +399,8 @@ folgende Regeln:
 3. Keepability, Early Play und Planfähigkeit müssen getrennt ausgewiesen werden.
 4. Aggregierte Daten dürfen nicht nachträglich als simulierte Einzelhände dargestellt werden.
 5. Jeder Kalibrierungszyklus endet mit einer kritischen Reflexion und einem eindeutig priorisierten nächsten Schritt.
+6. Die fünf allgemeinen Referenzarchetypen sind Burn, Tokens, Artifacts, Control und Mill; spezielle Engine-Decks wie Shrines sind keine verpflichtende globale Referenz.
+7. Control-Interaktion muss gegen den konkreten gegnerischen Plan und nicht nur anhand der Kartenzahl bewertet werden.
 
 Dokumentiere diese Spezifikationsänderung in `docs/CHANGELOG_SPECIFICATION.md`.
 
@@ -382,6 +417,6 @@ Falls kein sinnvoller Commit möglich ist, dokumentiere im Repository oder im Ab
 - mindestens zwei mögliche Folgeschritte
 - genau einen priorisierten nächsten ausführbaren Schritt
 
-Nach zwei aufeinanderfolgenden No-Change-Zyklen mit derselben Ursache wechsle zum nächsten priorisierten Roadmap-Punkt. Wiederhole nicht endlos dieselben Statusprüfungen.
+Nach zwei aufeinanderfolgenden No-Change-Zyklen mit derselben Ursache wechsle zum nächsten priorisierten Roadmap-Punkt.
 
 Erfinde keine Ergebnisse, keine Workflow-Runs, keine Artefakte und keine simulierten Hände.
