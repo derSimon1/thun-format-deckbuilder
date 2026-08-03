@@ -34,6 +34,15 @@ Eine vollständig qualifizierte v2-KGB existiert noch nicht. `baseline: none` be
 - **Alternative Erklärung/Risiko:** Die kleinen Goldfish- und Early-Play-Deltas entstehen wahrscheinlich aus der nun legalen Auswahl von zwei `Warping Wail` und der zugehörigen Wastes-Manabasis, nicht aus einem Fehler der Zahlungslogik. Die Simulation modelliert andere nichtbasische echte farblose Quellen nur dann korrekt, wenn sie als Quelle `C` übergeben werden; reale Spiele bleiben ungeprüft.
 - **KGB-Entscheidung vor Push:** keine neue KGB. `baseline: none` besteht fort; der Zyklus verbessert Korrektheit und Reproduzierbarkeit, bringt aber keine belegte spielerische Verbesserung.
 
+## Agent-Instructions-Zyklus – lokale Evidenz vor CI
+
+- **Ursache:** Im Repository fehlt `AGENTS.md`; dadurch sind verbindliche Dokumentreihenfolge, Zyklusvertrag, lokaler Testpfad, PR-Trennung und die vorgeschriebene GitHub-CLI-Ausführung am Einstieg nicht dauerhaft auffindbar.
+- **Hypothese:** Eine knappe Root-Routingdatei verweist auf die bestehenden Single Sources of Truth und verhindert wiederkehrende Recovery-/Workflowfehler, ohne Runtime- oder Deckverhalten zu ändern.
+- **Änderungen:** neues Root-`AGENTS.md` mit Dokumenthierarchie, Zyklus-/Validierungsregeln, lokalem Windows-Testpfad, Artefaktregeln, PR-#13-Trennung und vollständigem GitHub-CLI-Pfad; Workflow `Token Go Wide – Agent Instructions`.
+- **Erwartete Invarianten:** 322 Tests, Fast-Validierung, Benchmarks `83/98/90/85/80`, Token-60/15, Seed `1701`, Deck-Hash `a9fbd8b2b767a92df82f564474565db1d44bbccd66c9af948869ec2375d8cced` und alle Matchups bleiben unverändert.
+- **Lokale Validierung:** Routing-Assertions grün; 322 Tests in 34,93 s; Fast und Token-Diagnose grün; Benchmarks, 100 Hände, Planfähigkeit 77 %, Produktions-/Finishdichten und Deck-Hash bitstabil; keine Regression.
+- **KGB-Entscheidung vor Push:** keine neue KGB. Die Änderung verbessert Prozesssicherheit, nicht belegte Deckstärke; `baseline: none` bleibt bestehen.
+
 ## Nächster ausführbarer Schritt
 
-In einem separaten späteren Zyklus den kleinen Early-Play-/Goldfish-Verlust der nun zugelassenen `Warping Wail`-Auswahl gegen alternative castbare Go-Wide-Kandidaten isoliert bewerten.
+Nach erfolgreicher Agent-Instructions-CI den kleinen Early-Play-/Goldfish-Verlust der nun zugelassenen `Warping Wail`-Auswahl gegen alternative castbare Go-Wide-Kandidaten isoliert bewerten.

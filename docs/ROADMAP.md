@@ -13,6 +13,7 @@
 - [x] Postboard-Lebensgewinn im Burn-Modell
 - [x] Burn-Cuts rollenbasiert absichern
 - [x] Arena-Import und 100 Hände final bewerten
+- [x] Root-`AGENTS.md` als dauerhafte Repository-Einstiegsanweisung validieren
 
 ## Stabiler Stand – Run 78
 
@@ -24,14 +25,12 @@
 - Burn-Plan: 3 `Dawnbringer Cleric` hinein; 2 `Descendant of Storms`, 1 `Duty Beyond Death` heraus
 - Mainboard-Hash `133e45be5a4ca94dc6bb8dddeb6c811db9e2889ced915f54c018898441668815`
 
-## Aktueller Zyklus – Castability
+## Aktueller Zyklus – Agent Instructions
 
-1. `{C}` zentral und getrennt von generischem/farbigem Mana erkennen.
-2. Wastes und Mindestquellen in der erzeugten Manabasis garantieren.
-3. Candidate Eligibility, Manabasis und Opening Hands auf dieselbe Definition ausrichten.
-4. Farbige und Wildcard-Quellen als Gegenbeispiele absichern.
-5. 322 Tests, Fast, 100 Hände mit Seed `1701` und Arena 60/15 lokal grün.
-6. Workflow `Token Go Wide – Castability` nennen und CI-Artefakt auswerten.
+1. Verbindliche Dokumenthierarchie knapp routen, nicht duplizieren.
+2. Zyklus-, Test-, Artefakt-, PR- und GitHub-CLI-Regeln am Root auffindbar machen.
+3. 322 Tests, Fast, 100 Hände und alle Referenzmetriken unverändert bestätigen.
+4. Workflow `Token Go Wide – Agent Instructions` nennen und CI-Artefakt auswerten.
 
 ## Prioritäten danach
 
@@ -42,4 +41,4 @@
 
 ## Genau ein nächster ausführbarer Schritt
 
-In einem separaten späteren Zyklus den kleinen Early-Play-/Goldfish-Verlust der nun zugelassenen `Warping Wail`-Auswahl gegen alternative castbare Go-Wide-Kandidaten isoliert bewerten.
+Nach erfolgreicher Agent-Instructions-CI den kleinen Early-Play-/Goldfish-Verlust der nun zugelassenen `Warping Wail`-Auswahl gegen alternative castbare Go-Wide-Kandidaten isoliert bewerten.
