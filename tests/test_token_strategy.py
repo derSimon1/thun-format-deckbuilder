@@ -45,7 +45,10 @@ def test_full_pool_selects_and_fulfils_reliable_go_wide_package():
     role_counts: dict[str, int] = {}
     for entry in deck.mainboard:
         for role in set(entry.roles):
-            role_counts[role] = role_counts.get(role, 0) + entry.quantity
+            normalized_role = str(role)
+            role_counts[normalized_role] = (
+                role_counts.get(normalized_role, 0) + entry.quantity
+            )
 
     assert "Go Wide" in deck.profile_name
     assert role_counts["token_creature_maker"] >= 15

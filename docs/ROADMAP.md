@@ -24,37 +24,24 @@ Referenzarchetypen: Burn, Tokens, Artifacts, Control und Mill. Jeder Zyklus ende
 - [x] Goldfish auf reale Produktionsmodi umgestellt
 - [x] Mono-White-Poolkapazität je Produktionsmodus gemessen
 - [x] Aktivierungsmetadaten aus Funktionsrollen ausgeschlossen
-
-## Run-63-Evidenz
-
-| Produktionsmodus | Karten | maximale Kopien |
-|---|---:|---:|
-| sofort | 88 | 264 |
-| aktiviert | 16 | 48 |
-| bedingt | 50 | 150 |
-| Death | 14 | 42 |
-| automatisch wiederholbar | 1 | 3 |
-
-- [x] Run `30817765040` vollständig grün
-- [x] 297 Tests
-- [x] Fast ungefähr 4:14 Minuten
-- [x] Benchmarks 83/91/90/85/80
 - [x] Value-Mindestdichte von sechs automatischen Engines als unerreichbar widerlegt
 
 ## Aktueller Fokus – Token Go Wide
 
 ### Builder
 
-- [x] kanonische Rolle `token_immediate_maker` vorbereiten
-- [x] kanonische Rolle `token_multi_maker` vorbereiten
+- [x] `token_immediate_maker` nur garantierter Sofortproduktion zuweisen
+- [x] `token_multi_maker` nur garantierter Sofortproduktion von mindestens zwei Kreatur-Tokens zuweisen
 - [x] `token_repeatable_maker` nur automatischen Triggern zuweisen
 - [x] Value-Planwahl an mindestens sechs erreichbare automatische Enginekopien binden
 - [x] Go-Wide-Planwahl auf garantierte Sofort-/Multi-Maker und Team-Payoffs ausrichten
-- [x] Go-Wide-Profil mit kapazitätsgeprüften Pflichtdichten vorbereiten
-- [ ] vollständige Testsuite und Fast-Validierung auswerten
+- [x] Go-Wide-Profil mit kapazitätsgeprüften Pflichtdichten implementieren
+- [x] Fast-Validierung erzeugt ein legales Go-Wide-Deck, Benchmark 96
+- [ ] Rollen-Normalisierungstest grün machen
+- [ ] vollständigen grünen Go-Wide-Workflow und Artefaktvergleich bestätigen
 - [ ] finale Go-Wide-Deckliste und Arena-Import prüfen
 
-### Pflichtdichten des ersten Go-Wide-Zyklus
+### Pflichtdichten
 
 - mindestens 15 Kreatur-Token-Maker
 - mindestens 9 sofortige Maker
@@ -62,19 +49,32 @@ Referenzarchetypen: Burn, Tokens, Artifacts, Control und Mill. Jeder Zyklus ende
 - mindestens 3 Anthems
 - Ziele: 20 / 12 / 9 / 6
 
+### Run-64-Evidenz
+
+- Profil: Go Wide
+- 36 Kreatur-Token-Maker
+- 25 sofortige Maker
+- 21 garantierte Multi-Maker
+- 6 Anthems
+- Token-Benchmark 96
+- Burn 83, Artifacts 90, Control 85 und Mill 80 unverändert
+- 300 von 301 Tests grün
+- einziger Fehler: Enum-/String-Normalisierung im Full-Pool-Rollentest
+
 ### Erfolgskriterien
 
-- [ ] Profilname enthält `Go Wide`
-- [ ] Legalität 60/15 und Kopienlimit
-- [ ] genau 100 Hände mit Seed 1701
-- [ ] Keepability, Early Play und Planfähigkeit vollständig ausgewertet
-- [ ] Goldfish mit korrigierter Produktionsmessung
+- [x] Profilname enthält `Go Wide`
+- [x] Legalität 60/15 und Kopienlimit im Fast-Lauf
+- [x] andere vier Referenzbenchmarks stabil
+- [x] keine Token-Rollen-Fehlpositive
+- [ ] vollständige Testsuite grün
+- [ ] genau 100 Hände mit Seed 1701 ausgewertet
+- [ ] Keepability, Early Play und Planfähigkeit gegen Run 63 verglichen
+- [ ] Goldfish mit korrigierter Produktionsmessung verglichen
 - [ ] Token gegen Burn, Artifacts und Mill sowie BO3 ausgewertet
-- [ ] Fast unter zehn Minuten
-- [ ] Burn 83, Artifacts 90, Control 85 und Mill 80 ohne unbegründete Regression
-- [ ] keine Token-Rollen-Fehlpositive
+- [ ] Fast unter zehn Minuten bestätigt
 
-## Nach erfolgreichem Go-Wide-Builderzyklus
+## Nach grünem Go-Wide-Builderzyklus
 
 1. Strategy Commitment auf sofortige Maker, Multi-Maker und Team-Payoffs ausrichten.
 2. Opening-Hand-Klassifikation auf dieselben präzisen Go-Wide-Rollen umstellen.
@@ -84,6 +84,10 @@ Referenzarchetypen: Burn, Tokens, Artifacts, Control und Mill. Jeder Zyklus ende
 6. relevante Control-Antworten aus konkreten Gegnerdecks ableiten.
 7. belastbare Regression-Baseline statt `baseline: none`.
 8. erste v2-KGB und Club-/Meta-Benchmark.
+
+## Genau ein nächster ausführbarer Schritt
+
+Den Rollen-Normalisierungshotfix committen, den entstehenden Workflow vollständig auswerten und anschließend anhand der 100 Hände und Goldfish-Artefakte genau eine belegte Go-Wide-Schwäche priorisieren.
 
 ## Definition of Done für den aktuellen Zyklus
 
