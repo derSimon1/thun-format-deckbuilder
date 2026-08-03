@@ -1,5 +1,4 @@
 from thun_deckbuilder.card_analyzer import analyze_card
-from thun_deckbuilder.card_roles import detect_roles
 from thun_deckbuilder.control_strategy import ControlStrategy
 from thun_deckbuilder.deck_generator import DeckEntry, GeneratedDeck, ManaCost
 from thun_deckbuilder.knowledge_base import CardKnowledge
@@ -20,33 +19,6 @@ def k(name, text, colors=("R",), roles=()):
         card,
         analyze_card(card),
         frozenset(roles),
-        frozenset(),
-    )
-
-
-def detected_k(
-    name,
-    text,
-    *,
-    colors=(),
-    type_line="Artifact",
-    mana_value=0,
-    mana_cost="",
-):
-    card = {
-        "name": name,
-        "mana_value": mana_value,
-        "mana_cost": mana_cost,
-        "colors": list(colors),
-        "color_identity": list(colors),
-        "type_line": type_line,
-        "oracle_text": text,
-    }
-    analysis = analyze_card(card)
-    return CardKnowledge(
-        card,
-        analysis,
-        detect_roles(analysis),
         frozenset(),
     )
 
@@ -85,16 +57,19 @@ def test_sideboard_encodes_graveyard_hate_as_machine_readable_role():
 
 
 def test_specific_phrase_prevents_generic_role_double_classification():
-    # Import/instantiate ControlStrategy so its sideboard rules are registered.
+    # Register the Control sideboard rule set. The broad removal role is
+    # deliberately injected to reproduce the class of false positive that
+    # phrase-first matching must prevent.
     ControlStrategy()
-    crypt = detected_k(
-        "Tormod's Crypt",
-        "Sacrifice Tormod's Crypt: Exile all cards from target player's graveyard.",
+    graveyard_card_with_broad_role = k(
+        "Graveyard Device",
+        "Exile all cards from target player's graveyard.",
+        colors=(),
+        roles=("removal",),
     )
-    assert "removal" in crypt.roles
 
     result = SideboardBuilder().build(
-        (crypt,),
+        (graveyard_card_with_broad_role,),
         GeneratedDeck((), 25),
         archetype="control",
         colors=("U", "B"),
