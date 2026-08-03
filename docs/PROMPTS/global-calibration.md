@@ -1,15 +1,27 @@
 # Global Calibration Prompt
 
-**Version:** 1.2  
+**Version:** 1.3  
 **Verbindliche Grundlage:** `docs/SPECIFICATION.md`
 
 ## Verwendung
 
-Der externe Auftrag soll nur Repository, Branch/PR und Laufzeit nennen. Diese Datei enthält die vollständige Arbeitsanweisung.
+Der externe Auftrag nennt nur Repository, Branch/PR und die verfügbare Laufzeit `X` in Stunden. Diese Datei enthält die vollständige Arbeitsanweisung.
+
+Beispiel:
+
+> Arbeite 3 Stunden im Repository `derSimon1/thun-format-deckbuilder` auf Branch `codex/global-deckbuilder-calibration` und PR #14 gemäß `docs/PROMPTS/global-calibration.md`. PR #13 bleibt unangetastet.
 
 ## Auftrag
 
-Führe genau einen produktiven Kalibrierungszyklus im Repository `derSimon1/thun-format-deckbuilder` auf Branch `codex/global-deckbuilder-calibration` und PR #14 aus. PR #13 bleibt unangetastet.
+Arbeite für die im externen Auftrag genannte Laufzeit im Repository `derSimon1/thun-format-deckbuilder` auf Branch `codex/global-deckbuilder-calibration` und PR #14. PR #13 bleibt unangetastet.
+
+Führe innerhalb der verfügbaren Laufzeit so viele **vollständige produktive Kalibrierungszyklen** wie sinnvoll möglich durch. Ein Zyklus ist nur abgeschlossen, wenn Hypothese, Änderung oder belegter No-Change-Befund, Validierung, Reflexion und Dokumentation vollständig vorliegen.
+
+Starte keinen neuen Zyklus, wenn er innerhalb der verbleibenden Laufzeit voraussichtlich nicht mehr sauber validiert, dokumentiert und abgeschlossen werden kann. Nutze die Restzeit stattdessen für Abschlussvalidierung, CI-Auswertung, Artefaktprüfung, Logbook, Roadmap und Abschlussbericht.
+
+Es werden **keine separaten 15-Minuten-Aufgaben** benötigt. Arbeite im selben Lauf kontinuierlich weiter. GitHub Actions ist Validator und kein Entwicklungsagent.
+
+## 1. Verbindliche Repository-Dokumente
 
 Lies zu Beginn vollständig die aktuelle Version von:
 
@@ -21,25 +33,30 @@ Lies zu Beginn vollständig die aktuelle Version von:
 - `docs/KNOWN_ISSUES.md`
 - `docs/META.md`
 
-Diese Repository-Dokumente sind verbindlich und haben Vorrang vor älteren Aufgabenformulierungen.
+Diese Repository-Dokumente sind verbindlich und haben Vorrang vor älteren Aufgabenformulierungen und vor allgemeinen Annahmen.
 
-## 1. Startprüfung
+Vor jedem weiteren Zyklus lies mindestens den zuletzt geänderten Teil von Logbook und Roadmap erneut und beginne mit dem dort priorisierten nächsten ausführbaren Schritt, sofern keine neue belegte Evidenz eine andere Priorität rechtfertigt.
 
-Prüfe vor jeder Änderung:
+## 2. Start- und Zyklusprüfung
 
-- aktuellen PR-Head
+Prüfe zu Beginn des Laufs und unmittelbar vor jeder Änderung:
+
+- aktuellen Branch- und PR-Head
 - Mergeability
 - aktive CI-Runs
 - letzten erfolgreichen Workflow
 - enthaltene Jobs
 - relevante Logs
 - verfügbare Artefakte
+- Änderungen seit dem letzten dokumentierten Zyklus
 
-Halte den Ausgangs-Head fest. Stoppe ohne Commit, wenn aktive CI, ein veränderter Head, Parallelität oder eine unklare Ursache vorliegt. Dokumentiere dann den exakten Stopgrund und den nächsten ausführbaren Schritt.
+Halte den Ausgangs-Head jedes Zyklus fest.
 
-## 2. Priorisierung
+Stoppe den betroffenen Änderungsschritt ohne Commit, wenn aktive CI, ein veränderter Head, Parallelität oder eine unklare Ursache eine sichere Änderung verhindert. Dokumentiere dann den exakten Stopgrund, die Erkenntnis, Confidence und den nächsten ausführbaren Schritt. Ein solcher Befund darf den gesamten mehrstündigen Lauf nicht unnötig beenden, sofern ein anderer Roadmap-Punkt sicher bearbeitet werden kann.
 
-Wähle anhand der aktuellen Roadmap genau eine testbare Hypothese mit hohem erwartetem globalem Qualitätsgewinn.
+## 3. Priorisierung
+
+Wähle pro Zyklus genau eine testbare Hypothese mit hohem erwartetem globalem Qualitätsgewinn.
 
 Aktuelle Priorität:
 
@@ -53,252 +70,7 @@ Aktuelle Priorität:
 8. Finish Density
 9. Baseline und Meta-Benchmark
 
-Die fünf verbindlichen Referenzarchetypen sind Burn, Tokens, Artifacts, Control und Mill. Shrines ist kein Pflicht- oder Referenzarchetyp mehr. Es darf höchstens optional als spezieller Regressionstest für mehrfarbige Engine-Decks verwendet werden, wenn dies durch konkrete Evidenz begründet ist.
-
-Wiederhole nicht lediglich Statusprüfungen. Nach zwei dokumentierten No-Change-Zyklen derselben Ursache musst du zum nächsten Roadmap-Punkt wechseln.
-
-Setze höchstens drei eng gekoppelte Code-, Test- oder Berichtsänderungen um, die dieselbe Ursache behandeln. Keine Dummy-Commits, keine unbegründeten Grenzwertverschiebungen und keine Änderungen an PR #13.
-
-## 3. Verbindliche Hypothese für den nächsten Zyklus
-
-Implementiere einen reproduzierbaren `OpeningHandPlanReport`, der für jedes geprüfte Referenzdeck genau 100 Sieben-Karten-Starthände mit einem dokumentierten festen Zufallsseed erzeugt und die einzelnen Hände beziehungsweise ihre maschinenlesbaren Ergebnisse speichert.
-
-Die Analyse darf nicht nur Landzahl oder irgendeinen frühen spielbaren Spell bewerten. Sie muss prüfen, ob der deklarierte Hauptplan des Decks realistisch anlaufen kann.
-
-Für jede Hand sind mindestens zu erfassen:
-
-- gezogene sieben Karten
-- verfügbare Manaquellen
-- farblich passende Manaquellen
-- mögliche Spielzüge in Zug 1, Zug 2 und Zug 3
-- frühe Bedrohung oder Enabler
-- Engine-Zugang
-- Payoff-Zugang
-- Finisher-Zugang
-- notwendige frühe Interaktion
-- tote Karten
-- widersprüchliche Karten oder Kartenpakete
-- deklarierter Hauptplan
-- Klassifikation `planfähig`, `marginal` oder `nicht planfähig`
-- konkrete Klassifikationsgründe
-- konkrete Ausfallgründe
-
-Die Bewertung muss archetypen- und planabhängig erfolgen.
-
-### Burn
-
-Eine Hand ist nur dann planfähig, wenn sie ausreichend frühe Pressure- oder Burn-Dichte besitzt und ihre relevanten Karten mit den vorhandenen Farben rechtzeitig wirken kann.
-
-Prüfe insbesondere:
-
-- Zug-1- oder Zug-2-Pressure
-- mehrere frühe Schadensquellen
-- Verhältnis aus Kreaturen, Burn und Mana
-- Hände mit nur teuren oder reaktiven Karten
-- Hände, die zwar einen frühen Spell, aber keinen realistischen Schadensplan besitzen
-
-### Tokens – Go Wide
-
-Eine Hand ist nur dann planfähig, wenn sie frühe Token Maker oder gleichwertige Board-Entwicklung besitzt und ein realistisches Fenster für Anthem, Pump, Evasion oder einen anderen Go-Wide-Payoff erreicht.
-
-Prüfe insbesondere:
-
-- früher Token Maker
-- zweiter Maker oder Board-Verbreiterung
-- passender Go-Wide-Payoff
-- Mana für Maker und Payoff
-- Hände mit ausschließlich Payoffs ohne Board
-- Hände mit ausschließlich kleinen Bodies ohne Scaling
-
-### Tokens – Value Tokens
-
-Eine Hand ist nur dann planfähig, wenn sie frühe Token-Erzeugung mit einer wiederholbaren Value-Engine oder einem belastbaren Ressourcenvorteil verbinden kann.
-
-Prüfe insbesondere:
-
-- früher Token Maker
-- wiederholbare Engine
-- Kartenfluss, Mana-, Lebens- oder Board-Vorteil
-- realistisches Engine-Fenster
-- Hände mit vielen Token-Karten, aber ohne Value-Konversion
-- Hände mit Engine, aber ohne verwertbares Material
-
-### Tokens – Aristocrats
-
-Eine Hand ist nur dann planfähig, wenn sie in einem realistischen Zeitfenster mehrere notwendige Funktionsgruppen zusammenbringt:
-
-- Opfermaterial oder wiederholbare Token-Erzeugung
-- Sacrifice Outlet oder gleichwertiger Opfer-Enabler
-- Drain-, Death- oder Sacrifice-Payoff
-- ausreichendes Mana und passende Farben
-
-Ein einzelnes formal passendes Element reicht nicht aus.
-
-Unterscheide mindestens:
-
-- nur Material
-- nur Outlet
-- nur Payoff
-- Material plus Outlet ohne Payoff
-- Material plus Payoff ohne Outlet
-- Outlet plus Payoff ohne Material
-- vollständiger oder realistisch vervollständigbarer Aristocrats-Core
-
-### Artifacts
-
-Eine Hand ist nur dann planfähig, wenn sie einen frühen Artifact-Enabler und mindestens ein nutzbares Synergy-Piece oder Payoff besitzt.
-
-Prüfe insbesondere:
-
-- frühes Artefakt oder Artifact-Enabler
-- Synergie-Piece
-- Payoff oder Engine
-- Mana und Farbzugang
-- Hände mit generischen Artefakten ohne Synergie
-- Hände mit Payoffs ohne ausreichende Artefaktbasis
-
-### Control
-
-Eine Hand ist nur dann planfähig, wenn sie den gegnerischen frühen Plan realistisch verlangsamen oder beantworten, anschließend Ressourcen aufholen und schließlich über eine belastbare Wincondition gewinnen kann.
-
-Control wird nicht anhand einer hohen Anzahl reaktiver Karten allein bewertet. Die Hand muss eine sinnvolle zeitliche Abfolge aus Mana, früher Interaktion, Stabilisierung, Kartenvorteil und späterem Abschluss ermöglichen.
-
-Prüfe insbesondere:
-
-- belastbare und farblich passende Manaquellen
-- verfügbare Interaktion in Zug 1 oder 2
-- Removal gegen frühe Kreaturen
-- Countermagic oder andere Antworten gegen Nichtkreaturen-Pläne
-- Schutz vor mehreren Bedrohungen oder Go-Wide-Boards
-- Sweeper-Zugang, wenn er im Matchup notwendig ist
-- Kartenvorteil oder Selection nach der ersten Interaktion
-- realistische Stabilisierung bis Zug 4 oder 5
-- Zugang zu einer Wincondition nach der Stabilisierung
-- Hände mit nur Countern gegen frühes Creature-Aggro
-- Hände mit nur Removal gegen Engines, Combo oder alternative Winconditions
-- Hände mit vielen Antworten, aber ohne Kartenfluss
-- Hände mit Kartenvorteil und Finishern, aber ohne frühe Antworten
-- zu viele teure Karten oder situative Antworten
-- widersprüchliche Tap-out- und Draw-go-Pakete
-
-Die Control-Bewertung muss matchupsensitiv sein. Eine Antwort gilt nur dann als relevante Interaktion, wenn sie den erwarteten gegnerischen Plan tatsächlich beeinflussen kann.
-
-### Mill
-
-Eine Hand ist nur dann planfähig, wenn sie eine frühe Mill-Engine oder belastbare wiederholbare Mill-Quelle besitzt und ausreichenden Schutz, Interaktion oder Tempozugang hat.
-
-Prüfe insbesondere:
-
-- frühe Mill-Engine
-- wiederholbare Mill-Quelle
-- Schutz oder Interaktion
-- Mana und Farben
-- Hände mit einmaligem Mill ohne Folgedruck
-- Hände mit Interaktion, aber ohne realistische Mill-Clock
-
-## 4. Reproduzierbarkeit und Rohdaten
-
-Verwende einen explizit dokumentierten Zufallsseed.
-
-Der Seed muss:
-
-- im Bericht stehen
-- in den maschinenlesbaren Rohdaten enthalten sein
-- bei gleichem Deck und gleichem Code dieselben 100 Hände erzeugen
-- in automatisierten Tests reproduzierbar geprüft werden
-
-Speichere die Ergebnisse unter `artifacts/global` oder `docs/reports`.
-
-Bevorzugtes Format:
-
-- JSON oder JSONL für vollständige Rohdaten
-- Markdown für die kompakte menschlich lesbare Zusammenfassung
-
-Die Rohdaten müssen mindestens enthalten:
-
-- Deck-ID oder Archetyp
-- Decklisten-Hash oder eindeutige Deckreferenz
-- Seed
-- Simulationsversion
-- Handnummer
-- Karten der Starthand
-- relevante Sequenz bis Zug 3
-- Klassifikation
-- Klassifikationsgründe
-- Ausfallgründe
-
-Erfinde keine Einzelhände aus bereits aggregierten Workflow-Daten. Falls bestehende Artefakte nur Zusammenfassungen enthalten, muss die Simulation aus der tatsächlichen Deckliste und den verfügbaren Kartenmetadaten neu ausgeführt werden. Ist das nicht möglich, dokumentiere den exakten technischen Stopgrund und behaupte nicht, die 100-Hand-Prüfung durchgeführt zu haben.
-
-## 5. Pflichtmetriken je Deckliste
-
-Berichte mindestens:
-
-- Keepability-Rate
-- planfähige Rate
-- marginale Rate
-- nicht-planfähige Rate
-- frühe-Play-Rate bis Zug 2
-- frühe-Play-Rate bis Zug 3
-- Manafehlerquote
-- Farbfehlerquote
-- fehlende-Enabler-Quote
-- fehlende-Engine-Quote
-- fehlende-Payoff-Quote
-- fehlende-Finisher-Quote, sofern archetypenrelevant
-- Quote widersprüchlicher oder toter Karten
-- drei häufigste Problemtypen
-
-Für Control sind zusätzlich mindestens zu berichten:
-
-- frühe relevante Interaktionsrate bis Zug 2
-- Abdeckungsrate gegen Kreaturenpläne
-- Abdeckungsrate gegen Nichtkreaturen-Pläne
-- Stabilisierungschance bis Zug 4 oder 5
-- Kartenvorteil-Zugang nach früher Interaktion
-- Wincondition-Zugang nach Stabilisierung
-- Quote situativ toter Antworten je Matchup
-
-Keepability und Planfähigkeit müssen getrennte Metriken bleiben. Eine Hand kann formal keepbar sein und trotzdem den Hauptplan nicht zuverlässig unterstützen.
-
-Eine allgemeine Early-Play-Rate darf nicht als Beweis für einen funktionierenden Matchplan verwendet werden. Bei Control darf die reine Anzahl verfügbarer Antworten nicht mit tatsächlicher Matchup-Abdeckung gleichgesetzt werden.
-
-Falls sinnvoll, simuliere zusätzlich Ziehschritte bis Zug 4 oder 5. Trenne diese Ergebnisse klar von der reinen Sieben-Karten-Starthandbewertung.
-
-## 6. Tests
-
-Ergänze gezielte Tests für mindestens:
-
-- deterministische Wiederholbarkeit mit identischem Seed
-- unterschiedliche Ergebnisse mit anderem Seed
-- exakt 100 Hände pro Deck
-- korrekte Klassifikation klar planfähiger Hände
-- korrekte Klassifikation klar nicht planfähiger Hände
-- Tokens Go Wide
-- Tokens Value Tokens
-- Tokens Aristocrats
-- Control mit früher relevanter Interaktion und späterem Kartenvorteil
-- Control mit formal vorhandenen, aber im Matchup toten Antworten
-- Trennung von Early Play und Planfähigkeit
-- Trennung von Keepability und Planfähigkeit
-- vollständige maschinenlesbare Ausgabe
-
-Vermeide Tests, die ausschließlich die aktuelle Implementierung spiegeln. Verwende kleine, kontrollierte Deck- oder Hand-Fixtures mit fachlich eindeutigem erwarteten Ergebnis.
-
-## 7. Gesamtvalidierung
-
-Führe nach der Implementierung aus:
-
-- vollständige Testsuite
-- Fast-Validierung
-- Vergleich von fünf Archetypen
-- Vergleich der drei Token-Subarchetypen
-- drei relevante Token-Matchups
-- Control-Berichte gegen mindestens Aggro, Tokens und einen Nichtkreaturen- oder Engine-Plan
-- BO3-Berichte
-- Laufzeitprüfung unter zehn Minuten
-- Prüfung auf unbegründete Regressionen
-
-Vergleiche mindestens:
+Die fünf verbindlichen Referenzarchetypen sind:
 
 - Burn
 - Tokens
@@ -306,55 +78,128 @@ Vergleiche mindestens:
 - Control
 - Mill
 
-Innerhalb Tokens müssen Go Wide, Value Tokens und Aristocrats getrennt ausgewertet werden.
+Shrines ist kein Pflicht- oder Referenzarchetyp mehr. Es darf höchstens optional als spezieller Regressionstest für mehrfarbige Engine-Decks verwendet werden, wenn konkrete Evidenz dies begründet.
 
-Prüfe, ob sich bestehende Kennzahlen wie Strategy Commitment oder Engine Density scheinbar verbessern, während die planfähige Starthandrate unverändert schlecht bleibt. Dokumentiere solche Widersprüche ausdrücklich.
+Wiederhole nicht lediglich Statusprüfungen. Nach zwei dokumentierten No-Change-Zyklen derselben Ursache musst du zum nächsten Roadmap-Punkt wechseln.
 
-Prüfe bei Control zusätzlich, ob eine hohe Interaktionsdichte nur durch situative oder im jeweiligen Matchup tote Antworten entsteht. Eine grüne Control-Kennzahl darf nicht allein aus der Anzahl von Removal- oder Counter-Karten abgeleitet werden.
+Setze pro Zyklus höchstens drei eng gekoppelte Code-, Test- oder Berichtsänderungen derselben Ursache um. Keine Dummy-Commits, keine unbegründeten Grenzwertverschiebungen und keine Änderungen an PR #13.
 
-## 8. Vor dem Commit
+## 4. Aktuell stärkste Hypothese
 
-Prüfe unmittelbar vor dem Commit erneut:
+Implementiere beziehungsweise vervollständige einen reproduzierbaren `OpeningHandPlanReport`, der für jedes erzeugte oder als aktuelle Referenz verwendete Deck genau 100 Sieben-Karten-Starthände mit dokumentiertem festem Zufallsseed erzeugt und maschinenlesbar speichert.
 
-- Branch-Head
-- PR-Head
-- aktive CI
-- zwischenzeitliche Änderungen
-- Mergeability
-- ob der lokale Stand noch auf dem aktuellen PR-Head basiert
+Die Analyse darf nicht nur Landzahl oder irgendeinen frühen spielbaren Spell bewerten. Sie muss prüfen, ob der deklarierte Hauptplan realistisch anlaufen kann.
 
-Bei erfolgreicher Validierung:
+Für jede Hand sind mindestens zu erfassen:
 
-- erstelle genau einen sinnvollen Commit
-- aktualisiere `docs/DEVELOPMENT_LOGBOOK.md`
-- aktualisiere `docs/ROADMAP.md`
-- nimm beide Dokumentationsänderungen in denselben Commit auf
+- gezogene sieben Karten
+- verfügbare und farblich passende Manaquellen
+- mögliche Spielzüge in Zug 1, 2 und 3
+- frühe Bedrohung oder Enabler
+- Engine-, Payoff- und Finisher-Zugang
+- notwendige frühe Interaktion
+- tote oder widersprüchliche Karten
+- deklarierter Hauptplan
+- Klassifikation `planfähig`, `marginal` oder `nicht planfähig`
+- konkrete Klassifikations- und Ausfallgründe
 
-Ändere `docs/DECISIONS.md`, `docs/KNOWN_ISSUES.md`, `docs/META.md` oder `docs/SPECIFICATION.md` nur gemäß den dort definierten Regeln.
+### Archetypabhängige Kriterien
 
-## 9. Nach dem Push
+**Burn:** frühe Pressure- oder Burn-Dichte, realistische Schadenssequenz, passende Farben und keine Hand aus ausschließlich teuren oder reaktiven Karten.
 
-Verifiziere innerhalb von zehn Minuten die neue Workflow-Run-ID der PR.
+**Tokens – Go Wide:** frühe Maker oder Boardentwicklung plus realistisches Fenster für Anthem, Pump, Evasion oder einen anderen Go-Wide-Payoff.
 
-Prüfe:
+**Tokens – Value Tokens:** frühe Token-Erzeugung plus wiederholbare Value-Engine oder belastbarer Ressourcen- und Kartenvorteil.
 
-- Run-ID
-- Commit-SHA
-- Status
-- Conclusion
-- alle Jobs
-- fehlgeschlagene oder übersprungene Schritte
-- relevante Logs
-- erzeugte Artefakte
-- Inhalt und Verwendbarkeit der Artefakte
+**Tokens – Aristocrats:** Opfermaterial oder wiederholbare Token-Erzeugung plus Sacrifice Outlet oder gleichwertiger Enabler plus Drain-, Death- oder Sacrifice-Payoff. Unterscheide Material, Outlet und Payoff einzeln sowie alle unvollständigen Kombinationen.
 
-Grüne CI darf nicht automatisch als Beweis für bessere spielerische Qualität gewertet werden.
+**Artifacts:** früher Artifact-Enabler plus nutzbares Synergy-Piece, Engine oder Payoff.
 
-## 10. Verbindliche Reflexion
+**Control:** relevante frühe Interaktion gegen den konkreten gegnerischen Plan, anschließende Stabilisierung, Kartenvorteil und belastbare Wincondition. Eine hohe Zahl reaktiver Karten allein genügt nicht. Prüfe Removal, Countermagic, Sweeper-Zugang, situativ tote Antworten, Tap-out-/Draw-go-Widersprüche und ob die Partie tatsächlich beendet werden kann.
 
-Stelle das Ergebnis am Ende ausdrücklich in Frage.
+**Mill:** frühe Mill-Engine oder wiederholbare Mill-Quelle plus Schutz, Interaktion oder Tempo und eine realistische Mill-Clock.
 
-Beantworte mindestens:
+## 5. Reproduzierbarkeit und Rohdaten
+
+Der Seed muss:
+
+- im Bericht stehen
+- in den maschinenlesbaren Rohdaten enthalten sein
+- bei gleichem Deck und Code dieselben 100 Hände erzeugen
+- durch automatisierte Tests reproduzierbar geprüft werden
+
+Speichere vollständige Rohdaten als JSON oder JSONL unter `artifacts/global` oder `docs/reports` und ergänze eine kompakte Markdown-Zusammenfassung.
+
+Die Rohdaten enthalten mindestens Deck-ID, Decklisten-Hash, Seed, Simulationsversion, Handnummer, Karten, Sequenz bis Zug 3, Klassifikation, Gründe und Ausfallgründe.
+
+Erfinde keine Einzelhände aus aggregierten Workflow-Daten. Falls eine echte Simulation nicht möglich ist, dokumentiere den exakten technischen Stopgrund und behaupte nicht, die 100-Hand-Prüfung durchgeführt zu haben.
+
+## 6. Pflichtmetriken
+
+Berichte je Deck mindestens:
+
+- Keepability-Rate
+- planfähige, marginale und nicht-planfähige Rate
+- frühe-Play-Rate bis Zug 2 und 3
+- Mana- und Farbfehlerquote
+- fehlende Enabler-, Engine-, Payoff- und gegebenenfalls Finisher-Quote
+- Quote widersprüchlicher oder toter Karten
+- drei häufigste Problemtypen
+
+Für Control zusätzlich:
+
+- relevante Interaktionsrate bis Zug 2
+- Abdeckung gegen Kreaturen- und Nichtkreaturen-Pläne
+- Stabilisierungschance bis Zug 4 oder 5
+- Kartenvorteil-Zugang nach früher Interaktion
+- Wincondition-Zugang nach Stabilisierung
+- Quote situativ toter Antworten je Matchup
+
+Keepability, Early Play und Planfähigkeit müssen getrennte Metriken bleiben. Eine allgemeine Early-Play-Rate oder bloße Anzahl von Antworten ist kein Beweis für einen funktionierenden Hauptplan.
+
+## 7. Tests und Validierung je Zyklus
+
+Ergänze fachlich eindeutige Tests für die jeweilige Ursache. Für den Opening-Hand-Report mindestens:
+
+- identischer Seed erzeugt identische Ergebnisse
+- anderer Seed verändert die Stichprobe
+- exakt 100 Hände pro Deck
+- klar planfähige und klar nicht-planfähige Fixtures
+- Go Wide, Value Tokens und Aristocrats
+- Control mit relevanter sowie matchup-toter Interaktion
+- Trennung von Early Play, Keepability und Planfähigkeit
+- vollständige maschinenlesbare Ausgabe
+
+Vor jedem Commit:
+
+1. vollständige Testsuite ausführen
+2. Fast-Validierung ausführen
+3. Burn, Tokens, Artifacts, Control und Mill vergleichen
+4. drei Token-Matchups prüfen
+5. Control gegen Aggro, Tokens und einen Nichtkreaturen- oder Engine-Plan prüfen
+6. BO3-Berichte prüfen
+7. Laufzeit unter zehn Minuten bestätigen
+8. unbegründete Regressionen ausschließen
+9. Branch-Head, PR-Head, Mergeability und aktive CI erneut prüfen
+
+## 8. Commit- und CI-Regel
+
+Bei erfolgreicher Validierung erstelle pro abgeschlossenem Zyklus genau einen sinnvollen Commit. Aktualisiere `docs/DEVELOPMENT_LOGBOOK.md` und `docs/ROADMAP.md` im selben Commit.
+
+Nach jedem Push:
+
+- verifiziere innerhalb von zehn Minuten die neue Workflow-Run-ID
+- prüfe Commit-SHA, Status und Conclusion
+- prüfe alle Jobs, Schritte und Logs
+- prüfe erzeugte Artefakte und deren Inhalt
+
+Während ein Workflow läuft, darfst du nur an einem nachweislich unabhängigen nächsten Schritt arbeiten. Besteht Abhängigkeit zum laufenden Ergebnis, warte nicht passiv, sondern nutze die Zeit für Artefaktanalyse, Dokumentation, Testdesign oder einen unabhängigen Roadmap-Punkt. Erzeuge keinen Dummy-Commit zum Triggern.
+
+Grüne CI ist kein automatischer Beweis für bessere spielerische Qualität.
+
+## 9. Reflexion nach jedem Zyklus
+
+Stelle jedes Ergebnis ausdrücklich in Frage:
 
 - Welche zentrale Annahme könnte falsch sein?
 - Welche alternative Erklärung passt ebenfalls zu den Messwerten?
@@ -362,61 +207,45 @@ Beantworte mindestens:
 - Welche Mess- oder Datenlücke bleibt?
 - Bedeutet grüne CI tatsächlich bessere spielerische Qualität?
 - Welche unbeabsichtigte Regression könnte unentdeckt sein?
-- Sind die Klassifikationsregeln möglicherweise zu streng oder zu locker?
-- Bilden die Referenzdecks echte Deckbuilder-Ausgaben oder nur kuratierte Beispiele ab?
-- Werden Kartentexte, Rollen und Synergien zuverlässig genug erkannt?
-- Ist eine gute Starthandrate möglicherweise nur Folge einer schwachen oder zu allgemeinen Planbeschreibung?
-- Werden Control-Antworten gegen den konkreten gegnerischen Plan bewertet oder nur generisch als Interaktion gezählt?
-- Wird eine kontrollierte Partie tatsächlich beendet oder lediglich verzögert?
+- Sind Klassifikationsregeln zu streng oder zu locker?
+- Sind Referenzdecks echte Builder-Ausgaben oder kuratierte Beispiele?
+- Werden Kartentexte, Rollen und Synergien zuverlässig erkannt?
+- Werden Control-Antworten gegen den konkreten Plan bewertet?
+- Wird eine kontrollierte Partie beendet oder nur verzögert?
 
-Bewerte danach die Erkenntnis neu mit einer expliziten Confidence-Angabe.
+Bewerte die Erkenntnis danach neu mit expliziter Confidence.
 
-Leite mindestens zwei mögliche Folgeschritte ab und bewerte sie nach:
+Leite mindestens zwei mögliche Folgeschritte ab und bewerte sie nach erwartetem globalem Qualitätsgewinn, Evidenz, Aufwand und Risiko. Wähle genau einen logisch stärksten nächsten Schritt und schreibe ihn konkret und ausführbar in Logbook und Roadmap.
 
-- erwartetem globalem Qualitätsgewinn
-- Evidenz
-- Aufwand
-- Risiko
+Der nächste Zyklus beginnt mit diesem Schritt, sofern keine neue belegte Evidenz eine andere Priorität rechtfertigt.
 
-Wähle genau einen logisch stärksten nächsten Schritt für den folgenden Zyklus. Schreibe ihn konkret und ausführbar in:
+## 10. No-Change-Regel
 
-- `docs/DEVELOPMENT_LOGBOOK.md`
-- `docs/ROADMAP.md`
-
-Der nächste Zyklus beginnt mit diesem Schritt, außer neue belegte Evidenz rechtfertigt eine andere Priorität.
-
-## 11. Dauerhafte Verankerung
-
-Sobald CI inaktiv und der Branch-Head stabil ist, verankere dauerhaft in:
-
-- `docs/SPECIFICATION.md`
-- `docs/PROMPTS/global-calibration.md`
-
-folgende Regeln:
-
-1. Für jede erzeugte oder als Referenz verwendete Deckliste sind 100 reproduzierbare Sieben-Karten-Starthände mit dokumentiertem Seed zu analysieren.
-2. Die Bewertung muss archetypen- und planabhängig sein.
-3. Keepability, Early Play und Planfähigkeit müssen getrennt ausgewiesen werden.
-4. Aggregierte Daten dürfen nicht nachträglich als simulierte Einzelhände dargestellt werden.
-5. Jeder Kalibrierungszyklus endet mit einer kritischen Reflexion und einem eindeutig priorisierten nächsten Schritt.
-6. Die fünf allgemeinen Referenzarchetypen sind Burn, Tokens, Artifacts, Control und Mill; spezielle Engine-Decks wie Shrines sind keine verpflichtende globale Referenz.
-7. Control-Interaktion muss gegen den konkreten gegnerischen Plan und nicht nur anhand der Kartenzahl bewertet werden.
-
-Dokumentiere diese Spezifikationsänderung in `docs/CHANGELOG_SPECIFICATION.md`.
-
-## 12. No-Change- und Abbruchfall
-
-Falls kein sinnvoller Commit möglich ist, dokumentiere im Repository oder im Abschlussprotokoll:
+Falls kein sinnvoller Commit möglich ist, dokumentiere:
 
 - geprüfte Hypothese
-- verwendete Daten
-- verwendeten Seed, falls eine Simulation möglich war
+- verwendete Daten und gegebenenfalls Seed
 - exakten Stopgrund
 - gewonnene Erkenntnis
 - Confidence
-- mindestens zwei mögliche Folgeschritte
+- mindestens zwei Folgeschritte
 - genau einen priorisierten nächsten ausführbaren Schritt
 
-Nach zwei aufeinanderfolgenden No-Change-Zyklen mit derselben Ursache wechsle zum nächsten priorisierten Roadmap-Punkt.
+Nach zwei aufeinanderfolgenden No-Change-Zyklen derselben Ursache wechsle zum nächsten priorisierten Roadmap-Punkt.
 
-Erfinde keine Ergebnisse, keine Workflow-Runs, keine Artefakte und keine simulierten Hände.
+## 11. Abschluss des mehrstündigen Laufs
+
+Beende den Lauf mit:
+
+- vollständiger Testsuite und Full-Validierung, sofern innerhalb der Laufzeit sauber möglich
+- Liste aller Commits und Workflow-Run-IDs
+- Status, Jobs, Logs und Artefakte des letzten relevanten Runs
+- Qualitätsentwicklung je Referenzarchetyp
+- bestätigten und widerlegten Hypothesen
+- Regressionen, Risiken und Datenlücken
+- aktualisiertem Logbook und aktualisierter Roadmap
+- genau einem priorisierten nächsten ausführbaren Schritt
+
+Beginne keinen unvollständigen letzten Zyklus nur, um die Laufzeit auszuschöpfen.
+
+Erfinde keine Ergebnisse, Workflow-Runs, Artefakte oder simulierten Hände.
