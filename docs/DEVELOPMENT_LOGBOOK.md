@@ -7,8 +7,8 @@ Detaillierte frühere Fassungen bleiben über die Git-Historie erhalten. Jeder Z
 Eine vollständig qualifizierte Development-System-v2-KGB existiert noch nicht.
 
 - v2-Bootstrap-Vergleichsstand: Commit `31f6c1e053976435481c07ab2098430bc2a45471`, Run `30792560878`
-- Einschränkungen des Bootstrap-Stands: Shrines statt Control, keine planabhängigen 100 Rohhände, `baseline: none`
-- aktueller Status: technische Vergleichsstände vorhanden, aber noch keine belastbare v2-KGB
+- aktueller technischer Sicherungspunkt: Commit `937f10f699814e271dd7f8b11b874b0a8f64270c`, Run `30801497068`
+- der aktuelle Sicherungspunkt ist keine v2-KGB, weil der Vergleich weiterhin `baseline: none` meldet und Mill keinen belastbaren Hauptplan besitzt
 
 ## Laufübersicht 2026-08-03
 
@@ -16,117 +16,85 @@ Eine vollständig qualifizierte Development-System-v2-KGB existiert noch nicht.
 |---|---|---|---|
 | OpeningHandPlanReport | `43fa53d1766b05327eae5880bacb05905923f21c` | `30794553679` | 100 reproduzierbare Hände je Deck |
 | Manafehler-Invariante | `5a040f9db39b740d1f1cb72bfcfdb221fcd061d1` | `30795368803` | Manafehler-Hände nicht mehr planfähig |
-| Control-Integration | `380eba398fd27c30579f92da9c1d9d20372e626e` | `30796392816` | Control technisch integriert; alter Test rot |
-| Control-Basis | `9c4426e8bcdd8177d5cce3722484b2d9ceec3b07` | `30796896850` | vollständiger grüner Control-Lauf |
+| Control-Integration | `380eba398fd27c30579f92da9c1d9d20372e626e` | `30796392816` | Control integriert; alter Test rot |
+| Control-Basis | `9c4426e8bcdd8177d5cce3722484b2d9ceec3b07` | `30796896850` | grüner Control-Basislauf |
 | Control-Finisher | `2ef72a092db8de4717ec1d474a380c0b2c0d63dc` | `30797591719` | Benchmark 72→85, Finisher 0→6 |
 | Sideboard-Relevanz v1 | `f3ea0f48e5cdeac422a5bb29f6864fb203745c3d` | `30798351806` | technisch grün, fachlich widerlegt |
-| Sideboard-Marker v2 | `84c82fc4a795b5d14ef30ecc7debd24f0cef4478` | `30799228495` | technisch grün, weiterhin falsche BO3-Pläne |
-| Phrase-first und Diagnose | `3e6b23067d5811f12b0f6dae2325fb777776d5df` | `30800668838` | Fast fachlich erfolgreich; neuer Test mit falscher Annahme rot |
+| Sideboard-Marker v2 | `84c82fc4a795b5d14ef30ecc7debd24f0cef4478` | `30799228495` | technisch grün, falsche BO3-Pläne |
+| Phrase-first + Diagnose | `3e6b23067d5811f12b0f6dae2325fb777776d5df` | `30800668838` | Produktion fachlich korrekt, Testannahme rot |
+| Test-Invariante | `937f10f699814e271dd7f8b11b874b0a8f64270c` | `30801497068` | vollständiger grüner Sideboard-Abschluss |
 
-## Referenzstand Run 48
+## Abgeschlossener Sideboard-Zyklus – Run 50
 
-- 261 Tests bestanden
-- Fast-Lauf ungefähr 3 Minuten 46 Sekunden
-- fünf Referenzarchetypen und sechs Matchups
+### Technische Validierung
+
+- Workflow: `30801497068`, erfolgreich
+- Tests: 262 bestanden in 31,82 Sekunden
+- Test-/Fast-Schritt: ungefähr 3 Minuten 44 Sekunden
+- Artefakt: `global-calibration-pr-50`, ID `8851073096`, 43 Dateien, 50.063 Byte
+- fünf Referenzarchetypen
+- sechs priorisierte Matchups
 - Benchmarks: Burn 83, Tokens 90, Artifacts 90, Control 85, Mill 78
-- Seed `1701`, exakt 100 Hände je Deck
-- keine wiederhergestellte Regression-Baseline
+- Seed `1701`, je Deck exakt 100 Hände
 
-### Control
+### Fachliche Artefaktprüfung
 
-- legal 60/15
-- Keepability 78 %, Planfähigkeit 72 %
-- Finisher-Zugang 53 %
-- Manafehler 18 %, Farbfehler 4 %
-
-### Mill
-
-- Benchmark meldet 0 Mill-Quellen
-- finales Mainboard enthält nur zwei klar erkennbare Millkarten
-- Keepability 77 %, Planfähigkeit 0 %, marginal 100 %
-- fehlender Enabler-, Payoff- und Finisher-Zugang jeweils 72 %
-- 31 % tote oder widersprüchliche Hände
-- aktueller Build ist überwiegend Dimir Draw/Counter/Removal und kein belastbares Milldeck
-
-## Zyklus 8 – Phrase-first Sideboard-Klassifikation
-
-### Ausgangs-Head
-
-`84c82fc4a795b5d14ef30ecc7debd24f0cef4478`
-
-### Hypothese
-
-Spezifische Oracle-Text-Phrasen müssen Vorrang vor breiten funktionalen Rollen haben. Rollen werden nur verwendet, wenn keine spezifische Sideboardregel per Text erkannt wurde.
-
-### Änderungen
-
-1. zweistufige Sideboard-Klassifikation: Phrasentreffer zuerst, Rollen nur als Fallback
-2. Regressionstest für eine spezifische Graveyard-Phrase bei gleichzeitig vorhandener breiter Rolle
-3. neues Diagnoseartefakt `<archetype>-sideboard.json` mit finalen Namen, Mengen, Scores, Gründen und Rollen
-
-### Run 49
-
-- Commit: `3e6b23067d5811f12b0f6dae2325fb777776d5df`
-- Workflow: `30800668838`
-- Fast-Validierung: erfolgreich
-- Tests: 261 bestanden, 1 fehlgeschlagen
-- Artefakt: `global-calibration-pr-49`, ID `8850773679`, 43 Dateien, 50.535 Byte
-- Benchmarks unverändert: 83 / 90 / 90 / 85 / 78
-
-### Fachliche Artefaktauswertung
-
-Die Produktionsänderung funktioniert:
-
-- Control-Sideboard enthält Disfigure, Stab, Tragic Trajectory, Desert's Due und Final Flourish
-- finale Marker sind Anti-Aggro-Removal beziehungsweise Creature-Sweeper
 - Control gegen Burn: 3 Disfigure hinein
 - Control gegen Tokens: 3 Disfigure hinein
 - Control gegen Artifacts: keine ungeeignete Karte hinein
 - kein `Tormod's Crypt` gegen Burn, Tokens oder Artifacts
+- `control-sideboard.json` enthält finale Mengen, Scores, Gründe und Rollenmarker
+- Sideboard-Diagnoseartefakte liegen für alle fünf Referenzarchetypen vor
 
-### Korrektur der Root-Cause-Dokumentation
+### Ergebnis
 
-Die vorherige Aussage, die automatische Rollenerkennung müsse `Tormod's Crypt` zwingend als `removal` klassifizieren, war zu stark. Der neue Test zeigte für die verwendete Fixture nur `sacrifice`.
-
-Belegt ist dagegen:
-
-- die alte Kombination `phrase_match OR role_match` erlaubte spezifischen Karten zusätzliche breite Kategorien, sobald eine breite Rolle vorhanden war
-- Phrase-first verhindert diese Klasse von Doppelklassifikationen
-- der Regressionstest muss die breite Rolle gezielt injizieren, statt eine bestimmte aktuelle Rollenerkennung vorauszusetzen
+Phrase-first-Klassifikation ist als globale Regel bestätigt. Spezifische Oracle-Text-Phrasen werden vor breiten Rollen ausgewertet; Rollen bleiben Fallback. Der Regressionstest injiziert die breite Rolle bewusst und prüft nur die relevante Invariante.
 
 ### KGB-Entscheidung
 
-Keine neue v2-KGB. Run 49 ist wegen einer falschen Testannahme rot; außerdem bleibt `baseline: none` bestehen.
+Keine neue v2-KGB.
+
+Begründung:
+
+- `baseline: none` besteht fort
+- Mill hat weiterhin 0 % planfähige Hände
+- Sideboard-Relevanz wird noch über Archetyp-Matrix statt konkretes Gegnerdeck bestimmt
 
 ### Reflexion
 
-- Die Produktionshypothese ist durch reale Artefakte bestätigt.
-- Die Testhypothese war überangepasst an eine angenommene interne Rolle.
-- Direkte Sideboard-Diagnoseartefakte waren entscheidend und sollen erhalten bleiben.
-- Die Archetyp-Matrix ersetzt weiterhin keine Analyse des konkreten Gegnerdecks.
-- Nach Abschluss des Test-Hotfixes wird Sideboard-Kalibrierung pausiert und zu Mill gewechselt.
+- Zwei grüne Sideboard-Runs waren fachlich falsch; erst maschinenlesbare Artefakte und eine Root-Cause-Invariante schlossen die Ursache.
+- Direkte Diagnoseartefakte sind wirksamer als Rückschlüsse aus aggregierten BO3-Werten.
+- Phrase-first kann ungewöhnliche Kartentexte übersehen; der Rollenfallback bleibt notwendig.
+- Weitere Sideboard-Kalibrierung wird pausiert, solange keine neue Evidenz eine konkrete andere Ursache zeigt.
 
-## Zyklus 9 – Testannahme an belegte Invariante anpassen
+## Prozesszyklus – Global Calibration Prompt 2.1
 
-### Ausgangs-Head
+### Ziel
 
-`3e6b23067d5811f12b0f6dae2325fb777776d5df`
+Den nächsten Drei-Stunden-Lauf produktiver machen: weniger wiederholte Statusprüfung, früherer Artefaktvergleich, verbindliche Abschlussreserve und ein klar begrenztes Mill-Ziel.
 
-### Änderung
+### Änderungen
 
-Der Regressionstest injiziert ausdrücklich eine breite Rolle `removal` zusammen mit einer spezifischen Graveyard-Hate-Phrase. Geprüft wird ausschließlich die relevante Invariante: spezifischer Phrasentreffer erzeugt nur `sideboard_graveyard_hate` und keinen Anti-Aggro-Marker.
+1. Einmaliger Session-Snapshot statt vollständigem Neustart vor jedem Zyklus.
+2. Echtes 180-Minuten-Budget: maximal 20 Minuten Start, bis zu 120 Minuten produktive Zyklen einschließlich Fallback, mindestens 30 Minuten Abschluss und 10 Minuten Puffer.
+3. Artifact-first-Evidenztabelle mit vorher/nachher/Delta/Interpretation/Confidence.
+4. Zyklusvertrag vor Code: Ursache, Hypothese, Metriken, Invarianten, Erfolg, Abbruch und Zeitschätzung.
+5. Connector-only-Regel: Commit bleibt bis vollständiger CI- und Artefaktauswertung vorläufig.
+6. Schleifenschutz: keine dritte Variante derselben gescheiterten Heuristik ohne neue Root-Cause-Evidenz.
+7. Mill-Komposition wird das einzige primäre Entwicklungsziel des nächsten Drei-Stunden-Laufs.
 
-### Erwartete Validierung
+### Erwarteter Nutzen
 
-- vollständige Testsuite grün
-- Fast-Validierung grün
-- Run-49-Sideboardpläne bleiben unverändert korrekt
-- neue Sideboard-Diagnoseartefakte bleiben vorhanden
+- weniger identische CI-Abfragen
+- keine neuen Zyklen ohne ausreichenden Abschluss- und Workflowpuffer
+- fachliche Fehler werden über Artefakte früher erkannt
+- klarere Ursache-Wirkungs-Zuordnung je Commit
+- mehr Zeit für echte Deckqualität statt Prozesswiederholung
 
-### KGB-Entscheidung vor Push
+### KGB-Entscheidung
 
-Keine neue v2-KGB bis zum grünen Workflow und zur Artefaktprüfung.
+Keine neue v2-KGB. Der Prozess verbessert Reproduzierbarkeit und Sicherheit, verändert aber noch keine Mill-Qualität und stellt keine Regression-Baseline wieder her.
 
-### Priorisierter nächster ausführbarer Schritt
+## Priorisierter nächster ausführbarer Schritt
 
-Die Mill-Komposition reparieren: Gegner-Mill-Quellen maschinenlesbar erkennen, Kartenpoolkapazität bestimmen und eine kapazitätsgeprüfte Mindestdichte in Komposition, Optimierer, Benchmark und 100-Hand-Analyse konsistent durchsetzen.
+Die Mill-Komposition reparieren. Eine zentrale Definition für Gegner-Mill-Quellen einführen, die reale Kartenpoolkapazität messen und erst danach eine kapazitätsgeprüfte Mindestdichte festlegen. Komposition, Optimierer, Benchmark und 100-Hand-Analyse müssen dieselbe Definition verwenden. Keine Schwellenwertsenkung nur zum Bestehen.

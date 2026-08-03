@@ -1,5 +1,31 @@
 # Specification Changelog
 
+## Prompt 2.1 – 2026-08-03
+
+Operationalisierung des Development Systems für effizientere Drei-Stunden-Läufe. Die Spezifikation bleibt Version 2.0; der ausführende Prompt wurde auf 2.1 erhöht.
+
+### Hinzugefügt
+
+- einmaliger Session-Snapshot statt vollständigem Neustart vor jedem Zyklus
+- Artifact-first-Auswertung mit Evidenztabelle
+- verbindliche 30-Minuten-Abschlussreserve bei einem Drei-Stunden-Lauf
+- Zyklusvertrag mit Erfolgskriterien, Invarianten, Abbruchkriterien und Zeitschätzung
+- Connector-only-Regel: kontrollierte Vorprüfung, vollständige Suite in CI, Commit bis Artefaktauswertung vorläufig
+- maschinenlesbare Sideboard-Diagnoseartefakte
+- expliziter Schleifenschutz gegen wiederholte Varianten derselben gescheiterten Heuristik
+- Mill-Komposition als primäres Ziel des nächsten Drei-Stunden-Laufs
+
+### Geändert
+
+- keine Folge identischer CI-Statusabfragen ohne neue erwartbare Information
+- grüne CI wird noch klarer von fachlichem Erfolg getrennt
+- konkrete Artefaktinvarianten werden vor manuellen Sichtprüfungen bevorzugt
+- Sideboard-Tuning wird nach den abgeschlossenen Root-Cause-Zyklen pausiert; nächster Schwerpunkt ist Mill
+
+### Anlass
+
+Die Runs 47 und 48 waren technisch grün, boardeten aber weiterhin `Tormod's Crypt` gegen Burn und Tokens ein. Die bisherigen Prozesse erzeugten außerdem viele Statusprüfungen und ließen die semantische Artefaktauswertung zu spät erfolgen. Prompt 2.1 verschiebt die Arbeit auf vorab definierte Hypothesen, maschinenlesbare Evidenz und ausreichend Abschlusszeit.
+
 ## 2.0 – 2026-08-03
 
 Konsolidierung des Deckbuilder Development Systems für mehrstündige autonome Kalibrierung mit belastbaren Sicherheits- und Wiederanlaufregeln.

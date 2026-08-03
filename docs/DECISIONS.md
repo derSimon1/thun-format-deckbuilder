@@ -9,8 +9,6 @@ Dauerhafte Architektur- und Prozessentscheidungen. Neue Einträge werden nicht �
 
 GitHub Actions führt Tests und Validierungen aus, entwickelt aber keine Verbesserungen. Produktiver Fortschritt entsteht durch einen konkreten Entwicklungszyklus mit Hypothese, Änderung, Commit und anschließender CI.
 
-**Begründung:** Der Nachtlauf erzeugte trotz zahlreicher geplanter Zyklen keinen neuen Entwicklungscommit.
-
 ## D-002 – Kein Cron als primärer Entwicklungsantrieb
 
 **Datum:** 2026-08-03  
@@ -23,14 +21,14 @@ Zeitgesteuerte GitHub-Workflows dürfen ergänzend validieren, gelten aber weder
 **Datum:** 2026-08-03  
 **Status:** akzeptiert
 
-Kalibrierungsregeln leben im Repository. Chat-Aufträge referenzieren auf die aktuelle Spezifikation und den aktuellen Prompt, statt lange Anweisungen zu kopieren.
+Kalibrierungsregeln leben im Repository. Chat-Aufträge referenzieren auf Spezifikation und Prompt, statt lange Anweisungen zu kopieren.
 
 ## D-004 – Ein zusammenhängendes Änderungspaket pro Zyklus
 
 **Datum:** 2026-08-03  
 **Status:** akzeptiert
 
-Pro Zyklus werden höchstens drei eng gekoppelte Änderungen derselben Ursache in genau einem Commit gebündelt. Dadurch bleiben Ursache und Wirkung nachvollziehbar.
+Pro Zyklus werden höchstens drei eng gekoppelte Änderungen derselben Ursache in genau einem Commit gebündelt.
 
 ## D-005 – No-Change-Zyklen müssen produktiv sein
 
@@ -51,7 +49,7 @@ Token-Decks werden nicht nur über Rollenanzahlen bewertet. Vor Kartenauswahl wi
 **Datum:** 2026-08-03  
 **Status:** ersetzt durch D-009
 
-Diese frühere Entscheidung führte Shrines noch als wiederkehrenden Regressionstest. Sie ist für das Development System v2.0 nicht mehr maßgeblich.
+Diese frühere Entscheidung führte Shrines noch als wiederkehrenden Regressionstest. Sie ist für Development System v2.0 nicht mehr maßgeblich.
 
 ## D-008 – Fast und Full bleiben getrennt
 
@@ -65,9 +63,7 @@ Fast dient kurzen Entwicklungszyklen und soll unter zehn Minuten bleiben. Full w
 **Datum:** 2026-08-03  
 **Status:** akzeptiert
 
-Die fünf allgemeinen Referenzarchetypen sind Burn, Tokens, Artifacts, Control und Mill. Control prüft die Fähigkeit des Deckbuilders, gegnerische Pläne durch relevante Interaktion zu verhindern, anschließend zu stabilisieren und die Partie über eine belastbare Wincondition zu beenden.
-
-Shrines ist kein Pflicht- oder Referenzarchetyp mehr. Es darf nur bei konkreter Evidenz optional als spezieller Test für mehrfarbige Engine-Decks verwendet werden.
+Die fünf allgemeinen Referenzarchetypen sind Burn, Tokens, Artifacts, Control und Mill. Control prüft relevante Interaktion, Stabilisierung und eine belastbare Wincondition. Shrines ist kein Pflicht- oder Referenzarchetyp mehr.
 
 **Ersetzt:** D-007.
 
@@ -76,17 +72,44 @@ Shrines ist kein Pflicht- oder Referenzarchetyp mehr. Es darf nur bei konkreter 
 **Datum:** 2026-08-03  
 **Status:** akzeptiert
 
-Jeder Zyklus beginnt mit der letzten dokumentierten Known Good Baseline und endet mit der Entscheidung `neue KGB`, `keine neue KGB` oder `Regression`.
+Jeder Zyklus beginnt mit der letzten dokumentierten Known Good Baseline und endet mit `neue KGB`, `keine neue KGB` oder `Regression`.
 
-Eine grüne CI allein qualifiziert keinen Commit als KGB. Erforderlich sind vollständige Tests, Fast-Validierung, Referenzvergleiche, keine unbegründeten Regressionen, dokumentierte Reflexion und Confidence.
-
-Ist noch keine nach v2.0 qualifizierte KGB vorhanden, wird der letzte belegte grüne Stand nur als Legacy-KGB-Kandidat geführt, bis die fehlenden v2.0-Messungen vorliegen.
+Grüne CI allein qualifiziert keinen Commit als KGB. Solange keine v2-KGB existiert, wird ein belegter grüner Stand nur als Bootstrap- oder Legacy-Vergleichsstand geführt.
 
 ## D-011 – Mehrstundenbetrieb ohne separate 15-Minuten-Aufgaben
 
 **Datum:** 2026-08-03  
 **Status:** akzeptiert
 
-Ein externer Auftrag setzt die Laufzeit `X` in Stunden. Innerhalb desselben Laufs werden so viele vollständige Kalibrierungszyklen wie sinnvoll möglich durchgeführt. Separate 15-Minuten-Aufgaben sind nicht erforderlich.
+Ein externer Auftrag setzt die Laufzeit `X` in Stunden. Innerhalb desselben Laufs werden so viele vollständige Kalibrierungszyklen wie sinnvoll möglich durchgeführt.
 
 Ein neuer Zyklus wird nur begonnen, wenn er innerhalb der Restzeit vollständig implementiert, getestet, validiert und dokumentiert werden kann.
+
+## D-012 – Artifact-first-Auswertung vor weiterer Optimierung
+
+**Datum:** 2026-08-03  
+**Status:** akzeptiert
+
+Nach jedem Workflow werden nicht nur Status und Testzahl geprüft. Das relevante Artefakt wird einmal heruntergeladen und maschinenlesbar ausgewertet. Fachliche Aussagen stützen sich auf Decklisten, Rohhände, Rollen, Sideboard-Pläne, Matchups und BO3, nicht allein auf eine grüne Conclusion.
+
+Wiederholte identische Statusabfragen ohne neue erwartbare Information gelten nicht als produktive Arbeit.
+
+**Begründung:** Mehrere grüne Runs enthielten weiterhin 0 Control-Finisher beziehungsweise falsche `Tormod's Crypt`-Einwechslungen.
+
+## D-013 – Verbindliche Abschlussreserve und Zyklusvertrag
+
+**Datum:** 2026-08-03  
+**Status:** akzeptiert
+
+Bei einem Drei-Stunden-Lauf werden mindestens 30 Minuten für letzten Workflow, Artefaktprüfung, Logbook, Roadmap und Abschlussbericht reserviert.
+
+Vor jeder Codeänderung werden Ursache, Hypothese, erwartete Metriken, Invarianten, Erfolgskriterium, Abbruchkriterium und Zeitbedarf festgelegt. Ein Zyklus wird nicht gestartet, wenn Implementierung plus CI-/Artefaktpuffer plus Abschlussreserve nicht mehr in die Restzeit passen.
+
+## D-014 – Spezifische Signale vor breiten Rollen
+
+**Datum:** 2026-08-03  
+**Status:** akzeptiert
+
+Bei fachlicher Klassifikation haben spezifische Oracle-Text-Signale Vorrang vor breiten Rollen wie `removal`, `card_draw` oder `finisher`. Breite Rollen dienen als Fallback, wenn keine spezifische Kategorie erkannt wurde.
+
+**Begründung:** `Tormod's Crypt` wurde aufgrund des Wortes `exile` global als Removal erkannt und dadurch zusätzlich fälschlich als Anti-Aggro-Sideboardkarte klassifiziert.
