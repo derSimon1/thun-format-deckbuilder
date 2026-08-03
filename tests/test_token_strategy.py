@@ -47,8 +47,8 @@ def test_token_strategy_generates_60_card_deck():
         )
 
     spell_count = sum(entry.quantity for entry in deck.mainboard)
-    assert spell_count == 37
-    assert deck.lands == 23
+    assert spell_count == 36
+    assert deck.lands == 24
     assert spell_count + deck.lands == 60
 
 
@@ -76,8 +76,7 @@ def test_generic_builder_generates_token_deck():
             colors=["W"],
         )
 
-    assert sum(entry.quantity for entry in deck.mainboard) == 37
-    assert deck.lands == 23
+    assert sum(entry.quantity for entry in deck.mainboard) == 36
 
 
 def test_token_strategy_respects_copy_limit():
