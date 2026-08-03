@@ -8,6 +8,7 @@ from pathlib import Path
 from thun_deckbuilder.card_analyzer import analyze_card
 from thun_deckbuilder.card_database import CardDatabase
 from thun_deckbuilder.deck_builder import generate_deck
+from thun_deckbuilder.opening_hand_simulator import OpeningHandSimulator
 from thun_deckbuilder.token_packages import build_token_package_diagnostics
 from thun_deckbuilder.token_production import (
     analyze_token_production,
@@ -16,6 +17,10 @@ from thun_deckbuilder.token_production import (
 
 
 OUTPUT = Path("artifacts/global/tokens/token-packages.json")
+ARENA_OUTPUT = Path("artifacts/global/tokens/arena-import.txt")
+OPENING_HAND_OUTPUT = Path("artifacts/global/tokens/opening-hands-100.json")
+OPENING_HAND_SEED = 1701
+OPENING_HAND_SAMPLES = 100
 
 
 def _production_diagnostics(deck, legal_by_name) -> dict[str, object]:
@@ -57,6 +62,47 @@ def _production_diagnostics(deck, legal_by_name) -> dict[str, object]:
     }
 
 
+def _arena_import(deck) -> str:
+    mainboard_lines = [
+        f"{entry.quantity} {entry.name}" for entry in deck.mainboard
+    ]
+    if deck.mana_base is not None:
+        mainboard_lines.extend(
+            f"{allocation.quantity} {allocation.land_name}"
+            for allocation in deck.mana_base.allocations
+            if allocation.quantity
+        )
+    elif deck.lands:
+        mainboard_lines.append(f"{deck.lands} Plains")
+
+    sideboard_lines = [
+        f"{entry.quantity} {entry.name}" for entry in deck.sideboard
+    ]
+    mainboard_total = sum(entry.quantity for entry in deck.mainboard) + deck.lands
+    sideboard_total = sum(entry.quantity for entry in deck.sideboard)
+    if mainboard_total != 60:
+        raise ValueError(f"Arena mainboard must contain 60 cards, got {mainboard_total}")
+    if sideboard_total != 15:
+        raise ValueError(f"Arena sideboard must contain 15 cards, got {sideboard_total}")
+    return "\n".join(("Deck", *mainboard_lines, "", "Sideboard", *sideboard_lines, ""))
+
+
+def _opening_hand_diagnostics(deck) -> dict[str, object]:
+    report = OpeningHandSimulator().simulate_plan(
+        deck,
+        archetype="tokens",
+        plan="go_wide",
+        samples=OPENING_HAND_SAMPLES,
+        seed=OPENING_HAND_SEED,
+    )
+    if report.samples != OPENING_HAND_SAMPLES or len(report.hands) != OPENING_HAND_SAMPLES:
+        raise ValueError(
+            "Opening-hand validation must store exactly "
+            f"{OPENING_HAND_SAMPLES} hands"
+        )
+    return asdict(report)
+
+
 def main() -> None:
     with CardDatabase() as database:
         legal = database.get_all_legal_cards()
@@ -79,6 +125,13 @@ def main() -> None:
         json.dumps(payload, indent=2, sort_keys=True) + "\n",
         encoding="utf-8",
     )
+    ARENA_OUTPUT.write_text(_arena_import(deck), encoding="utf-8")
+    opening_hands = _opening_hand_diagnostics(deck)
+    OPENING_HAND_OUTPUT.write_text(
+        json.dumps(opening_hands, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+
     aristocrats = payload["aristocrats"]
     false_positives = payload["broad_role_false_positive_copies"]
     production = payload["production"]
@@ -91,7 +144,11 @@ def main() -> None:
         f"drain_payoffs={aristocrats['drain_payoff_copies']} "
         f"false_positive_copies={sum(false_positives.values())} "
         f"production_modes={production['mode_copies']} "
-        f"pool_modes={capacity['distinct_by_mode']}"
+        f"pool_modes={capacity['distinct_by_mode']} "
+        f"opening_hands={opening_hands['samples']} "
+        f"opening_seed={opening_hands['seed']} "
+        f"plan_capable={opening_hands['plan_capable_pct']}% "
+        f"deck_hash={opening_hands['deck_hash']}"
     )
 
 
