@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import math
 import random
 from dataclasses import dataclass
 
@@ -55,16 +56,21 @@ def _threat_density(deck: GeneratedDeck) -> float:
 
 
 def _lethal_race_progress(report: GoldfishReport) -> float:
-    """Measure a damage plan without rewarding irrelevant overkill.
+    """Measure damage-plan pressure with diminishing returns after lethal.
 
-    Average damage captures how close non-lethal games get, while the kill rate
-    captures consistency. Damage above 20 life is capped because it cannot make
-    an already lethal five-turn goldfish win the race twice.
+    Damage up to 20 remains linear because it describes reaching lethal. Excess
+    damage still signals speed and reach, but receives only logarithmic credit
+    so a 40-damage goldfish does not count as twice as successful as a lethal
+    20-damage goldfish. Kill rate contributes a smaller consistency bonus.
     """
 
-    damage_progress = min(1.0, max(0.0, report.average_damage / 20.0))
+    ratio = max(0.0, report.average_damage / 20.0)
+    if ratio <= 1.0:
+        damage_progress = ratio
+    else:
+        damage_progress = 1.0 + 0.25 * math.log2(ratio)
     kill_consistency = min(1.0, max(0.0, report.kill_by_final_turn_pct / 100.0))
-    return damage_progress * 0.65 + kill_consistency * 0.35
+    return damage_progress + 0.2 * kill_consistency
 
 
 def _base_progress(report: GoldfishReport, archetype: str) -> float:

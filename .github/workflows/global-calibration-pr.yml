@@ -1,5 +1,5 @@
 name: Global Calibration PR
-run-name: Token Go Wide – Lethal Race Calibration
+run-name: Token Go Wide – Lethal Race Diminishing Returns
 
 on:
   pull_request:

@@ -22,7 +22,7 @@ Referenzarchetypen: Burn, Tokens, Artifacts, Control und Mill.
 - [x] 23-Land-Variante gemessen und wegen schlechterer Stabilität verworfen
 - [x] bedingte und aktivierte Maker durch modusspezifisches Scoring entfernt
 - [x] reine Opfer-Outlets aus Go Wide entfernt
-- [ ] Lethal-Race-Modell ohne Überkill-Doppelzählung kalibrieren
+- [ ] Lethal-Race-Modell mit abnehmendem Überkill-Nutzen kalibrieren
 - [ ] Arena-Import und 100 Hände final bewerten
 
 ## Aktuelle Pflichtdichten
@@ -40,15 +40,21 @@ Referenzarchetypen: Burn, Tokens, Artifacts, Control und Mill.
 - Keepability/Planfähigkeit 77/77 %, Early Play T2/T3 94/96 %
 - Goldfish 24,94 Schaden, 66 % Killrate, Board 9,10
 - Matchups Burn/Artifacts/Mill: 0/76/100 %
-- Burn erreicht im Goldfish 45,99 Durchschnittsschaden und 98 % Killrate; das bisherige Matchupmodell zählt den Überkill linear als 230 % Fortschritt
+
+## Run-75-Lernpunkt
+
+- harte Kappung bei 20 reduzierte Tokens–Artifacts auf 0 % und machte Control–Burn zu 100 %
+- Fast und Diagnose waren grün; ein Test scheiterte nur an 0,001 Monte-Carlo-Rundung
+- die harte Kappung wird verworfen, bevor weitere Deckoptimierung beginnt
 
 ## Aktueller Zyklus
 
-1. Schadensfortschritt für Burn und Tokens bei lethal 20 deckeln.
-2. Killrate als Konsistenzkomponente in den Rennfortschritt aufnehmen.
-3. Überkill- und Killraten-Regressionsfälle testen.
-4. Workflow sichtbar `Token Go Wide – Lethal Race Calibration` benennen.
-5. Deck-Hash, Benchmarks und Deckmetriken müssen unverändert bleiben; nur das Diagnosemodell darf sich ändern.
+1. Schaden bis 20 linear bewerten.
+2. Überkill oberhalb 20 nur logarithmisch gutschreiben.
+3. Killrate als kleinen Konsistenzbonus ergänzen.
+4. Fortschrittsfunktion direkt und deterministisch testen.
+5. Workflow sichtbar `Token Go Wide – Lethal Race Diminishing Returns` benennen.
+6. Deck-Hash, Benchmarks und Deckmetriken müssen unverändert bleiben.
 
 ## Prioritäten danach
 
@@ -60,4 +66,4 @@ Referenzarchetypen: Burn, Tokens, Artifacts, Control und Mill.
 
 ## Genau ein nächster ausführbarer Schritt
 
-Lethal-Race-Kalibrierung veröffentlichen, den sprechend benannten Workflow samt Artefakt vollständig auswerten und danach behalten oder evidenzbasiert zurückrollen.
+Diminishing-Returns-Fix veröffentlichen, den sprechend benannten Workflow samt Artefakt vollständig auswerten und erst nach grünem Gate weiter optimieren.

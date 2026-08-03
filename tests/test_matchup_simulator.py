@@ -1,8 +1,6 @@
-from dataclasses import replace
-
 from thun_deckbuilder.deck_generator import DeckEntry, GeneratedDeck, ManaCost
 from thun_deckbuilder.goldfish_simulator import GoldfishReport
-from thun_deckbuilder.matchup_simulator import MatchupSimulator
+from thun_deckbuilder.matchup_simulator import MatchupSimulator, _lethal_race_progress
 
 
 def entry(name, quantity, mv, type_line, *, roles=(), reasons=()):
@@ -95,22 +93,11 @@ def test_faster_goldfish_plan_is_favored_when_interaction_is_equal():
     assert result.wins_a_pct > result.wins_b_pct
 
 
-def test_excess_damage_beyond_lethal_does_not_count_as_extra_race_progress():
-    lethal = deck(
-        (entry("Threat", 12, 1, "Creature"),),
-        report("burn", damage=20.0, kill_rate=100),
-    )
-    overkill = deck(
-        (entry("Threat", 12, 1, "Creature"),),
-        report("burn", damage=45.0, kill_rate=100),
-    )
-    result = MatchupSimulator().simulate(
-        lethal,
-        overkill,
-        archetype_a="burn",
-        archetype_b="burn",
-    )
-    assert result.average_score_a == result.average_score_b
+def test_excess_damage_has_diminishing_returns_after_lethal():
+    lethal = _lethal_race_progress(report("burn", damage=20.0, kill_rate=100))
+    overkill = _lethal_race_progress(report("burn", damage=40.0, kill_rate=100))
+    assert overkill > lethal
+    assert overkill - lethal < 0.5
 
 
 def test_kill_consistency_breaks_equal_average_damage_tie():

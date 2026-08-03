@@ -50,15 +50,25 @@ Eine vollständig qualifizierte v2-KGB existiert noch nicht. `baseline: none` be
 - Matchups Tokens gegen Burn/Artifacts/Mill: 0/76/100 %.
 - KGB: keine neue KGB; `baseline: none` besteht fort.
 
-## Aktueller Zyklus – Lethal Race Calibration
+### Lethal-Race-Hartkappung – Run 75
 
-- **Ursache:** Der Matchup-Simulator bewertet durchschnittlichen Schaden linear. Burns 45,99 Schaden entsprechen dadurch 230 % Fortschritt, obwohl 20 Schaden bereits lethal sind. Überkill dominiert das Matchup stärker als Konsistenz und Interaktion.
-- **Hypothese:** Kappen des Schadensfortschritts bei 20 und Ergänzen der tatsächlichen Killrate ergibt ein differenzierteres Rennmodell. Das Deck selbst und alle Benchmark-, Opening-Hand- und Goldfish-Metriken müssen unverändert bleiben.
-- **Änderungen:** gemeinsame Lethal-Race-Funktion für Burn und Tokens; Regressionstests gegen Überkill-Doppelzählung und für Killraten-Konsistenz; Workflow-Run-Name `Token Go Wide – Lethal Race Calibration`.
-- **Erfolg:** vollständige Testsuite, Fast und Diagnose grün; Deck-Hash und Deckmetriken unverändert; Burn-Matchup nicht mehr allein durch irrelevanten Überkill determiniert; andere Matchups plausibel und ohne Regressionssignal.
-- **Rollback:** wenn das Modell langsamere Decks trotz klar schlechter Killrate bevorzugt oder Deck-/Benchmarkwerte unerwartet verändert.
-- **KGB-Entscheidung vor Push:** keine neue KGB, da nur das Diagnosemodell kalibriert wird und `baseline: none` fortbesteht.
+- Commit `c197679978ae117ddc93846a895f0773f3634df0`.
+- Workflow `Token Go Wide – Lethal Race Calibration`, ID `30832425136`, fehlgeschlagen; Artefakt `8863583892`.
+- Fast-Validierung und Token-Diagnose grün; 307 Tests bestanden, 1 Test scheiterte an einer Monte-Carlo-Rundungsdifferenz von 0,001.
+- Die wichtigere fachliche Auswertung widerlegte die harte Kappung: Tokens–Artifacts fiel 76→0 %, Control–Burn sprang 0→100 %.
+- Ursache: Eine vollständige Deckelung bei 20 zerstört die zwischen den Archetypen kalibrierte Fortschrittsskala.
+- Entscheidung: harte Kappung verwerfen und zuerst korrigieren; kein weiterer Optimierungszyklus vor grünem Gate.
+- KGB: keine neue KGB.
+
+## Aktueller Zyklus – Lethal Race Diminishing Returns
+
+- **Ursache:** Lineare Überkill-Wertung ist zu dominant, harte Kappung ist jedoch zu aggressiv und verzerrt archetypenübergreifende Vergleiche.
+- **Hypothese:** Schaden bis 20 bleibt linear; darüber erhält zusätzlicher Schaden nur logarithmischen Nutzen. Die Killrate liefert einen kleinen Konsistenzbonus. Dadurch bleibt Tokens gegen Artifacts vergleichbar, während Burns Überkill nicht mehr doppelt zählt.
+- **Änderungen:** logarithmisch abnehmender Überkill-Nutzen; robuster Unit-Test direkt auf der Fortschrittsfunktion; Workflow-Run-Name `Token Go Wide – Lethal Race Diminishing Returns`.
+- **Erfolg:** vollständige Testsuite, Fast und Diagnose grün; Deck-Hash und Benchmarks unverändert; Tokens–Artifacts bleibt konkurrenzfähig; Control–Burn und Tokens–Burn zeigen plausible Richtung ohne harte 0/100-Artefakte allein durch Skalierung.
+- **Rollback:** wenn die archetypenübergreifenden Matchups erneut kippen oder der Burn-Überkill weiterhin praktisch linear wirkt.
+- **KGB-Entscheidung vor Push:** keine neue KGB; Diagnosekalibrierung bei fortbestehendem `baseline: none`.
 
 ## Nächster ausführbarer Schritt
 
-Die Lethal-Race-Kalibrierung veröffentlichen und Workflow, vollständige Tests, Deck-Hash, Matchups sowie alle Artefakte auswerten. Danach evidenzbasiert behalten oder zurückrollen.
+Den Diminishing-Returns-Fix veröffentlichen und Workflow, Tests, Deck-Hash, Matchups sowie Artefakte vollständig auswerten. Erst danach weiter optimieren.
