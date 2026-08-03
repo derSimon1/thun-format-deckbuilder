@@ -32,6 +32,26 @@ def test_artifact_benchmark_counts_artifact_density():
     assert report.land_item.score == 100
 
 
+def test_control_benchmark_counts_answers_and_finishers():
+    deck = GeneratedDeck(
+        mainboard=(
+            entry("Counter", 9, 2, "Instant", reasons=("Counter target spell",)),
+            entry("Removal", 6, 2, "Instant", ("removal",), ("Control removal",)),
+            entry("Draw", 7, 3, "Instant", ("card_draw",), ("Card advantage engine",)),
+            entry("Finisher", 3, 6, "Creature", ("finisher",), ("Control-Finisher",)),
+            entry("Support", 10, 3, "Instant"),
+        ),
+        lands=25,
+    )
+
+    report = BenchmarkAnalyzer().analyze(deck, "control")
+
+    assert report.signature_items[0].key == "control_answers"
+    assert report.signature_items[0].actual == 15
+    assert report.signature_items[1].actual == 3
+    assert report.land_item.score == 100
+
+
 def test_shrine_benchmark_counts_shrines_and_fixing():
     deck = GeneratedDeck(
         mainboard=(
@@ -66,7 +86,4 @@ def test_mill_benchmark_counts_real_mill_sources():
     assert signature.key == "mill_sources"
     assert signature.actual == 24
     assert signature.score == 100
-    # The synthetic deck intentionally puts every spell at mana value two, so
-    # its aggregate benchmark must remain free to penalize the unrealistic
-    # curve. This test covers mill-source recognition only.
     assert report.land_item.score == 100

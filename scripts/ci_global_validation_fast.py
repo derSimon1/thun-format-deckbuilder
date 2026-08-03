@@ -4,7 +4,7 @@ import json
 import random
 from itertools import combinations as all_combinations
 
-import ci_global_validation as validation
+import ci_global_validation_v2 as v2
 
 from thun_deckbuilder.matchup_simulator import MatchupSimulator
 from thun_deckbuilder.opening_hand_simulator import OpeningHandSimulator
@@ -15,6 +15,7 @@ from thun_deckbuilder.tournament_simulator import (
 )
 
 
+validation = v2.validation
 FAST_MATCHUP_SAMPLES = 120
 FAST_BO3_SAMPLES = 40
 FAST_SIDEBOARD_SWAPS = 3
@@ -24,12 +25,15 @@ FAST_MATCHUP_PAIRS = (
     ("tokens", "burn"),
     ("tokens", "artifacts"),
     ("tokens", "mill"),
+    ("control", "burn"),
+    ("control", "tokens"),
+    ("control", "artifacts"),
 )
 _BASE_VALIDATE_ARCHETYPE = validation._validate_archetype
 
 
 def fast_combinations(archetypes, size: int):
-    """Use three Token-focused pairs in cyclic CI, preserving full mode."""
+    """Use Token- and Control-focused pairs in cyclic CI, preserving full mode."""
 
     values = tuple(archetypes)
     if size != 2:
@@ -182,6 +186,7 @@ def validate_archetype_with_plan_hands(
 
 
 def main() -> None:
+    v2.configure()
     validation.combinations = fast_combinations
     validation.MatchupSimulator = FastMatchupSimulator
     validation.BestOfThreeSimulator = FastBestOfThreeSimulator

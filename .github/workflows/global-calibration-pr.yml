@@ -79,7 +79,7 @@ jobs:
           TEST_STATUS=${PIPESTATUS[0]}
 
           if [ "$VALIDATION_MODE" = "full" ]; then
-            VALIDATION_SCRIPT=scripts/ci_global_validation.py
+            VALIDATION_SCRIPT=scripts/ci_global_validation_v2.py
           else
             VALIDATION_SCRIPT=scripts/ci_global_validation_fast.py
           fi

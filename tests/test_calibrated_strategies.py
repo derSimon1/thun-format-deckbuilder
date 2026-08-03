@@ -5,6 +5,7 @@ from thun_deckbuilder.calibrated_strategies import (
     MillStrategy,
     ShrineStrategy,
 )
+from thun_deckbuilder.control_strategy import ControlStrategy
 from thun_deckbuilder.deck_request import DeckRequest
 
 
@@ -36,6 +37,14 @@ def test_mill_strategy_requires_dimir():
         strategy._validate_request(_request("mill", ("U",)))
 
     strategy._validate_request(_request("mill", ("U", "B")))
+
+
+def test_control_strategy_requires_dimir():
+    strategy = ControlStrategy()
+    with pytest.raises(ValueError):
+        strategy._validate_request(_request("control", ("U",)))
+
+    strategy._validate_request(_request("control", ("U", "B")))
 
 
 def test_calibrated_strategies_reject_non_sixty_card_decks():

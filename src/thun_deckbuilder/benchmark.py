@@ -83,6 +83,29 @@ BENCHMARKS: dict[str, BenchmarkProfile] = {
             ),
         ),
     ),
+    "control": BenchmarkProfile(
+        archetype="control",
+        display_name="Dimir Control",
+        role_targets=(("removal", 8), ("card_draw", 7)),
+        curve_targets=(("1", 4), ("2", 12), ("3", 10), ("4+", 9)),
+        lands=25,
+        signature_targets=(
+            SignatureTarget(
+                "control_answers",
+                14,
+                reason_phrases=(
+                    "Counter target spell",
+                    "Control removal",
+                    "Sweeper",
+                ),
+            ),
+            SignatureTarget(
+                "control_finishers",
+                3,
+                reason_phrases=("Control-Finisher",),
+            ),
+        ),
+    ),
     "shrines": BenchmarkProfile(
         archetype="shrines",
         display_name="Five-Color Shrines",

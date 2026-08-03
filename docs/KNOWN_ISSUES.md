@@ -26,7 +26,7 @@ Token-Engines werden von einmaligem Material getrennt. Eine archetypenübergreif
 **Status:** offen  
 **Priorität:** hoch
 
-Run `30792560878` auf Commit `31f6c1e053976435481c07ab2098430bc2a45471` ist technisch grün und dient als v2-Bootstrap-Vergleichsstand. Er ist keine v2-KGB, weil der Validator noch Shrines statt Control verwendet, die Regression-Baseline `none` meldet und noch keine 100 planabhängigen Rohhände speichert.
+Run `30792560878` auf Commit `31f6c1e053976435481c07ab2098430bc2a45471` dient als v2-Bootstrap-Vergleichsstand. Die 100-Hand-Auswertung ist inzwischen technisch vorhanden und durch Runs 42/43 verifiziert. Eine v2-KGB ist dennoch erst nach erfolgreicher Control-Pflichtvalidierung, wiederhergestelltem Baseline-Vergleich und vollständiger Reflexion zulässig.
 
 ## KI-005 – Matchups sind teilweise unrealistisch extrem
 
@@ -56,12 +56,12 @@ No-Change-Zyklen müssen Stopgrund, Erkenntnis und nächsten ausführbaren Schri
 
 Development System v2.0 verlangt Logbook-, Roadmap- und KGB-Entscheidungen pro Zyklus. Der Konsistenz-Check bleibt dennoch Pflicht.
 
-## KI-009 – Pflichtvalidator verwendet noch Shrines statt Control
+## KI-009 – Pflichtvalidator verwendete Shrines statt Control
 
-**Status:** bestätigt  
+**Status:** Umsetzung in Zyklus 3, CI ausstehend  
 **Priorität:** hoch
 
-Der Fast-/Full-Validator erzeugt aktuell Burn, Tokens, Artifacts, Shrines und Mill. Damit widerspricht die ausführbare Validierung der v2.0-Referenzgruppe Burn, Tokens, Artifacts, Control und Mill. Bis zur Control-Integration darf kein Lauf als vollständig qualifizierte v2-KGB gelten.
+Der v2-Validator wird auf Burn, Tokens, Artifacts, Control und Mill umgestellt. Shrines-Code bleibt für optionale Regressionstests erhalten, ist aber nicht mehr Teil der Pflichtvalidierung. Die reale Kartenpool-, 60/15-, Benchmark-, Matchup- und Laufzeitprüfung muss der neue PR-Workflow bestätigen.
 
 ## KI-010 – Planabhängige Starthandrollen beruhen teilweise auf Rollen und Auswahlgründen
 
@@ -69,3 +69,10 @@ Der Fast-/Full-Validator erzeugt aktuell Burn, Tokens, Artifacts, Shrines und Mi
 **Priorität:** mittel
 
 `DeckEntry` enthält derzeit keinen vollständigen Oracle-Text. Der `OpeningHandPlanReport` muss deshalb Rollen, Typzeile und Auswahlgründe verwenden. Ungewöhnlich formulierte Karten oder falsch erkannte Rollen können dadurch als Enabler, Engine, Payoff, Finisher oder Interaktion übersehen werden.
+
+## KI-011 – Mill-Starthände werden derzeit nie als planfähig klassifiziert
+
+**Status:** offen  
+**Priorität:** mittel
+
+Runs 42 und 43 zeigen für Mill 0 % planfähige und 100 % marginale Hände. Das kann auf zu wenige erkannte Mill-Enabler in der erzeugten Liste, unzureichende Oracle-Text-Weitergabe oder eine zu strenge Mill-Heuristik zurückgehen. Keine Schwellenwerte ändern, bevor die Ursache anhand der Rohhände belegt ist.

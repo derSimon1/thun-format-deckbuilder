@@ -11,7 +11,6 @@ Die fünf verbindlichen Referenzarchetypen sind Burn, Tokens, Artifacts, Control
 ## Phase 1 – Stabilität und Messbarkeit
 
 - [x] globale Fast-Validierung
-- [x] fünf repräsentative Archetypen im Legacy-Validator
 - [x] Datenbankcache
 - [x] Opening-Hand-, Goldfish-, Matchup- und BO3-Berichte
 - [x] grundlegende Regressionserkennung
@@ -19,8 +18,8 @@ Die fünf verbindlichen Referenzarchetypen sind Burn, Tokens, Artifacts, Control
 - [x] v2-Bootstrap-Vergleichsstand mit Commit, Workflow und Einschränkungen dokumentieren
 - [x] reproduzierbaren `OpeningHandPlanReport` mit genau 100 gespeicherten Händen je im Fast-Lauf verwendeter Deckliste implementieren
 - [x] Keepability, Early Play und Planfähigkeit getrennt ausweisen
-- [x] Fast-Report-Artefakte und Laufzeit in Run `30794553679` verifiziert
-- [ ] vollständigen Validator auf Burn, Tokens, Artifacts, Control und Mill umstellen
+- [x] Manafehler dürfen nicht als planfähige Hände gelten
+- [ ] Control-Pflichtvalidator und sechs priorisierte Matchups im PR-Workflow verifizieren
 - [ ] erste vollständig qualifizierte v2-KGB erzeugen
 
 ## Phase 2 – Strategy Commitment und Engines
@@ -40,12 +39,15 @@ Die fünf verbindlichen Referenzarchetypen sind Burn, Tokens, Artifacts, Control
 
 ## Phase 3 – Control und allgemeine Interaktion
 
-- [ ] Control als fünften allgemeinen Referenzarchetyp im Builder und Validator integrieren
+- [x] Dimir Control als allgemeine Builder-Strategie registrieren
+- [x] Control-Scoring für Counter, Removal, Sweeper, Kartenvorteil und Finisher implementieren
+- [x] Control-Benchmark und v2-Validatorregistrierung vorbereiten
+- [ ] reale Control-Generierung mit 60/15, Legalität und Manabasis im Workflow bestätigen
 - [ ] matchupabhängige relevante Interaktion statt bloßer Antwortenzahl messen
 - [ ] Stabilisierung bis Zug 4 oder 5 bewerten
 - [ ] Kartenvorteil nach früher Interaktion messen
 - [ ] Wincondition-Zugang nach Stabilisierung prüfen
-- [ ] Control gegen Aggro, Tokens und Nichtkreaturen-/Engine-Pläne benchmarken
+- [ ] Control gegen Burn, Tokens und Artifacts benchmarken
 
 ## Phase 4 – Meta-Benchmark
 
@@ -67,10 +69,10 @@ Die fünf verbindlichen Referenzarchetypen sind Burn, Tokens, Artifacts, Control
 
 ## Aktuelle Priorität
 
-1. Manafehler-Invariante im neuen Workflow und in den Rohdaten verifizieren
-2. Control als fünften Builder- und Validator-Archetyp integrieren und Shrines aus der Pflichtvalidierung entfernen
-3. Burn, Tokens, Artifacts, Control und Mill mit denselben 100-Hand-Metriken vergleichen
-4. Mill-Befund 0 % planfähig / 100 % marginal gegen Rollen- und Kartentextdaten prüfen
+1. neuen Control-Workflow vollständig auswerten: Tests, 60/15, Benchmark, 100 Hände, sechs Matchups, BO3, Laufzeit und Artefakte
+2. bei roter CI genau eine belegte Control-Ursache beheben; keine Grenzwerte nur zum Bestehen verschieben
+3. bei grüner CI Control-Handmetriken auf relevante Interaktion, Kartenvorteil und Finisher-Zugang prüfen
+4. Mill-Befund 0 % planfähig / 100 % marginal anhand Rohhänden und Oracle-Textdaten untersuchen
 5. Go Wide, Value Tokens und Aristocrats anhand planfähiger Hände getrennt benchmarken
 6. erste vollständig qualifizierte v2-KGB dokumentieren
 7. Strategy Commitment und Engine Density archetypenübergreifend abstrahieren
@@ -79,11 +81,11 @@ Die fünf verbindlichen Referenzarchetypen sind Burn, Tokens, Artifacts, Control
 
 ## Definition of Done für den nächsten Zyklus
 
-- aktueller PR-Workflow und dessen Rohdatenartefakte sind vollständig ausgewertet
-- Control kann als legaler 60/15-Referenzarchetyp erzeugt werden
+- PR-Workflow des Control-Commits ist vollständig ausgewertet
 - Pflichtvalidierung verwendet Burn, Tokens, Artifacts, Control und Mill; Shrines ist daraus entfernt
-- Control-Hände unterscheiden relevante frühe Interaktion, Stabilisierung, Kartenvorteil und Wincondition-Zugang
-- Control wird gegen Aggro, Tokens und einen Nichtkreaturen-/Engine-Plan geprüft
+- Control erzeugt ein legales 60/15-Deck mit ausreichender Manabasis
+- Control-Hände berichten relevante frühe Interaktion, Engine-/Kartenvorteil- und Finisher-Zugang
+- Control wird gegen Burn, Tokens und Artifacts sowie die drei Token-Matchups geprüft
 - genau 100 reproduzierbare Hände je verwendeter Referenzdeckliste werden mit Seed gespeichert
 - vollständige Testsuite und Fast-Validierung sind erfolgreich
 - Fast-Validierung bleibt unter zehn Minuten

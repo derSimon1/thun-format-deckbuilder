@@ -8,7 +8,7 @@ Dieses Dokument ist das chronologische Projektgedächtnis. Es hält Änderungen,
 Datum / Lauf / Zyklus
 Ziel
 Ausgangs-Head
-Ausgangs-KGB oder Legacy-KGB-Kandidat
+Ausgangs-KGB oder Vergleichsstand
 Hypothese
 Änderungen oder No-Change-Befund
 Validierung und Laufzeit
@@ -36,273 +36,192 @@ Eine v2.0-KGB benötigt vollständige Tests, Fast-Validierung, erfolgreiche CI, 
 - Commit: `31f6c1e053976435481c07ab2098430bc2a45471`
 - Workflow: Run `30792560878`, erfolgreich
 - Tests: 240 bestanden in 30,10 Sekunden
-- Fast-Validierung: erfolgreich; Gesamtzeit des Test-/Fast-Schritts ungefähr 3 Minuten 36 Sekunden
+- Fast-Validierung: ungefähr 3 Minuten 36 Sekunden
 - Benchmarks: Burn 83, Tokens 90, Artifacts 90, Shrines 78, Mill 78
-- bestehende Opening-Hand-Werte nach Mulligan: Burn 96 %, Tokens 94 %, Artifacts 96 %, Shrines 94 %, Mill 96 %
-- Einschränkungen: Validator enthält Shrines statt Control; Vergleich meldet `baseline: none`; keine gespeicherten planabhängigen 100 Rohhände
-- Status: technischer und quantitativer Bootstrap-Vergleichsstand, keine voll qualifizierte v2-KGB
-- Confidence: hoch für Reproduzierbarkeit des technischen Stands, niedrig bis mittel für globale spielerische Aussagekraft
+- Einschränkungen: Shrines statt Control, `baseline: none`, keine gespeicherten planabhängigen 100 Rohhände
+- Status: technischer Bootstrap-Vergleichsstand, keine v2-KGB
+- Confidence: hoch für technische Reproduzierbarkeit, niedrig bis mittel für globale spielerische Aussagekraft
 
 ### Historischer Legacy-KGB-Kandidat
 
 - Commit: `3fa9b104d8e38a260ab1240df97bec206a17a1df`
 - Workflow: Run `30762470833`, erfolgreich
-- Evidenz: 225 Tests bestanden; Fast-Lauf ungefähr drei Minuten; Opening-Hand-, Goldfish-, Matchup- und BO3-Berichte vorhanden
-- Einschränkung: damalige Referenzgruppe enthielt Shrines statt Control; die v2.0-Starthand- und KGB-Regeln waren noch nicht vollständig umgesetzt
-- Status: historischer Wiederanlaufpunkt, keine voll qualifizierte v2.0-KGB
-- Confidence: mittel
+- Evidenz: 225 Tests bestanden; Fast-Lauf ungefähr drei Minuten
+- Einschränkung: alte Referenzgruppe und keine v2-Regeln
+- Status: historischer Wiederanlaufpunkt, keine v2-KGB
 
 ## Historische Lessons Learned
 
-### 2026-08-02 – Globale Kalibrierung und Token-Combat
-
-- robuste Scryfall-Bulkdatenbank und Cache aufgebaut
-- Opening-Hand-, Goldfish-, Benchmark-, Matchup- und BO3-Berichte etabliert
-- Token-Combat realistischer modelliert
-- Summoning Sickness, leere Anthem-Boards und Payoff-Wirkung durch Regressionstests abgesichert
-- zentrale Erkenntnis: Rollenpunkte allein erzeugen noch kein gutes Tokendeck
-
-### 2026-08-02/03 – Fehlgeschlagene Nachtkalibrierung
-
-- GitHub Actions und Cron wurden fälschlich als Entwicklungsantrieb behandelt
-- Statusprüfungen wurden wiederholt, ohne neue Entwicklungsergebnisse zu erzeugen
-- daraus folgten Single Source of Truth, produktive No-Change-Regel und kontinuierlicher Mehrstundenbetrieb ohne separate 15-Minuten-Aufgaben
-
-### 2026-08-03 – Token-Plan-Erkennung
-
-- Go Wide, Value Tokens und Aristocrats werden vor der Kartenauswahl unterschieden
-- planabhängige Kartenbewertung integriert
-- technische Integration bestätigt; spielerische Kalibrierung weiterhin benchmarkabhängig
-
-### 2026-08-03 – Planspezifische Dichteziele und Sparse-Pool-Hotfix
-
-- harte Mindestdichten blockierten sparse Kartenpools
-- Supportrollen wurden auf weiche Ziele zurückgeführt
-- zentrale Erkenntnis: harte Mindestwerte dürfen erst nach Kapazitätsprüfung aktiviert werden
-
-### 2026-08-03 – Strategy Commitment
-
-- Commitment-Score, planprägende, planfremde und neutrale Kopien sowie Mischmasch-Warnungen eingeführt
-- neutrale Interaktion wird nicht fälschlich als Planbruch gewertet
-
-### 2026-08-03 – Token Engine Density
-
-- wiederholbare planrelevante Engines von einmaligem Material getrennt
-- Null-Engine- und Single-Engine-Abhängigkeit werden transparent gewarnt
-- noch offen: archetypenübergreifende Abstraktion
+- Rollenpunkte allein erzeugen kein gutes Tokendeck.
+- Token-Combat muss Summoning Sickness und leere Anthem-Boards korrekt berücksichtigen.
+- Go Wide, Value Tokens und Aristocrats müssen vor der Kartenauswahl unterschieden werden.
+- Harte Rollenminimums dürfen erst nach Kapazitätsprüfung aktiviert werden.
+- Strategy Commitment muss neutrale Interaktion von planfremden Paketen trennen.
+- Engine Density muss wiederholbare Engines von einmaligem Material trennen.
+- GitHub Actions ist Validator, nicht Entwicklungsagent.
+- No-Change-Zyklen benötigen Stopgrund, Erkenntnis und nächsten Schritt.
 
 ## 2026-08-03 – Development System v2.0 Konsolidierung
 
-### Ziel
+- Spezifikation, Prompt, Roadmap, Decisions, Meta und PR-Beschreibung vereinheitlicht.
+- Referenzgruppe: Burn, Tokens, Artifacts, Control, Mill.
+- 100 reproduzierbare Starthände, KGB, Rollback und Session-Recovery verbindlich gemacht.
+- Runs `30791354202` und `30792560878` technisch grün.
+- KGB-Entscheidung: keine v2-KGB, da Validator noch Shrines enthielt.
 
-Eine konsistente, selbstbeschreibende Arbeitsgrundlage für mehrstündige Kalibrierung mit Sicherungspunkten und Wiederanlaufregeln schaffen.
+## 2026-08-03 – Drei-Stunden-Lauf, Zyklus 1: OpeningHandPlanReport
 
-### Ausgangslage
+### Ziel und Hypothese
 
-- Branch: `codex/global-deckbuilder-calibration`
-- PR: #14
-- PR #13 bleibt unangetastet
-- letzter vor der Konsolidierung verifizierter Head: `82b5aafead442103837f735ae1a66413462ba15c`
-- zugehöriger Workflow: Run `30791354202`, erfolgreich
-- PR war offen, Draft und mergeable
-
-### Änderungen
-
-- `docs/SPECIFICATION.md` auf Version 2.0 konsolidiert
-- Mehrstundenbetrieb ohne separate 15-Minuten-Aufgaben verbindlich gemacht
-- Burn, Tokens, Artifacts, Control und Mill als Referenzarchetypen festgelegt
-- Shrines aus den Pflicht- und Referenzarchetypen entfernt
-- 100 reproduzierbare Starthände je verwendeter Deckliste verbindlich gemacht
-- Keepability, Early Play und Planfähigkeit getrennt
-- Known Good Baseline, Git-Tag, Rollback und Session-Recovery eingeführt
-- Prompt-Priorität an Roadmap und KGB-Bootstrap angepasst
-- D-007 ausdrücklich ersetzt; Control und KGB als dauerhafte Entscheidungen dokumentiert
-- META auf Control statt Shrines ausgerichtet
-
-### Validierung
-
-- Run `30791354202` bestätigt den unmittelbar vorherigen Dokumentationsstand als technisch grün
-- Run `30792560878` bestätigt Head `31f6c1e053976435481c07ab2098430bc2a45471` mit 240 Tests und Fast-Validierung als technisch grün
-- grüne CI allein begründet weiterhin keine v2.0-KGB
-
-### Ergebnis
-
-Die Repository-Dokumente verwenden dieselbe Referenzgruppe und dasselbe Mehrstunden-, Baseline- und Wiederanlaufmodell. Die ausführbare Validierung ist jedoch noch nicht vollständig angepasst und verwendet weiterhin Shrines statt Control.
-
-### KGB-Entscheidung
-
-Keine neue v2.0-KGB.
-
-### Confidence
-
-Hoch für die Prozesskonsistenz; keine Aussage über eine neue spielerische Baseline.
-
-### Priorisierter nächster ausführbarer Schritt
-
-Den reproduzierbaren `OpeningHandPlanReport` mit genau 100 gespeicherten Händen je verwendeter Deckliste, dokumentiertem Seed und getrennten Keepability-/Early-Play-/Planfähigkeitsmetriken implementieren und im Fast-Workflow als Rohdatenartefakt ausgeben.
-
-## 2026-08-03 – Drei-Stunden-Lauf, Zyklus 1: OpeningHandPlanReport und v2-Bootstrap
-
-### Ziel
-
-Die Messlücke zwischen formal spielbaren Händen und realistisch anlaufendem Hauptplan schließen, ohne die bestehende aggregierte London-Mulligan-Simulation zu brechen.
+Eine reproduzierbare Einzelhandanalyse soll Keepability, Early Play und Planfähigkeit trennen und damit halbe Engines sowie widersprüchliche Hände sichtbar machen.
 
 ### Ausgangs-Head
 
 `31f6c1e053976435481c07ab2098430bc2a45471`
 
-### Ausgangs-KGB oder Vergleichsstand
-
-- keine voll qualifizierte v2-KGB
-- v2-Bootstrap-Vergleichsstand: Head `31f6c1e053976435481c07ab2098430bc2a45471`, Run `30792560878`
-- Run 41: 240 Tests bestanden; Fast-Validierung erfolgreich; 0 gemeldete Regressionen, jedoch `baseline: none`
-- bestehender Pflichtvalidator: Burn, Tokens, Artifacts, Shrines, Mill
-
-### Hypothese
-
-Ein reproduzierbarer Einzelhandbericht mit archetypen- und planabhängiger Klassifikation trennt Keepability, Early Play und Planfähigkeit und macht halbe Engines beziehungsweise widersprüchliche Hände sichtbar. Der globale Qualitätsgewinn ist höher als eine weitere Schwellenwertanpassung, weil die neue Messung alle späteren Token-, Control-, Engine- und Finish-Entscheidungen absichert.
-
 ### Änderungen
 
-1. `OpeningHandSimulator.simulate_plan` erzeugt exakt 100 reproduzierbare Sieben-Karten-Hände mit Seed, Deck-Hash, farbigen Manaquellen, Zug-1/2/3-Spielbarkeit, Sequenzvorschlag, Rollen-Zugängen, Klassifikation und Ausfallgründen. Die bestehende Methode `simulate` bleibt kompatibel.
-2. 15 gezielte Tests decken Reproduzierbarkeit, anderen Seed, exakt 100 Hände, Early-Play-/Planfähigkeits-Trennung, Go Wide, Value Tokens, Aristocrats, Artifacts, Mill, Control und Farbfehler ab.
-3. Der Fast-Validator schreibt pro erzeugtem Archetyp `<archetype>-opening-hands.json` mit vollständigen Rohdaten und ergänzt die kompakte Zusammenfassung in den Validierungsbericht.
+1. `OpeningHandSimulator.simulate_plan` erzeugt exakt 100 Hände mit Seed, Deck-Hash, Manaquellen, Zug-1/2/3-Spielbarkeit, Sequenz, Rollen-Zugängen, Klassifikation und Ausfallgründen.
+2. Gezielte Tests für Reproduzierbarkeit, drei Token-Pläne, Artifacts, Mill, Control und Farbfehler.
+3. Fast-Validator schreibt vollständige Rohdaten nach `artifacts/global/<archetype>/<archetype>-opening-hands.json`.
 
-### Validierung vor Commit
+### Commit und Workflow
 
-- Syntaxprüfung der geänderten Python-Dateien: bestanden
-- gezielte Tests in einer kontrollierten, API-kompatiblen Testumgebung: 15 bestanden in 0,77 Sekunden
-- identischer Seed erzeugte identische 100 Hände; anderer Seed veränderte die Stichprobe
-- bestehende aggregierte Simulator-Tests blieben in der kontrollierten Suite enthalten
-- vollständige Repository-Testsuite und Fast-Validierung müssen durch den neuen PR-Workflow verifiziert werden, da im lokalen Ausführungscontainer kein direkter GitHub-Checkout möglich war
-
-### Starthand-Seed und Rohdatenpfad
-
+- Commit: `43fa53d1766b05327eae5880bacb05905923f21c`
+- Run: `30794553679`, erfolgreich
+- Tests: 250 bestanden in 23,49 Sekunden
+- Fast-Schritt: ungefähr 2 Minuten 51 Sekunden
+- Artefakt: ID `8848391256`, 38 Dateien, 46.181 Byte komprimiert
 - Seed: `1701`
-- Stichprobe: exakt 100 Hände je im Fast-Lauf erzeugter Deckliste
-- Rohdaten: `artifacts/global/<archetype>/<archetype>-opening-hands.json`
+- genau 100 Hände je erzeugtem Deck bestätigt
 
-### Qualitätsvergleich vor der Änderung
+### Erste Messwerte
 
-- Burn: Benchmark 83; Early Play 100 %; Core bis Zug 3 0 %
-- Tokens: Benchmark 90; Early Play 98 %; Core bis Zug 3 0 %
-- Artifacts: Benchmark 90; Early Play 99 %; Core bis Zug 3 100 %
-- Mill: Benchmark 78; Early Play 99 %; Core bis Zug 3 31 %
-- Control: nicht im ausführbaren Validator vorhanden
-
-Diese Werte bestätigen die Messlücke: hohe Early-Play-Raten beweisen insbesondere bei Burn und Tokens keinen erkannten Hauptplan.
-
-### Ergebnis vor Push
-
-Die Messung ist implementiert und gezielt getestet. Eine spielerische Verbesserung wird noch nicht behauptet; der Zyklus verbessert zunächst Messbarkeit und Reproduzierbarkeit.
-
-### KGB-Entscheidung
-
-Keine neue v2-KGB in diesem Commit.
-
-Gründe:
-
-- Control fehlt weiterhin als erzeugter Pflichtarchetyp
-- die neue vollständige Testsuite, Fast-Laufzeit und Rohdatenartefakte müssen post-push verifiziert werden
-- der bisherige Regressionsvergleich besitzt keine wiederhergestellte Baseline
-
-### Confidence
-
-- hoch für deterministische Datenerzeugung und Rohdatenstruktur
-- mittel für die rollen-/gründe-basierte Planerkennung
-- niedrig bis mittel für globale spielerische Aussagekraft vor echten Builder-/Clubbenchmarks
-
-### Kritische Reflexion
-
-- Falsche Annahme: Rollen und Auswahlgründe könnten den tatsächlichen Kartentext nicht zuverlässig genug repräsentieren.
-- Alternative Erklärung: Schlechte Planfähigkeitsraten könnten von zu strengen Heuristiken statt von schlechten Decklisten stammen.
-- Overfitting-Risiko: Die kontrollierten Fixtures sind fachlich eindeutig, aber einfacher als reale Kartenpakete.
-- Messlücke: Matchupsensitivität von Control-Antworten ist noch nicht vollständig modelliert.
-- Grüne CI würde nur technische Stabilität zeigen, nicht automatisch bessere Decks.
-- Unentdeckte Regression: Die zusätzliche 100-Hand-Auswertung könnte die Fast-Laufzeit oder Artefaktgröße erhöhen; dies muss im Workflow geprüft werden.
-
-### Mögliche Folgeschritte
-
-1. **Control als fünften Builder-/Validator-Archetyp integrieren** – sehr hoher globaler Qualitätsgewinn, hohe Evidenz aus der v2-Inkonsistenz, mittlerer bis hoher Aufwand, mittleres Risiko.
-2. **Oracle-Text in `DeckEntry` beziehungsweise Handrollen durchreichen** – hoher Messqualitätsgewinn, mittlere Evidenz, mittlerer Aufwand, Risiko breiter Datenmodelländerungen.
-3. **Token-Grenzwerte anhand der neuen Rohhände kalibrieren** – hoher möglicher Spielgewinn, aber erst nach erfolgreicher Workflow- und Control-Basis sinnvoll; mittlerer Aufwand, höheres Overfitting-Risiko.
-
-### Priorisierter nächster ausführbarer Schritt
-
-Nach erfolgreicher Auswertung des neuen Workflows Control als fünften allgemeinen Builder- und Validator-Archetyp integrieren, Shrines aus der Pflichtvalidierung entfernen und Control-Starthände sowie Matchups gegen Aggro, Tokens und einen Nichtkreaturen-/Engine-Plan mit denselben 100-Hand-Rohdaten prüfen.
-
-## 2026-08-03 – Drei-Stunden-Lauf, Zyklus 2: Manafehler dürfen keine planfähigen Hände sein
-
-### Ziel
-
-Eine durch die neuen Rohdaten belegte Fehlklassifikation korrigieren, bevor die Metrik für Control oder Schwellenwertkalibrierung verwendet wird.
-
-### Ausgangs-Head
-
-`43fa53d1766b05327eae5880bacb05905923f21c`
-
-### Ausgangs-KGB oder Vergleichsstand
-
-- keine voll qualifizierte v2-KGB
-- v2-Bootstrap-Vergleichsstand: `31f6c1e053976435481c07ab2098430bc2a45471`
-- neuer Workflow: Run `30794553679`, erfolgreich
-
-### Evidenz aus Run 42
-
-- vollständige Testsuite: 250 bestanden in 23,49 Sekunden
-- Fast-Validierung: erfolgreich; Test-/Fast-Schritt von 07:41:32 bis 07:44:22, ungefähr 2 Minuten 51 Sekunden
-- Artefakt: `global-calibration-pr-42`, ID `8848391256`, 38 Dateien, 46.181 Byte komprimiert
-- pro erzeugtem Deck genau 100 Hände mit Seed `1701` und Deck-Hash gespeichert
 - Burn: Keepability 78 %, Planfähigkeit 94 %, Manafehler 22 %
 - Tokens/Aristocrats: Keepability 73 %, Planfähigkeit 92 %, Manafehler 22 %
 - Artifacts: Keepability 71 %, Planfähigkeit 88 %, Manafehler 22 %
 - Mill: Keepability 77 %, Planfähigkeit 0 %, marginal 100 %
 - Shrines: Keepability 69 %, Planfähigkeit 51 %, Manafehler 18 %
 
-### Hypothese
+### Erkenntnis
 
-Eine Hand mit höchstens einem oder mindestens fünf Ländern kann zwar relevante Planstücke enthalten, ist als reine Sieben-Karten-Starthand aber nicht belastbar planfähig. Solche Hände müssen höchstens marginal sein. Diese Invariante ist globaler und fachlich belastbarer als archetypspezifische Schwellenwertkorrekturen.
-
-### Änderungen
-
-1. Jede zunächst planfähige Hand mit Mana Screw oder Flood wird auf `marginal` herabgestuft und erhält den Grund `plan_pieces_with_unstable_mana`.
-2. Ein Regressionstest erzwingt archetypenunabhängig, dass keine Hand mit `mana_error=True` als `planfaehig` klassifiziert wird.
-
-### Validierung vor Commit
-
-- Syntaxprüfung: bestanden
-- gezielte kontrollierte Suite: 16 Tests bestanden in 0,69 Sekunden
-- vollständige Testsuite und Fast-Validierung durch neuen PR-Workflow zu verifizieren
-
-### Ergebnis vor Push
-
-Die Metrik unterscheidet nun zwischen vorhandenen Planstücken und einer tatsächlich belastbaren Starthand. Dies ist eine Messkorrektur, keine behauptete Deckverbesserung.
+Grüne CI deckte eine fachliche Fehlklassifikation nicht ab: Hände mit Mana Screw oder Flood konnten als planfähig gelten.
 
 ### KGB-Entscheidung
 
 Keine neue v2-KGB.
 
-Control fehlt weiterhin im Pflichtvalidator und die korrigierten globalen Rohdaten müssen post-push ausgewertet werden.
+### Confidence und Reflexion
+
+- hoch für Determinismus und Rohdaten
+- mittel für Rollen-/Gründe-Heuristik
+- Rollen und Auswahlgründe können Oracle-Text unvollständig repräsentieren
+- gute Messwerte können von zu breiten Signalen stammen
+
+### Nächster Schritt
+
+Manafehler-Invariante korrigieren, bevor Control oder Grenzwerte kalibriert werden.
+
+## 2026-08-03 – Drei-Stunden-Lauf, Zyklus 2: Manafehler-Invariante
+
+### Ziel und Hypothese
+
+Eine Sieben-Karten-Hand mit höchstens einem oder mindestens fünf Ländern kann relevante Planstücke enthalten, darf aber nicht als belastbar planfähig gelten.
+
+### Ausgangs-Head
+
+`43fa53d1766b05327eae5880bacb05905923f21c`
+
+### Änderungen
+
+1. Planfähige Hände mit Mana Screw/Flood werden auf `marginal` herabgestuft und erhalten `plan_pieces_with_unstable_mana`.
+2. Regressionstest: keine Hand mit `mana_error=True` darf `planfaehig` sein.
+
+### Commit und Workflow
+
+- Commit: `5a040f9db39b740d1f1cb72bfcfdb221fcd061d1`
+- Run: `30795368803`, erfolgreich
+- Tests: 251 bestanden in 23,30 Sekunden
+- Test-/Fast-Schritt: ungefähr 2 Minuten 50 Sekunden
+- Artefakt: ID `8848730571`, 38 Dateien, 46.166 Byte komprimiert
+- Seed: `1701`
+- geprüfte Rohhände: 500
+- Verstöße gegen Mana-Invariante: 0
+
+### Korrigierte Messwerte
+
+- Burn: Keepability 78 %, Planfähigkeit 78 %, marginal 20 %, nicht planfähig 2 %
+- Tokens/Aristocrats: Keepability 73 %, Planfähigkeit 73 %, marginal 23 %, nicht planfähig 4 %
+- Artifacts: Keepability 71 %, Planfähigkeit 70 %, marginal 30 %
+- Mill: Keepability 77 %, Planfähigkeit 0 %, marginal 100 %
+- Shrines: Keepability 69 %, Planfähigkeit 48 %, marginal 49 %, nicht planfähig 3 %
+
+### KGB-Entscheidung
+
+Keine neue v2-KGB, da Control weiterhin nicht im Pflichtvalidator war.
+
+### Confidence und Reflexion
+
+- hoch für die globale Mana-Invariante
+- mittel für übrige archetypenabhängige Regeln
+- aggressive Ein-Land-Hände können praktisch situativ keepbar sein; `marginal` ist bewusst konservativ und kein automatisches Mulligan-Urteil
+- Mill bleibt eine belegte Messauffälligkeit, darf aber nicht durch bloße Schwellenwertverschiebung repariert werden
+
+### Nächster Schritt
+
+Control als fünften Builder- und Validator-Archetyp integrieren.
+
+## 2026-08-03 – Drei-Stunden-Lauf, Zyklus 3: Control-Referenzarchetyp
+
+### Ziel
+
+Shrines aus der ausführbaren Pflichtvalidierung entfernen und Control als allgemeinen Referenzfall für das Verhindern gegnerischer Pläne integrieren.
+
+### Ausgangs-Head
+
+`5a040f9db39b740d1f1cb72bfcfdb221fcd061d1`
+
+### Hypothese
+
+Eine konservative Dimir-Control-Strategie kann mit Oracle-Textsignalen günstige Counter, Removal, Sweeper, Kartenvorteil und wenige Finisher auswählen. Sie liefert einen allgemeineren globalen Qualitätsbenchmark als Shrines.
+
+### Änderungen
+
+1. Neues Control-Scoring und `ControlStrategy` mit 25 Ländern, Dimir-Farbpflicht und Control-spezifischem Sideboard; Registrierung im Deckbuilder.
+2. Control-Benchmark sowie v2-Validatorwrapper für Burn, Tokens, Artifacts, Control und Mill; Fast-Matchups um Control gegen Burn, Tokens und Artifacts ergänzt; Full-Workflow auf v2-Validator gestellt.
+3. Gezielte Tests für Counter, Removal, Sweeper, Kartenvorteil, Finisher, Dimir-Farbpflicht und Control-Benchmark.
+
+### Validierung vor Commit
+
+- statische Import- und Abhängigkeitsprüfung: keine neue zyklische Abhängigkeit erkannt
+- bestehender Run 43 ist grün und Branch-Head stabil
+- reale Kartenpool-, 60/15-, Manabasis-, Benchmark-, 100-Hand-, Matchup- und Laufzeitprüfung: durch neuen PR-Workflow zu verifizieren
+
+### KGB-Entscheidung vor Push
+
+Keine neue v2-KGB. Eine KGB-Entscheidung ist erst nach vollständiger Workflow- und Artefaktauswertung zulässig.
 
 ### Confidence
 
-Hoch für die Mana-Invariante; mittel für die übrigen archetypenabhängigen Klassifikationsregeln.
+- mittel bis hoch für Scoring-Signale und Registrierungsstruktur
+- mittel für reale Poolkapazität und Sideboardfüllung
+- niedrig bis mittel für spielerische Control-Qualität vor Artefakt- und Clubauswertung
 
 ### Kritische Reflexion
 
-- Mögliche falsche Annahme: Einzelne aggressive Ein-Land-Hände könnten mit mehreren Ein-Mana-Spells praktisch keepbar sein; die globale Herabstufung auf marginal ist daher bewusst konservativ, nicht zwingend ein Mulligan-Urteil.
-- Alternative Erklärung für hohe Planraten: Nicht nur Manafehler, sondern zu breite Enabler-/Payoff-Signale können die Werte aufblasen.
-- Overfitting: Die neue Regel ist eine globale Invariante und nicht auf einzelne Artefaktwerte angepasst; dennoch bleibt die Landzahl nur ein vereinfachter Sequenzindikator.
-- Datenlücke: Draws bis Zug 3 werden in diesem reinen Starthandbericht nicht als Rettung eingerechnet.
-- Grüne CI beweist weiterhin nur technische Konsistenz.
-- Mögliche unentdeckte Regression: Planfähigkeitsraten können stark sinken; dies ist fachlich erwartet, muss aber je Archetyp geprüft werden.
+- Falsche Annahme: Dimir könnte als einzelner Control-Referenzfall zu eng sein; Azorius oder Esper würden andere Antworttypen abdecken.
+- Alternative Erklärung für gute Benchmarks: hohe Antwortenzahl kann situativ tote Interaktion enthalten.
+- Overfitting-Risiko: Gründe wie `Counter target spell` und `Control-Finisher` speisen zugleich Benchmark und Handanalyse.
+- Datenlücke: Die Matchup-Simulation bewertet Counter/Removal noch nicht vollständig gegen konkrete Kartentypen.
+- Grüne CI würde nur zeigen, dass ein legales Control-Deck erzeugt wird, nicht dass es gegnerische Pläne realistisch verhindert.
+- Unentdeckte Regression: sechs statt drei Fast-Matchups können die Laufzeit erhöhen.
 
 ### Mögliche Folgeschritte
 
-1. **Control als Referenzarchetyp integrieren** – höchster globaler Gewinn, hohe Evidenz, mittlerer bis hoher Aufwand, mittleres Risiko.
-2. **Mill-Klassifikation untersuchen** – Run 42 zeigt 0 % planfähig und 100 % marginal; hohe Messrelevanz, geringer bis mittlerer Aufwand, Risiko einer archetypspezifischen Überanpassung.
-3. **Oracle-Text in die Handanalyse aufnehmen** – hoher langfristiger Gewinn, mittlerer Aufwand, breiteres Datenmodellrisiko.
+1. **Control-Workflow und Rohhände auswerten** – höchste Evidenz, geringer Aufwand, niedriges Risiko.
+2. **Matchupabhängige Control-Antwortabdeckung modellieren** – hoher globaler Gewinn, mittlerer Aufwand, mittleres Risiko.
+3. **Mill-Rohhände analysieren** – hohe Messrelevanz, geringer bis mittlerer Aufwand, Gefahr archetypspezifischer Überanpassung.
 
 ### Priorisierter nächster ausführbarer Schritt
 
-Nach erfolgreicher Workflow-Auswertung Control als fünften Builder- und Validator-Archetyp integrieren. Mill bleibt als belegte Messauffälligkeit dokumentiert, wird aber nicht vorgezogen, solange keine weitere Evidenz zeigt, dass die globale Rollen-/Textbasis statt nur die Mill-Heuristik fehlerhaft ist.
+Den neuen Control-Workflow vollständig auswerten. Bei roter CI genau eine belegte Ursache beheben. Bei grüner CI Control-Handmetriken, sechs Matchups, BO3, Artefakte und Laufzeit prüfen und danach entscheiden, ob zuerst Control-Matchupsensitivität oder der Mill-Messfehler den höheren globalen Qualitätsgewinn verspricht.
