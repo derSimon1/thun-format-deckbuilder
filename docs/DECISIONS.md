@@ -49,9 +49,9 @@ Token-Decks werden nicht nur über Rollenanzahlen bewertet. Vor Kartenauswahl wi
 ## D-007 – Shrines bleiben vorerst Regressionstest
 
 **Datum:** 2026-08-03  
-**Status:** akzeptiert
+**Status:** ersetzt durch D-009
 
-Shrines werden nur verändert, wenn eine globale Ursache dies rechtfertigt. Zielgerichtete Shrine-Optimierung ist nicht Teil der aktuellen Kalibrierung.
+Diese frühere Entscheidung führte Shrines noch als wiederkehrenden Regressionstest. Sie ist für das Development System v2.0 nicht mehr maßgeblich.
 
 ## D-008 – Fast und Full bleiben getrennt
 
@@ -59,3 +59,34 @@ Shrines werden nur verändert, wenn eine globale Ursache dies rechtfertigt. Ziel
 **Status:** akzeptiert
 
 Fast dient kurzen Entwicklungszyklen und soll unter zehn Minuten bleiben. Full wird manuell oder am Ende einer Runde ausgeführt.
+
+## D-009 – Control ersetzt Shrines als allgemeinen Referenzarchetyp
+
+**Datum:** 2026-08-03  
+**Status:** akzeptiert
+
+Die fünf allgemeinen Referenzarchetypen sind Burn, Tokens, Artifacts, Control und Mill. Control prüft die Fähigkeit des Deckbuilders, gegnerische Pläne durch relevante Interaktion zu verhindern, anschließend zu stabilisieren und die Partie über eine belastbare Wincondition zu beenden.
+
+Shrines ist kein Pflicht- oder Referenzarchetyp mehr. Es darf nur bei konkreter Evidenz optional als spezieller Test für mehrfarbige Engine-Decks verwendet werden.
+
+**Ersetzt:** D-007.
+
+## D-010 – Known Good Baseline ist der verbindliche Sicherungspunkt
+
+**Datum:** 2026-08-03  
+**Status:** akzeptiert
+
+Jeder Zyklus beginnt mit der letzten dokumentierten Known Good Baseline und endet mit der Entscheidung `neue KGB`, `keine neue KGB` oder `Regression`.
+
+Eine grüne CI allein qualifiziert keinen Commit als KGB. Erforderlich sind vollständige Tests, Fast-Validierung, Referenzvergleiche, keine unbegründeten Regressionen, dokumentierte Reflexion und Confidence.
+
+Ist noch keine nach v2.0 qualifizierte KGB vorhanden, wird der letzte belegte grüne Stand nur als Legacy-KGB-Kandidat geführt, bis die fehlenden v2.0-Messungen vorliegen.
+
+## D-011 – Mehrstundenbetrieb ohne separate 15-Minuten-Aufgaben
+
+**Datum:** 2026-08-03  
+**Status:** akzeptiert
+
+Ein externer Auftrag setzt die Laufzeit `X` in Stunden. Innerhalb desselben Laufs werden so viele vollständige Kalibrierungszyklen wie sinnvoll möglich durchgeführt. Separate 15-Minuten-Aufgaben sind nicht erforderlich.
+
+Ein neuer Zyklus wird nur begonnen, wenn er innerhalb der Restzeit vollständig implementiert, getestet, validiert und dokumentiert werden kann.
