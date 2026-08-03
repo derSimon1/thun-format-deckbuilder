@@ -4,6 +4,7 @@ from thun_deckbuilder.card_database import CardDatabase
 from thun_deckbuilder.deck_builder import generate_deck
 from thun_deckbuilder.deck_request import DeckRequest
 from thun_deckbuilder.knowledge_base import KnowledgeBase
+from thun_deckbuilder.paths import DATABASE_FILE
 from thun_deckbuilder.token_strategy import TokenStrategy
 
 
@@ -52,7 +53,8 @@ def test_token_strategy_generates_60_card_deck():
 
 
 def test_full_pool_selects_and_fulfils_reliable_go_wide_package():
-    with CardDatabase() as database:
+    with CardDatabase(DATABASE_FILE) as database:
+        assert database.database_path == DATABASE_FILE.resolve()
         deck = generate_deck(
             database=database,
             archetype="tokens",
