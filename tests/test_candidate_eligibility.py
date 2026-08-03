@@ -5,10 +5,10 @@ from thun_deckbuilder.deck_state import DeckState
 from thun_deckbuilder.knowledge_base import CardKnowledge
 
 
-def knowledge(name: str = "Test Spell") -> CardKnowledge:
+def knowledge(name: str = "Test Spell", mana_cost: str = "{1}{W}") -> CardKnowledge:
     card = {
         "name": name,
-        "mana_cost": "{1}{W}",
+        "mana_cost": mana_cost,
         "mana_value": 2,
         "colors": ["W"],
         "color_identity": ["W"],
@@ -49,3 +49,18 @@ def test_rejects_strategy_ineligible_candidate() -> None:
 
     assert not result.eligible
     assert "strategy" in result.reason.lower()
+
+
+def test_rejects_explicit_colorless_cost_without_colorless_land_support() -> None:
+    card = knowledge(name="Colorless Spell", mana_cost="{1}{C}")
+    result = CandidateEligibility().check(
+        card,
+        contribution_from_knowledge(card),
+        DeckState(),
+        deck_size=36,
+        max_copies=3,
+        strategy_eligible=lambda item: True,
+    )
+
+    assert not result.eligible
+    assert "colorless mana" in result.reason.lower()

@@ -36,6 +36,11 @@ class CandidateEligibility:
     ) -> EligibilityResult:
         if contribution.is_land:
             return EligibilityResult(False, "Lands are added after spell composition.")
+        if "{C}" in str(knowledge.card.get("mana_cost", "")).upper():
+            return EligibilityResult(
+                False,
+                "Explicit colorless mana is unsupported by the basic-land mana builder.",
+            )
         if state.total_cards >= deck_size:
             return EligibilityResult(False, "The deck is already full.")
         if state.quantity_of(contribution.card_name) >= max_copies:
