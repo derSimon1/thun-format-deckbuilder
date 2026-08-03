@@ -106,21 +106,37 @@ Keine neue v2-KGB. Die Kapazitätsmessung ist grün, aber der Modus `repeatable`
 
 ## Token-Zyklus 5 – Aktivierte versus automatische Produktion
 
-### Zyklusvertrag
+### Run 62 – rotes Integrationsgate
 
-- **Ursache:** `repeatable` enthält sowohl automatische Trigger als auch aktivierte Tokenfähigkeiten.
-- **Hypothese:** Aktivierte Produktion und ihre Manaaktivierung werden separat ausgewiesen; dadurch zeigt der Pool die tatsächliche automatische Value-Engine-Kapazität.
-- **Änderungen:** Aktivierungsparser und Modus `activated`; Kapazitätsdiagnose; Regressionstests.
-- **Erwartung:** `Whirlermaker` wechselt von `repeatable` zu `activated`; `Cathar's Call` bleibt automatische wiederholbare Quelle.
-- **Invarianten:** keine Kartenauswahl; Benchmark 91, Hände 77/76 %, Goldfish 14,66/27 %, andere Archetypen unverändert.
-- **Erfolg:** Poolartefakt trennt aktivierte und automatische Kopien samt Aktivierungskosten.
-- **Abbruch:** Builderdeck oder andere Benchmarks ändern sich.
-- **geschätzte Zeit:** 35–50 Minuten inklusive Workflow und Artefaktauswertung.
+- Commit `b2bf2f5320894d21ab3bcc82f57e760c7a495ea6`
+- Workflow `30817033194`, fehlgeschlagen
+- 297 Tests bestanden in 52,72 Sekunden
+- Burn 83, Artifacts 90, Control 85 und Mill 80 blieben grün
+- Token-Validierung brach vor Deckausgabe ab
+- Artefakt `global-calibration-pr-62`, ID `8857298524`, 37 Dateien
 
-### KGB-Entscheidung vor Push
+### Belegte Ursache
 
-Keine neue KGB. Der Zyklus verfeinert ausschließlich die Messdefinition.
+Der neue Diagnosemarker `token_activation_mana_3` wurde nicht vom bestehenden Metadatenfilter in `card_contribution.py` erfasst. Dadurch wurde Simulationsmetadaten fälschlich als kanonische Funktionsrolle normalisiert. Parser und Tests für die Activated-/Repeatable-Trennung selbst waren grün.
+
+### Hotfix-Zyklusvertrag
+
+- **Hypothese:** Das Ergänzen von `token_activation_mana_` zum zentralen Metadatenfilter stellt den unveränderten Builderstand wieder her und erhält die Diagnosemarker auf den finalen DeckEntries.
+- **Änderungen:** Metadatenfilter, Regressionstest und Dokumentation.
+- **Invarianten:** keine Plan-, Profil-, Scoring- oder Kartenauswahländerung; Benchmarks 83/91/90/85/80; Hände 77/76 %; Goldfish 14,66/27 %.
+- **Erfolg:** vollständige Tests und Fast grün; Artifact trennt `activated` und `repeatable`.
+- **Rollback:** Builderdeck oder andere Referenzmetriken ändern sich.
+
+### KGB-Entscheidung
+
+Keine neue KGB. Run 62 ist rot und nur als Diagnose des Integrationsfehlers verwendbar.
+
+### Kritische Reflexion
+
+- Die Annahme, alle Produktionsmarker würden automatisch vom bestehenden Präfixfilter erfasst, war falsch.
+- Der Fehler ist technisch und liefert noch keine Aussage zur Go-Wide-Deckqualität.
+- Ein grüner Hotfix beweist nur Messkonsistenz; die automatische Planwahl muss danach evidenzbasiert neu bewertet werden.
 
 ### Priorisierter nächster ausführbarer Schritt
 
-Den Workflow auswerten. Falls weniger als sechs automatische Repeatable-Kopien verbleiben, Value Tokens nicht weiter über die breite Repeatable-Rolle erzwingen; stattdessen Planerkennung und Go-Wide-Profil auf garantierte Sofortproduktion ausrichten.
+Den Metadatenfilter-Hotfix validieren. Falls die automatische Repeatable-Kapazität unter sechs Kopien liegt, Value Tokens nicht weiter erzwingen und die automatische Planwahl sowie das Go-Wide-Profil auf garantierte Sofort-/Multi-Maker und Anthem-Payoffs ausrichten.

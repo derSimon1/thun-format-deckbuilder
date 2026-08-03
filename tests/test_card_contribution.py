@@ -37,6 +37,7 @@ def test_simulation_metadata_is_not_treated_as_functional_role() -> None:
             "token_creature_maker",
             "token_output_2",
             "token_production_immediate",
+            "token_activation_mana_4",
         )
     )
 

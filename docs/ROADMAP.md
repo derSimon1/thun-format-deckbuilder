@@ -38,40 +38,50 @@ Referenzarchetypen: Burn, Tokens, Artifacts, Control und Mill. Jeder Zyklus ende
 
 Die zwei bisherigen Repeatable-Karten sind `Cathar's Call` und `Whirlermaker`. Aktivierte und automatische Produktion müssen vor einer Builderänderung getrennt werden.
 
-## Aktueller Zyklus – Activated versus Repeatable
+## Activated-versus-Repeatable-Zyklus
 
 - [x] aktivierte Tokenfähigkeit über Kosten-vor-Doppelpunkt erkennen
 - [x] generische und farbige Aktivierungsmana konservativ zählen
-- [x] Modus `activated` vorbereiten
-- [x] Aktivierungskosten als Diagnosemarker vorbereiten
-- [x] Kapazitätstests um Activated erweitern
-- [ ] vollständige CI und Artefakte auswerten
+- [x] Modus `activated` und Aktivierungskostenmarker implementieren
+- [x] Unit-Tests für Whirlermaker und Kapazitätsgruppen grün
+- [x] Run 62 gestartet und vollständig ausgewertet
+- [ ] Metadatenfilter-Hotfix vollständig grün bestätigen
+- [ ] Artifact-Kapazität für `activated` und `repeatable` auswerten
 
-## Erfolgskriterien
+## Run-62-Befund
 
-- [ ] alle Tests grün
+- 297 Unit-/Integrationstests bestanden
+- Fast brach nur bei Tokens ab
+- Ursache: `token_activation_mana_*` wurde als Funktionsrolle normalisiert
+- Burn 83, Artifacts 90, Control 85 und Mill 80 unverändert
+- keine Builder- oder Go-Wide-Aussage aus diesem roten Run ableiten
+
+## Erfolgskriterien Hotfix
+
+- [ ] vollständige Testsuite grün
 - [ ] Fast unter zehn Minuten
-- [ ] Builderprofil, Benchmark 91 und Deck-Hash unverändert
+- [ ] Tokens Benchmark 91 und Deck-Hash unverändert
 - [ ] Hände weiterhin 77/76 %
 - [ ] Goldfish weiterhin 14,66 Schaden und 27 % Killrate
-- [ ] `Whirlermaker` wird als aktiviert mit Mana 4 ausgewiesen
+- [ ] `Whirlermaker` als aktiviert mit Mana 4 ausgewiesen
 - [ ] automatische Repeatable-Kapazität separat dokumentiert
 - [ ] andere vier Benchmarks unverändert
 
-## Entscheidung nach dem Zyklus
+## Entscheidung nach grünem Hotfix
 
 ### Automatische Repeatable-Kapazität unter sechs Kopien
 
 - [ ] `token_repeatable_maker` nur automatischen Triggern zuweisen
 - [ ] Value-Mindestziel nicht künstlich auf bedingte oder aktivierte Karten ausweiten
 - [ ] automatische Planwahl anhand garantierter Produktionskapazität neu bewerten
-- [ ] Go Wide mindestens über garantierte Sofort-Maker und Anthem-Payoffs definieren
+- [ ] Go Wide über garantierte Sofort-/Multi-Maker und Anthem-/Evasion-Payoffs definieren
+- [ ] Go-Wide-Deck gegen den Run-61-Value-Stand vergleichen
 
 ### Automatische Repeatable-Kapazität mindestens sechs Kopien
 
 - [ ] Value-Profil auf echte automatische Engines verpflichten
 - [ ] aktivierte Quellen nur als sekundäre Value-Unterstützung bewerten
-- [ ] Builder, 100 Hände und Goldfish erneut vergleichen
+- [ ] explizites Go-Wide-Referenzdeck unabhängig erzeugen und vergleichen
 
 ## Danach
 
@@ -82,14 +92,15 @@ Die zwei bisherigen Repeatable-Karten sind `Cathar's Call` und `Whirlermaker`. A
 5. belastbare Regression-Baseline statt `baseline: none`.
 6. erste v2-KGB und Club-/Meta-Benchmark.
 
-## Definition of Done für den Token-Meilenstein
+## Definition of Done für den aktuellen Go-Wide-Lauf
 
-- Paket-, Produktions- und Aktivierungsdefinition konsistent
+- Activated-/Repeatable-Messung technisch grün
+- automatische Planwahl verwendet dieselbe Produktionsdefinition
+- Go Wide besitzt frühe garantierte Maker, Multi-Maker und Anthem-/Evasion-Payoffs
 - Full- und Sparse-Pool funktionieren
 - vollständige Testsuite und Fast-Validierung grün
 - fünf Referenzarchetypen und sechs Matchups
 - genau 100 Hände je Deck mit Seed 1701
-- Buildermetriken unverändert
-- automatische Enginekapazität evidenzbasiert dokumentiert
-- keine unbegründete Regression anderer Referenzarchetypen
+- andere vier Benchmarks ohne unbegründete Regression
+- Arena-Import des besten bestätigten Go-Wide-Decks verfügbar
 - KGB-Entscheidung, Reflexion und genau ein nächster Schritt dokumentiert
