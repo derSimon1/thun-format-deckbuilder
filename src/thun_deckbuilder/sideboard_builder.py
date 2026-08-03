@@ -160,6 +160,34 @@ RULES: dict[str, tuple[SideboardRule, ...]] = {
 }
 
 
+def _matching_rules(
+    knowledge: CardKnowledge,
+    rules: tuple[SideboardRule, ...],
+) -> tuple[SideboardRule, ...]:
+    """Prefer exact Oracle-text categories over broad functional roles.
+
+    Broad roles such as ``removal`` are useful only as a fallback. Once a card
+    matches a specific rule phrase, adding role-only categories can turn
+    graveyard hate into anti-aggro removal or produce similar false positives.
+    """
+
+    text = knowledge.analysis.oracle_text.lower()
+    phrase_matches = tuple(
+        rule
+        for rule in rules
+        if any(phrase in text for phrase in rule.phrases)
+    )
+    if phrase_matches:
+        return phrase_matches
+
+    role_values = {str(role) for role in knowledge.roles}
+    return tuple(
+        rule
+        for rule in rules
+        if rule.roles and role_values.intersection(rule.roles)
+    )
+
+
 class SideboardBuilder:
     """Build a conservative 15-card sideboard from legal, on-colour cards."""
 
@@ -185,19 +213,14 @@ class SideboardBuilder:
             available = max_copies - main_counts[analysis.name]
             if available <= 0:
                 continue
-            text = analysis.oracle_text.lower()
-            matched: list[str] = []
-            score = 0.0
-            for rule in rules:
-                phrase_match = any(phrase in text for phrase in rule.phrases)
-                role_match = any(str(role) in rule.roles for role in knowledge.roles)
-                if phrase_match or role_match:
-                    matched.append(rule.label)
-                    score += rule.priority
-            if score <= 0:
+
+            matched_rules = _matching_rules(knowledge, rules)
+            if not matched_rules:
                 continue
+            score = sum(rule.priority for rule in matched_rules)
             score -= analysis.mana_value * 0.15
-            scored.append((score, knowledge, tuple(dict.fromkeys(matched))))
+            matched = tuple(dict.fromkeys(rule.label for rule in matched_rules))
+            scored.append((score, knowledge, matched))
 
         scored.sort(
             key=lambda item: (

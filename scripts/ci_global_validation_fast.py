@@ -135,13 +135,30 @@ class FastBestOfThreeSimulator(BestOfThreeSimulator):
         )
 
 
+def _sideboard_diagnostics(deck) -> dict[str, object]:
+    cards = [
+        {
+            "name": entry.name,
+            "quantity": entry.quantity,
+            "score": entry.score,
+            "reasons": list(entry.reasons),
+            "roles": list(entry.roles),
+        }
+        for entry in deck.sideboard
+    ]
+    return {
+        "total_cards": sum(entry.quantity for entry in deck.sideboard),
+        "cards": cards,
+    }
+
+
 def validate_archetype_with_plan_hands(
     database,
     archetype,
     colors,
     legal_cards,
 ):
-    """Add exactly 100 reproducible plan-aware raw hands to fast artifacts."""
+    """Add reproducible hand and sideboard diagnostics to fast artifacts."""
 
     deck, metrics = _BASE_VALIDATE_ARCHETYPE(
         database,
@@ -160,10 +177,17 @@ def validate_archetype_with_plan_hands(
     summary.pop("hands", None)
     metrics["opening_hand_plan"] = summary
 
+    sideboard_payload = _sideboard_diagnostics(deck)
+    metrics["sideboard_diagnostics"] = sideboard_payload
+
     prefix = validation.ARTIFACT_DIR / archetype
     raw_path = prefix / f"{archetype}-opening-hands.json"
     raw_path.write_text(
         json.dumps(payload, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    (prefix / f"{archetype}-sideboard.json").write_text(
+        json.dumps(sideboard_payload, indent=2, sort_keys=True) + "\n",
         encoding="utf-8",
     )
     (prefix / f"{archetype}-validation.json").write_text(
@@ -181,6 +205,11 @@ def validate_archetype_with_plan_hands(
             f"plan_capable:{report.plan_capable_pct} "
             f"early_t2:{report.early_play_turn_two_pct} "
             f"early_t3:{report.early_play_turn_three_pct}\n"
+        )
+        output.write(
+            "sideboard_diagnostics="
+            f"cards:{sideboard_payload['total_cards']} "
+            f"entries:{len(sideboard_payload['cards'])}\n"
         )
     return deck, metrics
 

@@ -7,54 +7,64 @@ Referenzarchetypen: Burn, Tokens, Artifacts, Control und Mill. Shrines bleibt nu
 ## Erledigt
 
 - [x] Fast-Validierung, Cache, Opening-Hand-, Goldfish-, Matchup- und BO3-Berichte
-- [x] Token-Planerkennung: Go Wide, Value Tokens und Aristocrats
-- [x] Strategy Commitment und Token Engine Density
-- [x] genau 100 reproduzierbare Starthände je erzeugtem Referenzdeck
+- [x] genau 100 reproduzierbare Starthände je Referenzdeck
 - [x] Keepability, Early Play und Planfähigkeit getrennt
 - [x] Manafehler dürfen nicht als planfähige Hände gelten
+- [x] Token-Planerkennung: Go Wide, Value Tokens und Aristocrats
+- [x] Strategy Commitment und Token Engine Density
 - [x] Control-Scoring, Dimir-Strategie, Sideboard, Benchmark und v2-Validator
-- [x] Pflichtvalidator erzeugt Burn, Tokens, Artifacts, Control und Mill
-- [x] Fast-Validator prüft drei Token- und drei Control-Matchups
-- [x] Control-Benchmark 85, sechs Finisher, Finisher-Zugang 53 %
-- [x] erste Sideboard-Relevanzregel durch reale Artefakte als unzureichend widerlegt
+- [x] fünf Pflichtarchetypen und sechs priorisierte Fast-Matchups
+- [x] Control-Benchmark 85, sechs Finisher und 53 % Finisher-Zugang
+- [x] Sideboard-Marker als maschinenlesbare Rollen eingeführt
+- [x] Root Cause der falschen `Tormod's Crypt`-Einwechslung identifiziert: breite `removal`-Rolle erzeugte einen falschen zweiten Marker
 
-## Offen – Sideboard und Control
+## Aktueller Abschlusszyklus – Sideboard
 
-- [ ] maschinenlesbare Sideboard-Kategorien im realen BO3-Pfad bestätigen
+- [ ] Phrase-first-Klassifikation im PR-Workflow bestätigen
+- [ ] pro Archetyp neues `<archetype>-sideboard.json` prüfen
 - [ ] kein Graveyard-Hate gegen Burn, Tokens oder Artifacts
-- [ ] relevante Antworten aus konkretem Gegnerdeck statt nur Archetyp ableiten
-- [ ] Wincondition-Zugang nach Stabilisierung messen
-- [ ] Stabilisierung bis Zug 4 oder 5 explizit modellieren
-- [ ] Control-Abschlussdruck im Matchupmodell berücksichtigen
+- [ ] relevante Sideboardkarten bleiben verfügbar
+- [ ] danach unabhängig vom Ergebnis keine weitere Sideboard-Kalibrierung ohne neue externe Evidenz
 
-## Offen – globale Qualität
+## Nächste Entwicklungspriorität – Mill
 
-- [ ] Mill-Befund 0 % planfähig / 100 % marginal anhand Rohhänden prüfen
-- [ ] Token-Subarchetypen mit separaten Referenzdecks vergleichen
-- [ ] Strategy Commitment und Engine Density archetypenübergreifend abstrahieren
-- [ ] Finish Density allgemein modellieren
-- [ ] belastbare Regressionsbaseline statt `baseline: none`
-- [ ] erste vollständig qualifizierte v2-KGB
-- [ ] Meta- und Club-Benchmark
+- [ ] echte Mill-Quellen maschinenlesbar erkennen
+- [ ] Kartenpoolkapazität für Gegner-Mill bestimmen
+- [ ] kapazitätsgeprüfte Mindestdichte an Mill-Quellen definieren
+- [ ] Optimierer darf die Mindestdichte nicht entfernen
+- [ ] Benchmark `mill_sources` muss reale Builder-Auswahl messen
+- [ ] Planfähigkeitsrate muss über 0 % steigen, ohne Keepability/Mana künstlich zu verschlechtern
+- [ ] 100 Rohhände auf Enabler, Engine, Interaktion und tote Karten prüfen
+- [ ] Mill gegen Tokens sowie mindestens einen Control-/Engine-Plan validieren
 
-## Aktuelle Priorität
+## Danach
 
-1. Workflow der maschinenlesbaren Sideboard-Marker vollständig auswerten
-2. alle sechs BO3-Pläne prüfen; insbesondere kein `Tormod's Crypt` gegen Burn, Tokens oder Artifacts
-3. bei erneutem Scheitern exakten Marker-Verlust dokumentieren und nach zwei Sideboard-Zyklen zwingend zu Mill wechseln
-4. bei Erfolg Mill-Messauffälligkeit anhand der 100 Rohhände untersuchen
-5. relevante Control-Antworten aus dem konkreten Gegnerdeck ableiten
-6. Token-Subarchetypen separat benchmarken
-7. Regressionsbaseline und erste v2-KGB aufbauen
+1. relevante Control-Antworten aus dem konkreten Gegnerdeck statt nur aus Archetyp-Matrix ableiten
+2. Token-Subarchetypen als separate Referenzdecks benchmarken
+3. Strategy Commitment und Engine Density archetypenübergreifend abstrahieren
+4. Finish Density allgemein modellieren
+5. belastbare Regressionsbaseline statt `baseline: none` einführen
+6. erste vollständig qualifizierte v2-KGB erzeugen
+7. Meta- und Club-Benchmark aufbauen
 
-## Definition of Done für den nächsten Zyklus
+## Definition of Done für den Sideboard-Abschlusszyklus
 
 - vollständige Testsuite und Fast-Validierung grün
-- fünf Referenzarchetypen und sechs priorisierte Matchups vorhanden
-- Fast-Lauf unter zehn Minuten
+- Laufzeit unter zehn Minuten
+- fünf Referenzarchetypen und sechs Matchups vorhanden
 - je Deck exakt 100 Hände mit Seed `1701`
-- Sideboard-Einträge enthalten maschinenlesbare `sideboard_*`-Marker
+- Diagnoseartefakte enthalten finale Sideboardrollen und Gründe
+- `Tormod's Crypt` besitzt nur den Graveyard-Hate-Marker
 - kein `Tormod's Crypt` gegen Burn, Tokens oder Artifacts
-- relevante Sideboardkarten werden weiterhin eingewechselt, sofern vorhanden
-- BO3-Berichte und Laufzeit zeigen keine unbegründete Regression
-- Logbook enthält KGB-Entscheidung, Reflexion und genau einen nächsten Schritt
+- Logbook enthält KGB-Entscheidung und Mill als nächsten ausführbaren Schritt
+
+## Definition of Done für den ersten Mill-Zyklus
+
+- reale Mill-Quellen werden anhand Oracle-Text oder einer dedizierten Rolle erkannt
+- aktuelle Kartenpoolkapazität ist dokumentiert
+- finales 60/15-Deck enthält eine belegte, kapazitätsgeprüfte Mill-Quellendichte
+- vollständige Testsuite und Fast-Validierung grün
+- genau 100 Mill-Hände mit Seed `1701`
+- Planfähigkeit, Keepability, Early Play, Manafehler und tote Karten gegen Run 48 verglichen
+- keine Grenzwertsenkung nur zum Bestehen
+- genau ein weiterer priorisierter Schritt dokumentiert
