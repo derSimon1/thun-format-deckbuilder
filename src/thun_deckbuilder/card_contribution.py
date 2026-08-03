@@ -10,6 +10,16 @@ from thun_deckbuilder.synergy_tag import SynergyTag, normalize_synergy_tag
 
 
 _COLOR_SYMBOL = re.compile(r"\{([WUBRG])(?:/[^}]*)?\}", re.IGNORECASE)
+_METADATA_ROLE_PREFIXES = (
+    "token_output_",
+    "token_production_",
+)
+
+
+def _is_metadata_role(role: str) -> bool:
+    """Return whether a role carries simulation metadata, not deck function."""
+
+    return role.startswith(_METADATA_ROLE_PREFIXES)
 
 
 @dataclass(frozen=True)
@@ -58,10 +68,12 @@ class CardContribution:
 
 
 def contribution_from_knowledge(knowledge: CardKnowledge) -> CardContribution:
-    """Create a conservative v1 contribution model from existing analysis.
+    """Create conservative functional contribution data from existing analysis.
 
-    Role strength intentionally starts at 1.0. More nuanced strengths can be
-    introduced later without changing the public data model.
+    Machine-readable simulation metadata remains on the resulting ``DeckEntry``
+    because the composition engine copies all knowledge roles into the final
+    entry. It is deliberately excluded from ``CardContribution`` so dynamic
+    markers such as ``token_output_2`` cannot become structural deck roles.
     """
 
     mana_cost = str(knowledge.card.get("mana_cost", ""))
@@ -70,9 +82,14 @@ def contribution_from_knowledge(knowledge: CardKnowledge) -> CardContribution:
         color = symbol.upper()
         pips[color] = pips.get(color, 0) + 1
 
+    functional_roles = tuple(
+        role
+        for role in sorted(str(role) for role in knowledge.roles)
+        if not _is_metadata_role(role)
+    )
     return CardContribution(
         card_name=knowledge.analysis.name,
-        roles=tuple(RoleContribution(role) for role in sorted(knowledge.roles)),
+        roles=tuple(RoleContribution(role) for role in functional_roles),
         tags=frozenset(knowledge.synergies),
         mana_value=knowledge.analysis.mana_value,
         color_pips=tuple(sorted(pips.items())),

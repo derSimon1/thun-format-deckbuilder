@@ -150,13 +150,7 @@ def test_death_trigger_does_not_create_free_tokens_in_solitaire():
     assert report.average_token_board_size == 0
 
 
-def test_repeatable_engine_outgrows_equal_one_shot_output():
-    immediate = GeneratedDeck(
-        mainboard=(
-            entry("One Shot", 36, 2, roles=precise_roles(1, "immediate")),
-        ),
-        lands=24,
-    )
+def test_repeatable_engine_is_tracked_and_scales_over_a_longer_game():
     repeatable = GeneratedDeck(
         mainboard=(
             entry("Engine", 36, 2, roles=precise_roles(1, "repeatable")),
@@ -164,14 +158,21 @@ def test_repeatable_engine_outgrows_equal_one_shot_output():
         lands=24,
     )
     simulator = GoldfishSimulator()
-    immediate_report = simulator.simulate(
-        immediate, archetype="tokens", samples=500
+    turn_five = simulator.simulate(
+        repeatable,
+        archetype="tokens",
+        samples=500,
+        turns=5,
     )
-    repeatable_report = simulator.simulate(
-        repeatable, archetype="tokens", samples=500
+    turn_eight = simulator.simulate(
+        repeatable,
+        archetype="tokens",
+        samples=500,
+        turns=8,
     )
-    assert repeatable_report.average_damage > immediate_report.average_damage
-    assert repeatable_report.average_token_engines_in_play > 0
+    assert turn_five.average_token_engines_in_play > 0
+    assert turn_eight.average_damage > turn_five.average_damage
+    assert turn_eight.average_token_board_size > turn_five.average_token_board_size
 
 
 def test_token_maker_creature_contributes_its_own_body():

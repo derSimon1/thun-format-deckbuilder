@@ -24,51 +24,58 @@ Referenzarchetypen: Burn, Tokens, Artifacts, Control und Mill. Jeder Zyklus ende
 - [x] Full-Pool wechselt von Aristocrats zu Value Tokens
 - [x] Sparse-Pool-Ziele kapazitätsgeprüft
 - [x] neutrale Füller nur bei echter Kopienlücke
-- [x] Run 58: 283 Tests grün, Fast unter vier Minuten
-- [x] Run 58: Benchmark 91, Material 33, wiederholbare Maker 12, Fehlpositive 0
+- [x] Run 58: 283 Tests grün, Benchmark 91, Material 33, Fehlpositive 0
 - [x] Run 58: Keepability/Planfähigkeit 77/76 %
 
-## Aktueller Token-Zyklus – realistische Produktion
+## Produktionsmessung – Run 59
 
-- [x] Immediate-, Repeatable-, Conditional- und Death-Modi definieren
-- [x] konservative Mindestmenge je Creature-Token-Ereignis erkennen
-- [x] stabile Produktionsmarker im finalen Deck vorbereiten
-- [x] Token-Diagnose um Modus, Menge und Kartennamen erweitern
+- [x] Immediate-, Repeatable-, Conditional- und Death-Modi definiert
+- [x] konservative Mindestmenge je Creature-Token-Ereignis erkannt
+- [x] Produktionsmarker und Diagnoseartefakt implementiert
 - [x] Goldfish trennt Kartenkörper, Sofortproduktion und unbedingte Engines
-- [x] Conditional-/Death-Ausgabe wird im leeren Solitaire nicht automatisch erzeugt
-- [x] Regressionstests für 1 vs 2 Tokens, Death, Conditional, Engine und Kartenkörper vorbereiten
-- [ ] vollständige CI und Artefakte auswerten
+- [x] Conditional-/Death-Ausgabe wird nicht kostenlos erzeugt
+- [x] Messkorrektur belegt: Schaden 18,97→10,47; Killrate 66→7 %
+- [x] finales Deck enthält 26 bedingte und 7 Death-Maker-Kopien
+- [x] aktive unbedingte Engines im Goldfish: 0,00
+- [ ] technisches Gate wieder grün herstellen
 
-## Erfolgskriterien Produktionszyklus
+## Aktueller Hotfix
+
+- [x] Produktionsmetadaten von funktionalen `CardContribution`-Rollen trennen
+- [x] Metadaten auf finalen `DeckEntry`-Rollen erhalten
+- [x] Regressionstest für Metadata-Filter vorbereiten
+- [x] Repeatable-Test auf langfristiges Wachstum statt Fünf-Züge-Vergleich umstellen
+- [ ] vollständige Testsuite und Fast-Validierung grün
+- [ ] Produktionsdiagnose und konservative Goldfishwerte bestätigen
+- [ ] Buildermetriken gegen Run 58 unverändert bestätigen
+
+## Erfolgskriterien des Hotfixes
 
 - [ ] alle Tests grün
 - [ ] Fast unter zehn Minuten
-- [ ] Builderdeck und Benchmark 91 unverändert
-- [ ] Material 33, wiederholbare Maker 12, Fehlpositive 0
-- [ ] Opening-Hand-Werte unverändert
-- [ ] Diagnose nennt Kopien je Produktionsmodus
-- [ ] Goldfish meldet Boardgröße und aktive Engines
-- [ ] Schaden/Killrate werden als Messkorrektur interpretiert, nicht als automatische Deckregression
+- [ ] Builderprofil Value Tokens und Benchmark 91 unverändert
+- [ ] Material 33, Fehlpositive 0, Keepability/Planfähigkeit 77/76 %
+- [ ] Produktionsmarker im finalen Deck vorhanden
+- [ ] Produktionsmodi im Diagnoseartefakt sichtbar
+- [ ] Goldfish-Schaden/Killrate bleiben als korrigierte Messwerte dokumentiert
 - [ ] andere vier Benchmarks unverändert
 
-## Danach nach Artefaktevidenz
+## Nächste Token-Hypothese nach grünem Hotfix
 
-### A – Kartenauswahl an garantierter Produktion ausrichten
+### Garantierte Produktionskapazität messen
 
-- [ ] Anteil garantiert sofortiger und unbedingter wiederholbarer Produktion bewerten
-- [ ] Conditional-/Death-lastige Listen nicht über nominale Maker-Dichte überschätzen
-- [ ] nur bei belegter Unterversorgung Scoring/Komposition ändern
+- [ ] Mono-White-Pool nach garantierter sofortiger, unbedingter wiederholbarer, bedingter und Death-Produktion auswerten
+- [ ] unterschiedliche Karten und maximale Kopien je Modus dokumentieren
+- [ ] prüfen, ob Value Tokens überhaupt mindestens sechs unbedingte Engines tragen kann
+- [ ] erst nach Kapazitätsmessung `token_repeatable_maker` enger definieren
+- [ ] automatische Planwahl und Profile auf dieselbe Produktionsdefinition ausrichten
 
-### B – separate Token-Referenzdecks
+### Danach mögliche Pfade
 
-- [ ] Go Wide, Value Tokens und Aristocrats jeweils erzwungen erzeugen
-- [ ] Paketdichte, 100 Hände, Goldfish und Matchups getrennt vergleichen
-- [ ] automatische Planwahl gegen die drei Referenzdecks validieren
-
-### C – Matchupmodell
-
-- [ ] Burn-/Artifact-Extremwerte gegen Boardentwicklung und Interaktion prüfen
-- [ ] keine Kartenauswahl allein anhand heuristischer Matchup-Prozente verändern
+1. Bei ausreichender garantierter Kapazität Kartenauswahl auf diese Produktion verpflichten.
+2. Bei fehlender Value-Kapazität automatische Planwahl auf Go Wide oder Aristocrats zurückführen.
+3. Danach Go Wide, Value Tokens und Aristocrats als separate Referenzdecks erzeugen.
+4. Matchupmodell erst auf Basis belastbarer Produktionsdaten weiterentwickeln.
 
 ## Pausierter Mill-Rückkehrpunkt
 
@@ -89,7 +96,7 @@ Referenzarchetypen: Burn, Tokens, Artifacts, Control und Mill. Jeder Zyklus ende
 
 ## Definition of Done für den aktuellen Token-Meilenstein
 
-- zentrale Paket- und Produktionsdefinition in Diagnose, Builder und Simulation identisch
+- Paket- und Produktionsdefinition in Diagnose, Builder und Simulation konsistent
 - Full- und Sparse-Pool funktionieren
 - vollständige Testsuite und Fast-Validierung grün
 - fünf Referenzarchetypen und sechs Matchups

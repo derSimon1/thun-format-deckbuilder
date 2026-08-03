@@ -59,8 +59,6 @@ Full-Pool-Ergebnis:
 | Killrate | 66 % | 66 % | 0 |
 | vs Artifacts | 2 % | 7 % | +5 pp |
 
-Die Rollenbereinigung war fachlich bestätigt; das rote Gate entstand durch unerreichbare Produktionsminimums in kleinen Fixture-Pools.
-
 ### Runs 57/58 – Sparse-Pool-Hotfix
 
 - Run 57, Commit `dfa5bf4cccf21d2eee782191097b8ed894f6f36a`: rot; 280/281 Tests grün
@@ -69,58 +67,73 @@ Die Rollenbereinigung war fachlich bestätigt; das rote Gate entstand durch uner
 - Run 58 `30810553137`: erfolgreich
 - 283 Tests in 30,85 Sekunden
 - Test-/Fast-/Diagnoseschritt ungefähr 3:59 Minuten
-- Artefakt `global-calibration-pr-58`, ID `8854683264`, 47 Dateien, 62.499 Byte
+- Artefakt `global-calibration-pr-58`, ID `8854683264`, 47 Dateien
 - Benchmarks: Burn 83, Tokens 91, Artifacts 90, Control 85, Mill 80
-- fünf Archetypen, sechs Matchups, 0 gemeldete Regressionen
-
-Run 58 stellt den Full-Pool-Stand von Run 56 exakt wieder her und hält Sparse-Pools generierbar:
-
-- Value Tokens
-- 33 Materialkopien
-- 12 wiederholbare Maker
-- 0 breite Fehlpositive
-- Keepability/Planfähigkeit 77/76 %
-- Schaden/Killrate 18,97/66 %
+- Value Tokens, Material 33, wiederholbare Maker 12, Fehlpositive 0
+- Keepability/Planfähigkeit 77/76 %, Schaden/Killrate 18,97/66 %
 - Matchups: 0 % Burn, 7 % Artifacts, 100 % Mill
 
 ### KGB-Entscheidung
 
-Keine neue v2-KGB. Der Token-Builder ist nun ein technischer Sicherungspunkt, aber Goldfish und Matchups verwenden weiterhin eine nachweislich grobe Produktionsannahme.
-
-### Reflexion
-
-- Präzise Planrollen verbessern Kohärenz und Starthände.
-- Full-Pool-Ziele dürfen nicht unbesehen auf Sparse-Pools übertragen werden.
-- Neutrale Füller müssen ausschließlich eine tatsächliche Kopienlücke schließen.
-- Der aktuelle Goldfish-Wert ist nicht belastbar: jeder Maker erzeugt pauschal zwei Tokens, auch Death-, Ziel- und variable Trigger.
-- Grüne CI bestätigt die Builderintegration, nicht die simulierte Killrate.
+Keine neue v2-KGB. Der Builder ist technisch grün, aber Goldfish und Matchups verwendeten weiterhin eine pauschale Zwei-Token-Annahme.
 
 ## Token-Zyklus 3 – Produktionsmodi und Goldfish
 
-### Ausgangs-Head
+### Commit und Run 59
 
-`1a4618ed3eaed910632eba526b550d8abf9ed905`
+- Commit `3863d851efbf5704f84ce29b6897d638bb5d0bb9`
+- Run `30811810037`, rot
+- 292 Tests bestanden, 1 Test fehlgeschlagen
+- Fast-Validierung selbst PASS
+- Artefakt `global-calibration-pr-59`, ID `8855172586`
+- kombinierter Test-/Fast-Schritt ungefähr 4:04 Minuten
+- Benchmarks unverändert: Burn 83, Tokens 91, Artifacts 90, Control 85, Mill 80
+- Builderprofil, Paketrollen und 100 Hände unverändert
+
+### Fachliche Messkorrektur
+
+| Metrik | Run 58 | Run 59 | Delta | Interpretation |
+|---|---:|---:|---:|---|
+| Goldfish-Schaden | 18,97 | 10,47 | -8,50 | bisherige Pauschalproduktion blähte Schaden stark auf |
+| Killrate bis Zug 5 | 66 % | 7 % | -59 pp | neue Zahl ist konservative Messkorrektur, keine Builderregression |
+| durchschnittliches Tokenboard | nicht gemessen | 3,15 | neu | reales Board im Modell deutlich kleiner |
+| aktive unbedingte Engines | nicht gemessen | 0,00 | neu | nominelle Engine-Dichte entsprach keinen im Goldfish sicher auslösbaren Engines |
+| Tokens vs Artifacts | 7 % | 1 % | -6 pp | Matchup hängt direkt an korrigiertem Abschlussdruck |
+
+Die Workflow-Diagnose meldete 26 Kopien mit bedingter und 7 Kopien mit Death-Produktion. Keine der 33 Maker-Kopien erzeugt im leeren Solitaire garantiert sofort oder über einen unbedingten wiederholbaren Trigger Kreatur-Tokens. Damit ist die frühere `token_repeatable_maker`-Metrik fachlich zu breit.
+
+### Rote Ursachen
+
+1. Produktionsmarker wie `token_output_2` und `token_production_conditional` wurden als dynamische Knowledge-Rollen gespeichert. `CardContribution` versuchte sie als kanonische Funktionsrollen zu normalisieren. Die Fast-Validierung konnte zwar einen Produktionsstand erzeugen, aber direkte Token-Generierungstests scheiterten an unbekannten Rollen.
+2. Ein Regressionstest erwartete, dass ein wiederholbarer Ein-Token-Maker bereits bis Zug 5 zwingend mehr Schaden als ein gleich teurer einmaliger Maker erzeugt. Run 59 zeigte 4,02 gegenüber 4,04; die Setup-Verzögerung macht diese Annahme für den kurzen Horizont ungültig.
+
+### KGB-Entscheidung
+
+Regression festgestellt. Die Messhypothese ist fachlich bestätigt, das technische Gate ist rot.
+
+### Reflexion
+
+- Produktionsmetadaten sind kein funktionaler Deckrollenbeitrag.
+- „Repeatable“ bedeutet nicht automatisch, dass der Trigger im leeren Goldfish auslöst.
+- Die neue niedrige Killrate darf nicht durch Lockerung des Modells „repariert“ werden.
+- Der Builder priorisiert derzeit bedingte Engines, ohne garantierte Produktion zu messen.
+- Grüne Fast-Validierung allein hätte die rote Testintegration und die falsche Repeatable-Annahme nicht ersetzt.
+
+## Token-Hotfix 3 – Metadaten von Funktionsrollen trennen
 
 ### Zyklusvertrag
 
-- **Ursache:** alle Token-Maker werden als zwei sofort erzeugte Kreatur-Tokens behandelt.
-- **Hypothese:** Immediate-, Repeatable-, Conditional- und Death-Produktion mit konservativer Mindestmenge liefert realistischere Board-, Schaden- und Killdaten.
-- **Änderungen:** zentrale Produktionsanalyse; Rollenmarker und Diagnoseartefakt; Goldfish-Modell und Regressionstests.
-- **Erfolg:** Ein-/Zwei-Maker unterscheiden sich; echte Engines skalieren über Züge; Death-/zielabhängige Effekte erzeugen im leeren Solitaire nicht automatisch Tokens; Builderdeck bleibt identisch.
-- **Invarianten:** Benchmark 91, Material 33, wiederholbare Maker 12, Fehlpositive 0, Legalität und Opening-Hand-Werte unverändert.
-- **Abbruch:** Builderausgabe ändert sich, andere Benchmarks regressieren oder Fast überschreitet zehn Minuten.
-- **geschätzte Zeit:** 60–80 Minuten inklusive Artefaktauswertung.
-
-### Änderungen vor Push
-
-1. `token_production.py` erkennt konservative Mindestmenge und Produktionsmodus aus Oracle-Text.
-2. Der Token-Builder speichert stabile `token_output_*`- und `token_production_*`-Marker; die Diagnose listet Modi und Karten.
-3. Goldfish zählt Kartenkörper, garantierte Sofortproduktion und echte unbedingte Engines getrennt; Conditional-/Death-Ausgabe ist im leeren Solitaire nicht kostenlos.
+- **Ursache:** dynamische Produktionsmarker werden fälschlich als `CardContribution`-Rollen normalisiert; der Engine-Test verwendet einen ungeeigneten Fünf-Züge-Vergleich.
+- **Hypothese:** Metadata-Prefixe werden aus funktionalen Beiträgen gefiltert, bleiben aber auf finalen `DeckEntry`-Rollen für Diagnose und Goldfish erhalten. Engine-Skalierung wird über denselben Decktyp bei längerem Horizont geprüft.
+- **Änderungen:** Metadata-Filter in `contribution_from_knowledge`; Regressionstest; korrigierter Goldfish-Test.
+- **Erfolg:** alle Tests und Fast grün; Buildermetriken unverändert; Produktionsdiagnose vorhanden; Goldfish bleibt bei der konservativen Messung.
+- **Invarianten:** Benchmark 91, Material 33, Fehlpositive 0, Keepability/Planfähigkeit 77/76 %, andere Benchmarks unverändert.
+- **Rollback:** Produktionsmarker fehlen im finalen Artefakt oder beeinflussen erneut Komposition/Benchmark.
 
 ### KGB-Entscheidung vor Push
 
-Keine neue KGB. Die Änderung korrigiert Messung, nicht Kartenauswahl, und bleibt bis CI-/Artefaktauswertung vorläufig.
+Keine neue KGB. Der Hotfix bleibt bis CI- und Artefaktauswertung vorläufig.
 
 ### Priorisierter nächster ausführbarer Schritt
 
-Den neuen Workflow vollständig auswerten. Danach prüfen, ob der Builder wegen der korrigierten Produktionsdaten andere Karten priorisieren muss oder ob zuerst separate Go-Wide-/Value-/Aristocrats-Referenzdecks benötigt werden.
+Den Hotfix-Workflow vollständig auswerten. Bei Grün die Full-Pool-Kapazität garantiert sofortiger und im Solitaire unbedingter wiederholbarer Produktion messen; erst danach die Value-Planrolle oder Kartenauswahl verändern.
