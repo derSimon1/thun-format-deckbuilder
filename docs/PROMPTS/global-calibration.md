@@ -1,29 +1,25 @@
 # Global Calibration Prompt
 
-**Version:** 1.3  
+**Version:** 2.0  
 **Verbindliche Grundlage:** `docs/SPECIFICATION.md`
 
 ## Verwendung
 
-Der externe Auftrag nennt nur Repository, Branch/PR und die verfügbare Laufzeit `X` in Stunden. Diese Datei enthält die vollständige Arbeitsanweisung.
+Der externe Auftrag nennt nur:
+
+- Repository,
+- Branch und Pull Request,
+- verfügbare Laufzeit `X` in Stunden.
+
+Diese Datei enthält die vollständige Arbeitsanweisung.
 
 Beispiel:
 
 > Arbeite 3 Stunden im Repository `derSimon1/thun-format-deckbuilder` auf Branch `codex/global-deckbuilder-calibration` und PR #14 gemäß `docs/PROMPTS/global-calibration.md`. PR #13 bleibt unangetastet.
 
-## Auftrag
+## 1. Verbindlicher Start
 
-Arbeite für die im externen Auftrag genannte Laufzeit im Repository `derSimon1/thun-format-deckbuilder` auf Branch `codex/global-deckbuilder-calibration` und PR #14. PR #13 bleibt unangetastet.
-
-Führe innerhalb der verfügbaren Laufzeit so viele **vollständige produktive Kalibrierungszyklen** wie sinnvoll möglich durch. Ein Zyklus ist nur abgeschlossen, wenn Hypothese, Änderung oder belegter No-Change-Befund, Validierung, Reflexion und Dokumentation vollständig vorliegen.
-
-Starte keinen neuen Zyklus, wenn er innerhalb der verbleibenden Laufzeit voraussichtlich nicht mehr sauber validiert, dokumentiert und abgeschlossen werden kann. Nutze die Restzeit stattdessen für Abschlussvalidierung, CI-Auswertung, Artefaktprüfung, Logbook, Roadmap und Abschlussbericht.
-
-Es werden **keine separaten 15-Minuten-Aufgaben** benötigt. Arbeite im selben Lauf kontinuierlich weiter. GitHub Actions ist Validator und kein Entwicklungsagent.
-
-## 1. Verbindliche Repository-Dokumente
-
-Lies zu Beginn vollständig die aktuelle Version von:
+Lies zu Beginn vollständig:
 
 - `docs/SPECIFICATION.md`
 - `docs/PROMPTS/global-calibration.md`
@@ -33,219 +29,194 @@ Lies zu Beginn vollständig die aktuelle Version von:
 - `docs/KNOWN_ISSUES.md`
 - `docs/META.md`
 
-Diese Repository-Dokumente sind verbindlich und haben Vorrang vor älteren Aufgabenformulierungen und vor allgemeinen Annahmen.
+Diese Repository-Dokumente sind verbindlich und haben Vorrang vor älteren Aufgabenformulierungen und allgemeinen Annahmen.
 
-Vor jedem weiteren Zyklus lies mindestens den zuletzt geänderten Teil von Logbook und Roadmap erneut und beginne mit dem dort priorisierten nächsten ausführbaren Schritt, sofern keine neue belegte Evidenz eine andere Priorität rechtfertigt.
+Prüfe anschließend:
 
-## 2. Start- und Zyklusprüfung
+- aktuellen Branch- und PR-Head,
+- Mergeability,
+- aktive CI-Runs,
+- letzten erfolgreichen Workflow,
+- Jobs, Logs und Artefakte,
+- letzte Known Good Baseline,
+- zuletzt dokumentierten nächsten ausführbaren Schritt,
+- ob der vorherige Zyklus vollständig abgeschlossen wurde.
 
-Prüfe zu Beginn des Laufs und unmittelbar vor jeder Änderung:
+PR #13 bleibt unangetastet.
 
-- aktuellen Branch- und PR-Head
-- Mergeability
-- aktive CI-Runs
-- letzten erfolgreichen Workflow
-- enthaltene Jobs
-- relevante Logs
-- verfügbare Artefakte
-- Änderungen seit dem letzten dokumentierten Zyklus
+## 2. Mehrstundenbetrieb
 
-Halte den Ausgangs-Head jedes Zyklus fest.
+Arbeite für die im externen Auftrag genannte Laufzeit kontinuierlich im selben Lauf. Es werden keine separaten 15-Minuten-Aufgaben benötigt.
 
-Stoppe den betroffenen Änderungsschritt ohne Commit, wenn aktive CI, ein veränderter Head, Parallelität oder eine unklare Ursache eine sichere Änderung verhindert. Dokumentiere dann den exakten Stopgrund, die Erkenntnis, Confidence und den nächsten ausführbaren Schritt. Ein solcher Befund darf den gesamten mehrstündigen Lauf nicht unnötig beenden, sofern ein anderer Roadmap-Punkt sicher bearbeitet werden kann.
+Führe so viele vollständige produktive Kalibrierungszyklen wie sinnvoll möglich durch. Ein Zyklus ist nur abgeschlossen, wenn Hypothese, Änderung oder belegter No-Change-Befund, Validierung, Baseline-Vergleich, Reflexion und Dokumentation vollständig vorliegen.
+
+Starte keinen neuen Zyklus, wenn er innerhalb der verbleibenden Laufzeit voraussichtlich nicht mehr vollständig implementiert, getestet, validiert, dokumentiert und abgeschlossen werden kann. Nutze die Restzeit für Abschlussvalidierung, CI-Auswertung, Artefaktprüfung, Logbook, Roadmap und Abschlussbericht.
+
+GitHub Actions ist Validator und kein Entwicklungsagent.
 
 ## 3. Priorisierung
 
-Wähle pro Zyklus genau eine testbare Hypothese mit hohem erwartetem globalem Qualitätsgewinn.
+Beginne mit dem in Logbook und Roadmap festgelegten nächsten ausführbaren Schritt, sofern keine neue belegte Evidenz eine andere Priorität rechtfertigt.
 
-Aktuelle Priorität:
+Aktuelle globale Priorität:
 
-1. belastbare Token-Subarchetyp-Erkennung für Go Wide, Value Tokens und Aristocrats
-2. Control als allgemeiner Referenzarchetyp für das Verhindern gegnerischer Pläne
-3. Burn als Referenz für frühen Druck und Reach
-4. Artifacts als Referenz für Synergie- und Engine-Erkennung
-5. Mill als alternative Wincondition
-6. Strategy Commitment
-7. Engine Density
-8. Finish Density
-9. Baseline und Meta-Benchmark
+1. belastbare Token-Subarchetyp-Erkennung für Go Wide, Value Tokens und Aristocrats,
+2. planabhängige Starthand- und Sequenzbewertung,
+3. Control als allgemeiner Referenzarchetyp für das Verhindern gegnerischer Pläne,
+4. Strategy Commitment,
+5. Engine Density,
+6. Finish Density,
+7. belastbare Baseline und Meta-Benchmark.
 
-Die fünf verbindlichen Referenzarchetypen sind:
+Die fünf verbindlichen Referenzarchetypen sind Burn, Tokens, Artifacts, Control und Mill. Shrines ist kein Pflicht- oder Referenzarchetyp.
 
-- Burn
-- Tokens
-- Artifacts
-- Control
-- Mill
+Wähle pro Zyklus genau eine testbare Hypothese mit hohem erwartetem globalem Qualitätsgewinn. Setze höchstens drei eng gekoppelte Code-, Test- oder Berichtsänderungen derselben Ursache um.
 
-Shrines ist kein Pflicht- oder Referenzarchetyp mehr. Es darf höchstens optional als spezieller Regressionstest für mehrfarbige Engine-Decks verwendet werden, wenn konkrete Evidenz dies begründet.
+Keine Dummy-Commits, keine Grenzwertverschiebung nur zum Bestehen und keine unbelegten archetypspezifischen Sonderfälle.
 
-Wiederhole nicht lediglich Statusprüfungen. Nach zwei dokumentierten No-Change-Zyklen derselben Ursache musst du zum nächsten Roadmap-Punkt wechseln.
+## 4. Verbindliche 100-Starthände-Regel
 
-Setze pro Zyklus höchstens drei eng gekoppelte Code-, Test- oder Berichtsänderungen derselben Ursache um. Keine Dummy-Commits, keine unbegründeten Grenzwertverschiebungen und keine Änderungen an PR #13.
+Für jede erzeugte oder als aktuelle Referenz verwendete Deckliste simuliere genau 100 reproduzierbare Sieben-Karten-Starthände mit dokumentiertem festem Zufallsseed.
 
-## 4. Aktuell stärkste Hypothese
+Bewerte jede Hand archetypen- und planabhängig. Prüfe mindestens:
 
-Implementiere beziehungsweise vervollständige einen reproduzierbaren `OpeningHandPlanReport`, der für jedes erzeugte oder als aktuelle Referenz verwendete Deck genau 100 Sieben-Karten-Starthände mit dokumentiertem festem Zufallsseed erzeugt und maschinenlesbar speichert.
+- verfügbare und farblich passende Manaquellen,
+- spielbare Züge 1, 2 und 3,
+- frühe Bedrohung oder Enabler,
+- Engine-, Payoff- und Finisher-Zugang,
+- notwendige Interaktion,
+- tote oder widersprüchliche Karten,
+- ob der deklarierte Hauptplan realistisch anlaufen kann.
 
-Die Analyse darf nicht nur Landzahl oder irgendeinen frühen spielbaren Spell bewerten. Sie muss prüfen, ob der deklarierte Hauptplan realistisch anlaufen kann.
-
-Für jede Hand sind mindestens zu erfassen:
-
-- gezogene sieben Karten
-- verfügbare und farblich passende Manaquellen
-- mögliche Spielzüge in Zug 1, 2 und 3
-- frühe Bedrohung oder Enabler
-- Engine-, Payoff- und Finisher-Zugang
-- notwendige frühe Interaktion
-- tote oder widersprüchliche Karten
-- deklarierter Hauptplan
-- Klassifikation `planfähig`, `marginal` oder `nicht planfähig`
-- konkrete Klassifikations- und Ausfallgründe
-
-### Archetypabhängige Kriterien
-
-**Burn:** frühe Pressure- oder Burn-Dichte, realistische Schadenssequenz, passende Farben und keine Hand aus ausschließlich teuren oder reaktiven Karten.
-
-**Tokens – Go Wide:** frühe Maker oder Boardentwicklung plus realistisches Fenster für Anthem, Pump, Evasion oder einen anderen Go-Wide-Payoff.
-
-**Tokens – Value Tokens:** frühe Token-Erzeugung plus wiederholbare Value-Engine oder belastbarer Ressourcen- und Kartenvorteil.
-
-**Tokens – Aristocrats:** Opfermaterial oder wiederholbare Token-Erzeugung plus Sacrifice Outlet oder gleichwertiger Enabler plus Drain-, Death- oder Sacrifice-Payoff. Unterscheide Material, Outlet und Payoff einzeln sowie alle unvollständigen Kombinationen.
-
-**Artifacts:** früher Artifact-Enabler plus nutzbares Synergy-Piece, Engine oder Payoff.
-
-**Control:** relevante frühe Interaktion gegen den konkreten gegnerischen Plan, anschließende Stabilisierung, Kartenvorteil und belastbare Wincondition. Eine hohe Zahl reaktiver Karten allein genügt nicht. Prüfe Removal, Countermagic, Sweeper-Zugang, situativ tote Antworten, Tap-out-/Draw-go-Widersprüche und ob die Partie tatsächlich beendet werden kann.
-
-**Mill:** frühe Mill-Engine oder wiederholbare Mill-Quelle plus Schutz, Interaktion oder Tempo und eine realistische Mill-Clock.
-
-## 5. Reproduzierbarkeit und Rohdaten
-
-Der Seed muss:
-
-- im Bericht stehen
-- in den maschinenlesbaren Rohdaten enthalten sein
-- bei gleichem Deck und Code dieselben 100 Hände erzeugen
-- durch automatisierte Tests reproduzierbar geprüft werden
-
-Speichere vollständige Rohdaten als JSON oder JSONL unter `artifacts/global` oder `docs/reports` und ergänze eine kompakte Markdown-Zusammenfassung.
-
-Die Rohdaten enthalten mindestens Deck-ID, Decklisten-Hash, Seed, Simulationsversion, Handnummer, Karten, Sequenz bis Zug 3, Klassifikation, Gründe und Ausfallgründe.
-
-Erfinde keine Einzelhände aus aggregierten Workflow-Daten. Falls eine echte Simulation nicht möglich ist, dokumentiere den exakten technischen Stopgrund und behaupte nicht, die 100-Hand-Prüfung durchgeführt zu haben.
-
-## 6. Pflichtmetriken
+Klassifiziere jede Hand als `planfähig`, `marginal` oder `nicht planfähig`.
 
 Berichte je Deck mindestens:
 
-- Keepability-Rate
-- planfähige, marginale und nicht-planfähige Rate
-- frühe-Play-Rate bis Zug 2 und 3
-- Mana- und Farbfehlerquote
-- fehlende Enabler-, Engine-, Payoff- und gegebenenfalls Finisher-Quote
-- Quote widersprüchlicher oder toter Karten
-- drei häufigste Problemtypen
+- Keepability-Rate,
+- planfähige, marginale und nicht-planfähige Rate,
+- frühe-Play-Rate bis Zug 2 und 3,
+- Mana- und Farbfehlerquote,
+- fehlende Enabler-, Engine-, Payoff- und gegebenenfalls Finisher-Quote,
+- Quote toter oder widersprüchlicher Karten,
+- drei häufigste Problemtypen.
 
-Für Control zusätzlich:
+Keepability, Early Play und Planfähigkeit bleiben getrennte Metriken.
 
-- relevante Interaktionsrate bis Zug 2
-- Abdeckung gegen Kreaturen- und Nichtkreaturen-Pläne
-- Stabilisierungschance bis Zug 4 oder 5
-- Kartenvorteil-Zugang nach früher Interaktion
-- Wincondition-Zugang nach Stabilisierung
-- Quote situativ toter Antworten je Matchup
+Speichere Rohdaten oder eine kompakte maschinenlesbare Zusammenfassung unter `artifacts/global` oder `docs/reports`. Erfinde keine Einzelhände aus aggregierten Daten.
 
-Keepability, Early Play und Planfähigkeit müssen getrennte Metriken bleiben. Eine allgemeine Early-Play-Rate oder bloße Anzahl von Antworten ist kein Beweis für einen funktionierenden Hauptplan.
+## 5. Archetypabhängige Kriterien
 
-## 7. Tests und Validierung je Zyklus
+- **Burn:** frühe Pressure- oder Burn-Dichte und realistische Schadenssequenz.
+- **Tokens – Go Wide:** frühe Maker plus passendes Scaling- oder Payoff-Fenster.
+- **Tokens – Value Tokens:** frühe Token-Erzeugung plus wiederholbare Value-Engine.
+- **Tokens – Aristocrats:** Material plus Outlet plus Death-/Drain-/Sacrifice-Payoff.
+- **Artifacts:** früher Enabler plus Synergie-Piece, Engine oder Payoff.
+- **Control:** relevante frühe Interaktion gegen den konkreten gegnerischen Plan, Stabilisierung, Kartenvorteil und belastbare Wincondition. Situativ tote Antworten zählen nicht als echte Abdeckung.
+- **Mill:** frühe Mill-Engine oder wiederholbare Mill-Quelle plus Schutz, Interaktion oder Tempo.
 
-Ergänze fachlich eindeutige Tests für die jeweilige Ursache. Für den Opening-Hand-Report mindestens:
-
-- identischer Seed erzeugt identische Ergebnisse
-- anderer Seed verändert die Stichprobe
-- exakt 100 Hände pro Deck
-- klar planfähige und klar nicht-planfähige Fixtures
-- Go Wide, Value Tokens und Aristocrats
-- Control mit relevanter sowie matchup-toter Interaktion
-- Trennung von Early Play, Keepability und Planfähigkeit
-- vollständige maschinenlesbare Ausgabe
+## 6. Validierung vor Commit
 
 Vor jedem Commit:
 
-1. vollständige Testsuite ausführen
-2. Fast-Validierung ausführen
-3. Burn, Tokens, Artifacts, Control und Mill vergleichen
-4. drei Token-Matchups prüfen
-5. Control gegen Aggro, Tokens und einen Nichtkreaturen- oder Engine-Plan prüfen
-6. BO3-Berichte prüfen
-7. Laufzeit unter zehn Minuten bestätigen
-8. unbegründete Regressionen ausschließen
-9. Branch-Head, PR-Head, Mergeability und aktive CI erneut prüfen
+1. vollständige Testsuite ausführen,
+2. Fast-Validierung ausführen,
+3. Burn, Tokens, Artifacts, Control und Mill vergleichen,
+4. Go Wide, Value Tokens und Aristocrats getrennt prüfen,
+5. drei relevante Token-Matchups prüfen,
+6. Control gegen Aggro, Tokens und einen Nichtkreaturen- oder Engine-Plan prüfen,
+7. BO3-Berichte prüfen,
+8. Laufzeit unter zehn Minuten bestätigen,
+9. gegen die letzte Known Good Baseline vergleichen,
+10. unbegründete Regressionen ausschließen,
+11. Branch-Head, PR-Head, Mergeability und aktive CI erneut prüfen.
 
-## 8. Commit- und CI-Regel
+Bei erfolgreicher Validierung erstelle pro Zyklus genau einen sinnvollen Commit und aktualisiere `docs/DEVELOPMENT_LOGBOOK.md` sowie `docs/ROADMAP.md` im selben Commit.
 
-Bei erfolgreicher Validierung erstelle pro abgeschlossenem Zyklus genau einen sinnvollen Commit. Aktualisiere `docs/DEVELOPMENT_LOGBOOK.md` und `docs/ROADMAP.md` im selben Commit.
+## 7. Known Good Baseline
+
+Jeder Zyklus beginnt mit der letzten dokumentierten Known Good Baseline und endet mit genau einer Entscheidung:
+
+- neue KGB,
+- keine neue KGB,
+- Regression festgestellt.
+
+Eine neue KGB ist nur zulässig, wenn vollständige Tests, Fast-Validierung, Referenzvergleiche und CI erfolgreich sind, keine unbegründeten Regressionen vorliegen und der Qualitätsvergleich dokumentiert ist.
+
+Grüne CI allein genügt nicht.
+
+Bei zwei aufeinanderfolgenden unbegründeten Regressionen derselben Hypothese pausiere diese Hypothese und wechsle zum nächsten priorisierten Roadmap-Punkt.
+
+Prüfe bei größeren stabilen Meilensteinen, ob ein Git-Tag nach dem Muster `calibration-vX.Y` sinnvoll ist. Nicht jede KGB benötigt einen Tag.
+
+## 8. Commit, Workflow und Artefakte
 
 Nach jedem Push:
 
-- verifiziere innerhalb von zehn Minuten die neue Workflow-Run-ID
-- prüfe Commit-SHA, Status und Conclusion
-- prüfe alle Jobs, Schritte und Logs
-- prüfe erzeugte Artefakte und deren Inhalt
+- verifiziere innerhalb von zehn Minuten die neue Workflow-Run-ID,
+- prüfe Commit-SHA, Status und Conclusion,
+- prüfe alle Jobs, Schritte und Logs,
+- prüfe erzeugte Artefakte und deren Inhalt.
 
-Während ein Workflow läuft, darfst du nur an einem nachweislich unabhängigen nächsten Schritt arbeiten. Besteht Abhängigkeit zum laufenden Ergebnis, warte nicht passiv, sondern nutze die Zeit für Artefaktanalyse, Dokumentation, Testdesign oder einen unabhängigen Roadmap-Punkt. Erzeuge keinen Dummy-Commit zum Triggern.
+Während ein Workflow läuft, darf nur an einem nachweislich unabhängigen Schritt gearbeitet werden. Erzeuge keinen Dummy-Commit zum Triggern.
 
-Grüne CI ist kein automatischer Beweis für bessere spielerische Qualität.
+## 9. No-Change und Rollback
 
-## 9. Reflexion nach jedem Zyklus
+Falls kein sinnvoller Commit möglich ist, dokumentiere:
 
-Stelle jedes Ergebnis ausdrücklich in Frage:
+- geprüfte Hypothese,
+- verwendete Daten und gegebenenfalls Seed,
+- exakten Stopgrund,
+- gewonnene Erkenntnis,
+- Confidence,
+- mindestens zwei Folgeschritte,
+- genau einen priorisierten nächsten ausführbaren Schritt.
 
-- Welche zentrale Annahme könnte falsch sein?
+Nach zwei No-Change-Zyklen derselben Ursache wechsle zum nächsten Roadmap-Punkt.
+
+Wird eine KGB später als fehlerhaft erkannt, dokumentiere einen bewussten Rollback auf die letzte belastbare KGB mit Ursache, betroffenen Metriken, Tests, CI und nächstem Schritt.
+
+## 10. Reflexion nach jedem Zyklus
+
+Stelle das Ergebnis ausdrücklich in Frage:
+
+- Welche Annahme könnte falsch sein?
 - Welche alternative Erklärung passt ebenfalls zu den Messwerten?
-- Wurde auf Fixtures, Tests oder Simulationen überangepasst?
+- Wurde auf Tests, Fixtures oder Simulationen überangepasst?
 - Welche Mess- oder Datenlücke bleibt?
 - Bedeutet grüne CI tatsächlich bessere spielerische Qualität?
 - Welche unbeabsichtigte Regression könnte unentdeckt sein?
 - Sind Klassifikationsregeln zu streng oder zu locker?
 - Sind Referenzdecks echte Builder-Ausgaben oder kuratierte Beispiele?
 - Werden Kartentexte, Rollen und Synergien zuverlässig erkannt?
-- Werden Control-Antworten gegen den konkreten Plan bewertet?
 - Wird eine kontrollierte Partie beendet oder nur verzögert?
 
-Bewerte die Erkenntnis danach neu mit expliziter Confidence.
+Bewerte Confidence danach neu.
 
 Leite mindestens zwei mögliche Folgeschritte ab und bewerte sie nach erwartetem globalem Qualitätsgewinn, Evidenz, Aufwand und Risiko. Wähle genau einen logisch stärksten nächsten Schritt und schreibe ihn konkret und ausführbar in Logbook und Roadmap.
 
-Der nächste Zyklus beginnt mit diesem Schritt, sofern keine neue belegte Evidenz eine andere Priorität rechtfertigt.
+## 11. Session-Recovery
 
-## 10. No-Change-Regel
+Nach Zeitlimit, Verbindungsabbruch oder externem Abbruch:
 
-Falls kein sinnvoller Commit möglich ist, dokumentiere:
+1. lies alle verbindlichen Repository-Dokumente vollständig,
+2. prüfe Branch- und PR-Head,
+3. ermittle die letzte KGB,
+4. prüfe, ob der letzte Zyklus vollständig abgeschlossen wurde,
+5. setze beim dokumentierten nächsten ausführbaren Schritt fort.
 
-- geprüfte Hypothese
-- verwendete Daten und gegebenenfalls Seed
-- exakten Stopgrund
-- gewonnene Erkenntnis
-- Confidence
-- mindestens zwei Folgeschritte
-- genau einen priorisierten nächsten ausführbaren Schritt
+Ein teilweise bearbeiteter Zyklus darf nicht stillschweigend wiederholt, übersprungen oder als abgeschlossen dargestellt werden.
 
-Nach zwei aufeinanderfolgenden No-Change-Zyklen derselben Ursache wechsle zum nächsten priorisierten Roadmap-Punkt.
-
-## 11. Abschluss des mehrstündigen Laufs
+## 12. Abschluss des Laufs
 
 Beende den Lauf mit:
 
-- vollständiger Testsuite und Full-Validierung, sofern innerhalb der Laufzeit sauber möglich
-- Liste aller Commits und Workflow-Run-IDs
-- Status, Jobs, Logs und Artefakte des letzten relevanten Runs
-- Qualitätsentwicklung je Referenzarchetyp
-- bestätigten und widerlegten Hypothesen
-- Regressionen, Risiken und Datenlücken
-- aktualisiertem Logbook und aktualisierter Roadmap
-- genau einem priorisierten nächsten ausführbaren Schritt
-
-Beginne keinen unvollständigen letzten Zyklus nur, um die Laufzeit auszuschöpfen.
+- Liste aller Commits und Workflow-Run-IDs,
+- Status, Jobs, Logs und Artefakten des letzten relevanten Runs,
+- Qualitätsentwicklung je Referenzarchetyp,
+- KGB-Ausgangsstand und KGB-Endentscheidung,
+- bestätigten und widerlegten Hypothesen,
+- Regressionen, Risiken und Datenlücken,
+- aktualisiertem Logbook und aktualisierter Roadmap,
+- genau einem priorisierten nächsten ausführbaren Schritt.
 
 Erfinde keine Ergebnisse, Workflow-Runs, Artefakte oder simulierten Hände.
