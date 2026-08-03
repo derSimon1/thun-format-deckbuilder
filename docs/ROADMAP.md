@@ -2,90 +2,93 @@
 
 ## Development System v2.0 / Prompt 2.1
 
-Referenzarchetypen: Burn, Tokens, Artifacts, Control und Mill. Tokens werden zusätzlich als Go Wide, Value Tokens und Aristocrats bewertet. Jeder Zyklus endet mit KGB-Entscheidung, Reflexion und genau einem nächsten ausführbaren Schritt.
+Referenzarchetypen: Burn, Tokens, Artifacts, Control und Mill. Jeder Zyklus endet mit KGB-Entscheidung, Reflexion und genau einem nächsten ausführbaren Schritt.
 
-## Erledigte globale Grundlagen
+## Globale Grundlagen
 
-- [x] Fast-Validierung, Cache, Opening-Hand-, Goldfish-, Matchup- und BO3-Berichte
-- [x] genau 100 reproduzierbare Starthände je Referenzdeck, Seed 1701
-- [x] Keepability, Early Play und Planfähigkeit getrennt
+- [x] Fast-Validierung und Cache
+- [x] genau 100 reproduzierbare Starthände je Deck, Seed 1701
+- [x] Opening-Hand-, Goldfish-, Benchmark-, Matchup- und BO3-Berichte
 - [x] Manafehler-Invariante
-- [x] Control als fünfter Referenzarchetyp, Benchmark 85 und sechs Finisher
-- [x] fünf Pflichtarchetypen und sechs priorisierte Fast-Matchups
-- [x] maschinenlesbare Sideboard-Diagnose und Phrase-first-Klassifikation
-- [x] zentrale Mill-Quellendefinition, Poolkapazität und Messkompatibilität
+- [x] Control als fünfter Referenzarchetyp, Benchmark 85
+- [x] Phrase-first-Sideboardklassifikation und Diagnoseartefakte
+- [x] zentrale Mill-Quellendefinition und Poolkapazität
 
-## Aktueller Vier-Stunden-Lauf – Token-Fokus
+## Token-Fokus – aktueller Stand
 
-### Token-Zyklus 1 – Paketdiagnose
+### Diagnose abgeschlossen
 
-- [x] Kreatur-Token von Food/Clue/Blood/Treasure trennen
-- [x] wiederholbare Creature-Sacrifice-Outlets von One-Shot-Sacrifice trennen
-- [x] Other-Creature-Death-/Drain-Payoffs von Self-Death-Value trennen
-- [x] Deck- und Mono-White-Pooldiagnose erzeugen
-- [x] Run 55 vollständig auswerten
+- [x] Kreatur-Token von Food/Clue/Blood/Treasure getrennt
+- [x] echte Outlets von One-Shot-Sacrifice getrennt
+- [x] Other-Creature-Death-Payoffs von Self-Death getrennt
+- [x] Run 55: 43 Rollen-Fehlpositive belegt
+- [x] Full-Pool-Kapazität für alle drei Token-Pläne belegt
 
-**Run-55-Befund:** 14 echte Materialkopien, 9 Outletkopien, 3 Death-/Drain-Payoffs und 43 breite Rollen-Fehlpositive. Der Pool besitzt genügend Kapazität für alle drei Pläne.
+### Präzise Planrollen – Produktionsbefund Run 56
 
-### Token-Zyklus 2 – Präzise Planrollen und Komposition
+- [x] präzise Rollen eingeführt
+- [x] Planerkennung und Eligibility auf zentrale Paketdefinition gestellt
+- [x] planabhängige Mindestpakete definiert
+- [x] Full-Pool-Deck wechselt zu Value Tokens
+- [x] breite Rollen-Fehlpositive 43 → 0
+- [x] Material 14 → 33; wiederholbare Maker 12
+- [x] Benchmark 90 → 91; Keepability 73 → 77 %; Planfähigkeit 73 → 76 %
+- [ ] Testgate wieder grün herstellen
 
-- [x] präzise Tokenrollen vorbereiten
-- [x] Planerkennung auf echte Kreatur-Token-/Outlet-/Death-Signale umstellen
-- [x] Food-only und One-Shot-Sacrifice aus den planprägenden Rollen entfernen
-- [x] planabhängige, kapazitätsgeprüfte Mindestpakete definieren
-- [x] gezielte Plan-, Profil- und Rollenbereinigungstests vorbereiten
-- [ ] vollständige CI und Artefakte auswerten
+### Aktueller Hotfix
 
-### Erfolgskriterien für Zyklus 2
+- [x] tatsächliche Rollen-Kapazität je Candidate-Pool berechnen
+- [x] nur unerreichbare Sparse-Pool-Minimums begrenzen
+- [x] generische kleine Kreaturen als niedrig priorisierte Füller zulassen
+- [x] Produktionsziele bei ausreichender Kapazität unverändert lassen
+- [ ] vollständige Testsuite und Fast-Validierung bestätigen
+- [ ] Full-Pool-Deck und Token-Artefakte gegen Run 56 vergleichen
 
-- [ ] legal 60/15, Kopienlimit und Mono-White-Manabasis korrekt
-- [ ] Fast-Lauf unter zehn Minuten
-- [ ] finales Deck erfüllt die echten Mindestrollen seines gewählten Plans
-- [ ] `token-packages.json` meldet keine breiten planprägenden Fehlpositive
-- [ ] Commitment und 100-Hand-Klassifikation stimmen mit der Paketdiagnose überein
-- [ ] Keepability und Manafehler verschlechtern sich nicht unbegründet
-- [ ] Goldfish-Schaden beruht auf Kreatur-Tokens statt Food/Blood
-- [ ] Matchups gegen Burn, Artifacts und Mill werden gegen Run 55 verglichen
-- [ ] Burn, Artifacts, Control und Mill zeigen keine unbegründete Benchmarkregression
+### Nach grünem Hotfix anhand Evidenz priorisieren
 
-### Möglicher Token-Zyklus 3 – nur nach Artefaktevidenz
+Option A – **fehlender Value-Payoff**
 
-Falls der neue Builder einen kohärenten Go-Wide- oder Value-Plan erzeugt, aber Matchups weiterhin extrem bleiben:
+- [ ] klären, warum die zentrale Definition 0 verfügbare `token_value_payoff`-Karten meldet
+- [ ] Oracle-Phrasen gegen reale Mono-White-Karten prüfen
+- [ ] keine Rolle erzwingen, falls der Pool tatsächlich keinen direkten Value-Payoff enthält
 
-- [ ] Token-Goldfish zählt tatsächliche Tokenanzahl statt pauschal zwei pro Maker
-- [ ] Aristocrats-Schaden wird nur bei Material + Outlet + Death-/Drain-Payoff modelliert
-- [ ] Token-Combat unterscheidet Kreatur-Tokens von Nichtkreatur-Tokens
-- [ ] Matchupmodell trennt Boardentwicklung, Interaktion und Abschlussdruck
+Option B – **realistische Token-Goldfish-Messung**
 
-Falls der neue Builder weiterhin ein unvollständiges Paket erzeugt:
+- [ ] tatsächliche Tokenanzahl je Karte statt pauschal zwei verwenden
+- [ ] wiederholbare Quellen über Züge getrennt modellieren
+- [ ] Kreatur-Token und Nichtkreatur-Token strikt trennen
+- [ ] Schaden/Boardgröße gegen Run 56 vergleichen
 
-- [ ] exakte fehlende Rolle und Optimierungsschritt anhand Auswahltrace isolieren
-- [ ] höchstens eine belegte Kompositionsursache korrigieren
+Option C – **Matchupmodell**
+
+- [ ] Burn-/Artifact-Extremwerte gegen Boardentwicklung und Interaktion prüfen
+- [ ] keine Matchupschwellen allein anhand heuristischer Prozentwerte ändern
 
 ## Pausierter Mill-Rückkehrpunkt
 
 - [ ] mindestens 18 Mill-Quellen, Ziel 20
-- [ ] mindestens 6 echte wiederholbare Engines, Ziel 8
+- [ ] mindestens 6 echte Engines, Ziel 8
 - [ ] Komposition und Optimierer erhalten diese Dichte
-- [ ] Benchmark und Opening-Hand-Analyse bleiben auf der zentralen Definition
+- [ ] 100 Hände und Benchmark erneut vergleichen
 
-## Danach
+## Spätere Schritte
 
-1. Token-Subarchetypen als separate Referenzdecks statt nur automatische Planwahl benchmarken
+1. Go Wide, Value Tokens und Aristocrats als separate Referenzdecks erzeugen
 2. relevante Control-Antworten aus konkreten Gegnerdecks ableiten
 3. Mill-Kompositionsschritt abschließen
 4. Strategy Commitment und Engine Density archetypenübergreifend abstrahieren
 5. Finish Density allgemein modellieren
-6. belastbare Regression-Baseline statt `baseline: none`
-7. erste vollständig qualifizierte v2-KGB
+6. belastbare Regressionsbaseline statt `baseline: none`
+7. erste v2-KGB
 8. Meta- und Club-Benchmark
 
-## Definition of Done für den aktuellen Token-Meilenstein
+## Definition of Done für den aktuellen Hotfix
 
-- zentrale Token-Paketdefinition in Diagnose, Planerkennung und Komposition identisch
-- vollständige Testsuite und Fast-Validierung grün
+- alle Tests grün
+- Fast-Validierung unter zehn Minuten
 - fünf Referenzarchetypen und sechs Matchups
-- genau 100 Hände je Deck mit Seed 1701
-- Token-Metriken gegen Run 55 verglichen
-- keine unbegründete Regression anderer Referenzarchetypen
+- Value-Tokens-Deck legal 60/15
+- mindestens 10 echte Material- und 6 wiederholbare Maker-Kopien
+- 0 breite planprägende Fehlpositive
+- andere Benchmarks ohne unbegründete Regression
 - KGB-Entscheidung, Reflexion und genau ein nächster Schritt dokumentiert

@@ -4,110 +4,116 @@ Detaillierte frühere Fassungen bleiben über die Git-Historie erhalten. Jeder Z
 
 ## KGB-Status
 
-Eine vollständig qualifizierte Development-System-v2-KGB existiert noch nicht.
+Eine vollständig qualifizierte v2-KGB existiert noch nicht. Der Vergleich meldet weiterhin `baseline: none`; externe Club-/Meta-Evidenz fehlt.
 
-- v2-Bootstrap: `31f6c1e053976435481c07ab2098430bc2a45471`, Run `30792560878`
-- letzter Sideboard-Sicherungspunkt: `937f10f699814e271dd7f8b11b874b0a8f64270c`, Run `30801497068`
-- letzter grüner Mill-Messstand: `397d989bb19b2c78e4d2f17dcef00b6b572b5aa4`, Run `30803643342`
-- aktueller grüner Token-Diagnosestand: `6aa952f2e4d34a39fb32cb1910d3a13d2bcce5f1`, Run `30808101416`
-- keine v2-KGB, da der Vergleich weiterhin `baseline: none` meldet und externe Club-/Meta-Evidenz fehlt
+Aktuelle Sicherungspunkte:
 
-## Bisherige Meilensteine
-
-| Bereich | Commit / Run | Ergebnis |
-|---|---|---|
-| 100 Starthände | `43fa53d…` / `30794553679` | reproduzierbare Einzelhände, Seed 1701 |
-| Mana-Invariante | `5a040f9…` / `30795368803` | Manafehler nicht mehr planfähig |
-| Control | `2ef72a0…` / `30797591719` | Benchmark 85, sechs Finisher |
-| Sideboard | `937f10f…` / `30801497068` | Phrase-first, kein Graveyard-Hate gegen Aggro/Artifacts |
-| Mill-Messung | `397d989…` / `30803643342` | 40 legale Quellen, Benchmark 80, 55 % planfähig |
-| Token-Paketdiagnose | `6aa952f…` / `30808101416` | echte Paketbestandteile und 43 Rollen-Fehlpositive sichtbar |
+- Sideboard: `937f10f699814e271dd7f8b11b874b0a8f64270c`, Run `30801497068`
+- Mill-Messung: `397d989bb19b2c78e4d2f17dcef00b6b572b5aa4`, Run `30803643342`
+- Token-Diagnose: `6aa952f2e4d34a39fb32cb1910d3a13d2bcce5f1`, Run `30808101416`
 
 ## Vier-Stunden-Lauf – Token-Fokus
 
-### Session-Snapshot
+### Ausgangsstand Run 54
 
-- Ausgangs-Head: `397d989bb19b2c78e4d2f17dcef00b6b572b5aa4`
-- PR #14: offen, Draft, mergeable
-- Ausgangsrun: `30803643342`, erfolgreich
-- Ausgangsartefakt: `global-calibration-pr-54`, ID `8851950460`
-- Token-Plan: Aristocrats
+- Plan Aristocrats
 - Benchmark 90
 - Keepability/Planfähigkeit 73/73 %
-- Strategy Commitment 100 %
-- Engine Density 64 %
-- Goldfish bis Zug 5: 66 % Killrate, 18,69 Schaden
+- Commitment 100 %, Engine Density 64 %
+- Goldfish 18,69 Schaden, 66 % Killrate bis Zug 5
 - Matchups: 0 % Burn, 2 % Artifacts, 100 % Mill
-- Mill-Kompositionsschritt bleibt als dokumentierter Rückkehrpunkt offen
 
 ## Token-Zyklus 1 – Paketdiagnose
 
-### Ursache und Hypothese
-
-Die globale Rollenlogik zählte jedes erzeugte Token als Material, jedes Vorkommen von `sacrifice` als Outlet-Nähe und Self-Death-Effekte als Aristocrats-Payoff. Eine zentrale Oracle-Text-Diagnose sollte echte Kreatur-Token, wiederholbare Creature-Sacrifice-Outlets und Other-Creature-Death-/Drain-Payoffs getrennt ausweisen.
-
 ### Commit und Workflow
 
-- Commit: `6aa952f2e4d34a39fb32cb1910d3a13d2bcce5f1`
-- Workflow: `30808101416`, erfolgreich
-- Tests: 274 bestanden in 31,27 Sekunden
-- Test-/Fast-/Diagnoseschritt: ungefähr 3 Minuten 58 Sekunden
-- Artefakt: `global-calibration-pr-55`, ID `8853712704`, 47 Dateien, 62.043 Byte
-- Benchmarks unverändert: Burn 83, Tokens 90, Artifacts 90, Control 85, Mill 80
-- fünf Referenzarchetypen, sechs Matchups, 0 gemeldete Regressionen
+- Commit `6aa952f2e4d34a39fb32cb1910d3a13d2bcce5f1`
+- Run `30808101416`, erfolgreich
+- 274 Tests in 31,27 Sekunden
+- Fast-/Diagnoseschritt insgesamt ungefähr 3:58 Minuten
+- Artefakt `global-calibration-pr-55`, ID `8853712704`, 47 Dateien
+- Benchmarks: Burn 83, Tokens 90, Artifacts 90, Control 85, Mill 80
 
-### Fachliche Artefaktauswertung
+### Evidenz
 
-| Metrik | Run 54 | Run 55 | Delta | Interpretation | Confidence |
-|---|---:|---:|---:|---|---|
-| echtes Kreatur-Token-Material | unbekannt | 14 | neu | nur ein Teil der 33 breiten Maker ist echtes Boardmaterial | hoch |
-| echte wiederholbare Outlets | unbekannt | 9 | neu | drei Outlet-Kartennamen zu je drei Kopien | hoch |
-| echte Death-/Drain-Payoffs | unbekannt | 3 | neu | Paket hängt vollständig von Relic Vial ab | hoch |
-| Nichtkreatur-Token als Maker | unbekannt | 19 | neu | Food/Blood und ähnliche Tokens blähen Material auf | hoch |
-| One-Shot-Sacrifice als Outlet | unbekannt | 23 | neu | zusätzliche Kosten und Self-Sacrifice blähen Outletdichte auf | hoch |
-| breite Fehlpositive gesamt | unbekannt | 43 | neu | Commitment und Handklassifikation sind stark überzählt | hoch |
+| Paketmetrik | Run 55 |
+|---|---:|
+| echtes Kreatur-Token-Material | 14 |
+| echte wiederholbare Outlets | 9 |
+| Death-/Drain-Payoffs | 3 |
+| Nichtkreatur-Token fälschlich als Material | 19 |
+| One-Shot-Sacrifice fälschlich als Outlet | 23 |
+| breite Rollen-Fehlpositive gesamt | 43 |
 
-Das reale Deck besitzt zwar alle drei Aristocrats-Komponenten, aber nur drei Death-/Drain-Payoff-Kopien. Der legale Mono-White-Pool ist nicht der Engpass: 169 Kreatur-Token-Karten, 41 Multi-Maker, 20 wiederholbare Maker, 34 Outlets und 13 Death-Payoffs sind vorhanden.
+Der reale Pool ist nicht knapp: 169 Kreatur-Token-Karten, 41 Multi-Maker, 20 wiederholbare Maker, 34 Outlets und 13 Death-Payoffs.
 
-### KGB-Entscheidung
+### Entscheidung
 
-Keine neue v2-KGB. Der Zyklus verbessert Messbarkeit, ändert aber noch keine Deckauswahl. Die bisherigen 100-%-Commitment- und 73-%-Planfähigkeitswerte sind fachlich nicht mehr belastbar.
-
-### Reflexion
-
-- Die Annahme „jedes Token ist Kampfmaterial“ ist widerlegt.
-- Die Annahme „jedes sacrifice ist ein Outlet“ ist widerlegt.
-- Alternative Erklärung für extreme Matchups bleibt ein vereinfachtes Combat-/Matchupmodell.
-- Die Diagnose erkennt Copy-Token ohne das Wort `creature` möglicherweise zu konservativ; reale Deck- und Pooldaten müssen nach dem Rollenumbau erneut geprüft werden.
-- Grüne CI bestätigt nur die Diagnose, nicht bessere Token-Decks.
+Hypothese bestätigt. Keine neue KGB: Der Zyklus verbesserte Messbarkeit, nicht die Builderausgabe.
 
 ## Token-Zyklus 2 – Präzise Planrollen und Komposition
 
-### Ausgangs-Head
+### Commit und Run 56
 
-`6aa952f2e4d34a39fb32cb1910d3a13d2bcce5f1`
+- Commit `676da07f56abc55651c2d1e1cb25b423ba1a6088`
+- Run `30809079933`, rot
+- Tests: 274 bestanden, 5 fehlgeschlagen
+- Fast-Validierung selbst: PASS
+- Artefakt `global-calibration-pr-56`, ID `8854099893`, 47 Dateien
+- Laufzeit des Test-/Fast-/Diagnoseschritts: ungefähr 4:02 Minuten
+
+### Produktionsartefakt trotz rotem Testgate
+
+Der vollständige Pool erzeugte erfolgreich ein neues Value-Tokens-Deck:
+
+- Benchmark 90 → 91
+- Plan Aristocrats → Value Tokens
+- 33 echte Materialkopien
+- 12 wiederholbare Maker
+- 0 breite Rollen-Fehlpositive
+- Keepability 73 → 77 %
+- Planfähigkeit 73 → 76 %
+- Goldfish-Schaden 18,69 → 18,97
+- Killrate unverändert 66 %
+- Artifacts-Matchup 2 → 7 %
+- Burn unverändert 0 %, Mill unverändert 100 %
+- Commitment weiterhin 100 %
+- Engine Density 64 → 33 %, nun 12 echte wiederholbare Maker statt breite Sacrifice-„Engines“
+
+Deckkern: 33 Kreatur-Token-Maker, 24 Kreaturen, 13 Multi-Maker, 3 Anthems, 5 Removal. `token_value_payoff` ist noch 0/4 und wird als offene Rolle gewarnt.
+
+### Belegte rote Ursache
+
+Kleine Testdatenbanken enthalten nach präziser Eligibility nur 33 verfügbare Kopien. Die statischen Produktionsminimums werden nicht gegen den tatsächlich übergebenen Pool geprüft. Die Kompositionsengine bleibt deshalb drei Slots vor Deckende ohne zulässigen Kandidaten. Im vollständigen Pool sind alle Minimums erfüllbar.
+
+### KGB-Entscheidung
+
+Regression festgestellt: rotes Testgate. Der Produktionsbefund ist fachlich vielversprechend, darf aber nicht als neuer Sicherungspunkt gelten.
+
+### Reflexion
+
+- Die Hypothese zur Rollenbereinigung ist bestätigt.
+- Die Annahme, Full-Pool-Kapazität gelte für jede Test-/Sparse-Datenbank, ist falsch.
+- Schwellenwerte werden nicht global gesenkt; sie müssen poolabhängig begrenzt werden.
+- Value Tokens besitzt noch keinen erkannten direkten Value-Payoff. Die Planwahl beruht auf wiederholbaren Makern und Card Draw.
+- Goldfish bleibt pauschal und zählt nicht die tatsächliche Tokenmenge je Karte.
+- Extreme Matchups zeigen weiterhin Simulationsgrenzen.
+
+## Token-Hotfix – Poolabhängige Mindestwerte
 
 ### Zyklusvertrag
 
-- **Ursache:** 43 breite Rollen-Fehlpositive steuern Planwahl, Komposition, Commitment, Handklassifikation und Goldfish.
-- **Hypothese:** Token-spezifisch bereinigte Rollen und kapazitätsgeprüfte Planminimums erzeugen ein Deck, dessen deklarierter Plan tatsächlich erfüllt ist.
-- **Änderungen:** präzise Tokenrollen; zentrale Planerkennung/Eligibility/Scoring; profilespezifische Mindestpakete.
-- **Erwartung:** Nichtkreatur-Token und One-Shot-Sacrifices verlieren ihre planprägenden Rollen; der gewählte Plan erfüllt seine echten Paketminimums.
-- **Invarianten:** legal 60/15, Seed 1701, Fast unter zehn Minuten, andere vier Benchmarks ohne unbegründete Regression.
-- **Erfolg:** finales Diagnoseartefakt zeigt keine breiten Paket-Fehlpositive; Commitment und Hände verwenden die bereinigten Rollen; Token-Kohärenz steigt.
-- **Rollback:** roter Lauf, nicht erfüllbare Mindestpakete oder schlechtere Planfähigkeit ohne belegten Kohärenzgewinn.
-- **geschätzte Zeit:** 60–80 Minuten inklusive Workflow und Artefaktauswertung.
-
-### Änderung vor Push
-
-1. Neue Rollen `token_creature_maker`, `token_repeatable_maker`, `sacrifice_outlet`, `death_payoff`, `drain_payoff` und `token_value_payoff`.
-2. Token-Planerkennung und Kandidatenpool verwenden die zentrale Paketdefinition; breite Fehlrollen werden in der Token-spezifischen Knowledge-Ansicht entfernt.
-3. Go Wide, Value Tokens und Aristocrats erhalten anhand der gemessenen Poolkapazität eigene harte Planminimums.
+- **Ursache:** unerreichbare harte Minimums und nur 33 planrelevante Kopien im Sparse-Pool.
+- **Hypothese:** Kapazitätsprüfung je Candidate-Pool plus niedrig priorisierte kleine Kreaturen als Füllmaterial stellt Sparse-Pool-Fähigkeit wieder her, ohne Full-Pool-Ziele anzutasten.
+- **Änderungen:** `capacity_checked_token_profile`; getrennte Plan- und Composition-Pools; neutrale Kreaturen nur als Fallback.
+- **Erfolg:** alle Tests und Fast grün; Full-Pool-Value-Deck behält 33 Material- und mindestens 6 wiederholbare Maker-Kopien; 0 Fehlpositive.
+- **Invarianten:** keine Benchmarksenkung, keine Änderung der Produktionsziele bei ausreichender Kapazität.
+- **Rollback:** Full-Pool-Pflichtrollen oder Kohärenz gehen verloren.
 
 ### KGB-Entscheidung vor Push
 
-Keine neue v2-KGB. Der Commit bleibt bis vollständiger CI- und Artefaktauswertung vorläufig.
+Keine neue KGB. Der Hotfix ist bis CI-/Artefaktauswertung vorläufig.
 
 ### Priorisierter nächster ausführbarer Schritt
 
-Den neuen Workflow und insbesondere Deckliste, `token-packages.json`, 100 Hände, Commitment, Goldfish sowie die Matchups gegen Burn, Artifacts und Mill auswerten. Danach nur die durch Artefakte belegte nächste Ursache bearbeiten.
+Hotfix-Workflow auswerten. Bei Grün anschließend den fehlenden `token_value_payoff` und die tatsächliche Tokenzahl im Goldfish als zwei getrennte mögliche Ursachen nach Qualitätsgewinn vergleichen.
