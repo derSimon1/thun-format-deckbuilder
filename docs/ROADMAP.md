@@ -16,7 +16,8 @@
 - [x] Token-Hauptplan vor der Kartenauswahl bestimmen
 - [x] Signale für Go Wide, Value Tokens und Aristocrats unterscheiden
 - [x] Token-Karten planabhängig bewerten
-- [x] planspezifische Rollenminimums und Dichteziele
+- [x] planspezifische weiche Dichteziele
+- [ ] kapazitätsgeprüfte harte Mindestdichten für planprägende Rollen
 - [ ] Rollen-Mischmasch im Qualitätsbericht negativ bewerten
 - [ ] Strategy-Commitment-Bericht mit Plan, Dichten und Warnungen
 - [ ] Engine Density modellieren
@@ -42,18 +43,20 @@
 
 ## Aktuelle Priorität
 
-1. Strategy-Commitment-Bericht und negative Bewertung von Rollen-Mischmasch
-2. Engine Density
-3. Finish Density
-4. belastbare Vergleichsbaseline
-5. Meta-Benchmark
+1. CI-Stabilität der planspezifischen Token-Profile bestätigen
+2. Strategy-Commitment-Bericht und negative Bewertung von Rollen-Mischmasch
+3. Engine Density
+4. Finish Density
+5. belastbare Vergleichsbaseline
+6. Meta-Benchmark
 
 ## Definition of Done für den nächsten Sprint
 
 - Token-Hauptplan wird vor Kartenauswahl bestimmt.
 - Mindestens drei gezielte Regressionstests decken Subarchetyp-Kohärenz ab.
 - Der gewählte Token-Plan ist im erzeugten Profil und Bericht sichtbar.
-- Planspezifische Rollenminimums verhindern Rollen-Mischmasch.
+- Planprägende Rollen werden als Dichteziele bevorzugt, ohne sparse Kartenpools zu blockieren.
+- Harte Mindestdichten werden erst nach Kapazitätsprüfung aktiviert.
 - Fast-Validierung bleibt unter zehn Minuten.
 - Keine unbegründete Regression bei Burn, Artifacts, Shrines oder Mill.
 - Logbuch, Entscheidungen und bekannte Probleme sind aktualisiert.

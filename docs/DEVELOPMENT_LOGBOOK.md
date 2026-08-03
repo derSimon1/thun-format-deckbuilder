@@ -182,23 +182,68 @@ Konservative planspezifische Mindestdichten erzwingen die definierenden Pakete, 
 ### Validierung
 
 - statische Plausibilitätsprüfung: Mindestpakete bleiben unter den verfügbaren Zauberslots
-- vollständige Testsuite und Fast-Validierung: durch den neuen PR-Workflow zu verifizieren
-- fünf Archetypen, Token-Matchups und BO3-Berichte: durch die Workflow-Artefakte zu prüfen
+- vollständiger PR-Workflow: Run `30786201567`, fehlgeschlagen
+- Tests: 228 bestanden, 5 fehlgeschlagen
+- Fast-Validierung selbst: fünf Archetypen bestanden, drei Matchups geprüft, keine Regressionen
 
-### Vorläufiges Ergebnis
+### Ergebnis
 
-Die Planentscheidung beeinflusst nun nicht nur das Scoring, sondern auch die zwingend zu erfüllenden Rollen. Damit wird Strategy Commitment erstmals strukturell in der Komposition verankert.
+Die Hypothese war in ihrer harten Form zu optimistisch. Der Kompositionsalgorithmus reservierte die letzten vier Slots für eine planprägende Pflichtrolle, konnte aber im Testkartenpool keine weiteren geeigneten Kopien mehr wählen. Statische Summen der Mindestwerte reichen nicht aus, um die tatsächliche Rollenkapazität eines legalen Kartenpools zu beweisen.
 
 ### Confidence
 
-Mittel bis zum vollständigen grünen Workflow und zur Artefaktprüfung.
-
-### Offene Risiken
-
-- Rollen können überlappen; erfüllte Mindestzahlen sind deshalb noch kein vollständiger Strategy-Commitment-Score.
-- Die Mono-White-Kartenmenge könnte für Aristocrats nicht genug echte Outlets enthalten; ein Workflowfehler wäre hier ein nützlicher Kapazitätshinweis statt ein Grund, Mindestwerte blind zu senken.
-- Engine Density und Finish Density bleiben separat zu modellieren.
+Hoch. Fünf reproduzierbare Tests endeten mit demselben Fehler `Not enough eligible cards; 4 spell slots remain`.
 
 ### Nächster Schritt
 
-Workflow und erzeugte Token-Artefakte prüfen. Danach einen expliziten Strategy-Commitment-Bericht ergänzen, der Plan, Soll-/Ist-Dichten, Rollenüberlappung und Mischmasch-Warnungen ausweist.
+Harte Mindestwerte für seltene planprägende Rollen bis zu einer kapazitätsbewussten Vorprüfung zurücknehmen; die unterschiedlichen Zielwerte als weiche Präferenz beibehalten.
+
+---
+
+## 2026-08-03 – Zwei-Stunden-Kalibrierung, Zyklus 3: CI-Hotfix für sparse Rollenpools
+
+### Ziel
+
+Die durch Zyklus 2 verursachte rote CI beheben, ohne die Token-Plan-Erkennung oder planspezifische Scoringlogik zurückzunehmen.
+
+### Ausgangslage
+
+- Ausgangs-Head: `85b146f22118e43cc01c1cc7080c9c66b5be4b15`
+- PR #14 offen, mergeable und Draft
+- Workflow Run `30786201567`: fehlgeschlagen
+- belegte Ursache: harte Mindestwerte für `token_payoff`, `card_draw` oder `sacrifice` können den iterativen Composer in kleinen beziehungsweise sparse Kartenpools blockieren
+- Fast-Validierung war inhaltlich grün; ausschließlich die vollständige Testsuite war rot
+
+### Hypothese
+
+Wenn nur der breit verfügbare `token_maker` als harte Mindestrolle bleibt und die planprägenden Supportrollen weiterhin unterschiedliche Zielwerte besitzen, bleibt die Planpräferenz erhalten, während der Composer nicht mehr wegen fehlender seltener Rollen deadlockt.
+
+### Änderungen
+
+1. Planprägende Supportrollen werden von harten Mindestwerten auf planspezifische weiche Zielwerte umgestellt.
+2. Profiltests unterscheiden nun ausdrücklich zwischen harten Maker-Mindestwerten und weichen Supportzielen.
+3. Roadmap und Logbuch dokumentieren die notwendige spätere kapazitätsbewusste Mindestprüfung.
+
+### Validierung
+
+- Vorabbeleg: fünf identische Composer-Fehler in Run `30786201567`; 228 übrige Tests bestanden
+- Fast-Validierung des fehlerhaften Heads: Burn 83, Tokens 90, Artifacts 90, Shrines 78, Mill 78; drei Matchups; null Regressionen
+- Zielvalidierung: vollständige Testsuite und Fast-Validierung durch den nachfolgenden PR-Workflow
+
+### Ergebnis
+
+Der Fix beseitigt die konkret belegte, neu eingeführte harte Reservierungsbedingung, ohne Planerkennung, Scoring oder weiche Dichteziele zu entfernen.
+
+### Confidence
+
+Hoch für die identifizierte CI-Ursache; endgültige Bestätigung nach grünem PR-Workflow.
+
+### Offene Risiken
+
+- Weiche Ziele garantieren allein noch kein Strategy Commitment.
+- Harte Mindestwerte für seltene Rollen benötigen vor Aktivierung eine Kapazitätsprüfung gegen den tatsächlich legalen Pool und das Kopienlimit.
+- Ein expliziter Strategy-Commitment-Bericht bleibt erforderlich, um Zielerfüllung und Mischmasch sichtbar zu machen.
+
+### Nächster Schritt
+
+Neuen PR-Workflow prüfen. Bei grüner CI als nächsten produktiven Schritt Strategy-Commitment-Bericht und Mischmasch-Warnungen implementieren.
