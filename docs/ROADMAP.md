@@ -20,7 +20,8 @@ Referenzarchetypen: Burn, Tokens, Artifacts, Control und Mill.
 - [x] drei vollständige grüne Bestätigungsläufe auf demselben Head
 - [x] explizite `{C}`-Kosten ohne farblose Quellen aus der Komposition ausgeschlossen
 - [x] 23-Land-Variante gemessen und wegen schlechterer Stabilität verworfen
-- [ ] planfremde bedingte, Death- und aktivierte Maker reduzieren
+- [x] bedingte und aktivierte Maker durch modusspezifisches Scoring entfernt
+- [ ] reine Opfer-Outlets aus Go Wide entfernen
 - [ ] Arena-Import und 100 Hände final bewerten
 
 ## Aktuelle Pflichtdichten
@@ -30,19 +31,21 @@ Referenzarchetypen: Burn, Tokens, Artifacts, Control und Mill.
 - mindestens 6 garantierte Multi-Maker
 - mindestens 3 Anthems
 
-## Evidenz
+## Run-73-Evidenz
 
-- bestätigter 24-Land-Stand aus Run 72: Benchmark 96, 36 Maker; Produktionsmodi 24 sofortig, 6 Death, 3 bedingt, 3 aktiviert
-- 23-Land-Run 71: Benchmark 94, T2/T3 92/94 %, Mana-Screw 16 statt 13 Hände, Schaden 23,66, Killrate 63 %
-- Entscheidung: 24 Plains bleiben wegen klar besserer Starthand- und Kurvenstabilität
+- Benchmark Tokens 96→98; andere Benchmarks stabil bei 83/90/85/80
+- sofortige Maker 24→30
+- bedingte Maker 3→0, aktivierte Maker 3→0, Death-Maker 6→3
+- Material 36→33, weil zwei `Witch's Oven` als reine Opfer-Outlets ausgewählt wurden
+- nächster Fokus ist daher planabhängige Kandidatenkompatibilität statt weitere Score-Gewichte
 
 ## Aktueller Zyklus
 
-1. Death-Produktion im Go-Wide-Score abwerten, da sie einen eigenen Todesfall voraussetzt.
-2. Bedingte Produktion moderat abwerten, da sie nicht zuverlässig zum geplanten Zeitpunkt verfügbar ist.
-3. Aktivierte Produktion abhängig von den zusätzlichen Manakosten abwerten.
-4. Workflow-Run sichtbar `Token Go Wide – Immediate Maker Scoring` benennen.
-5. Nur bei grünem Gate und positivem Gesamtbild beibehalten.
+1. Reine Opfer-Outlets für Go Wide nach Planerkennung aus dem Kandidatenpool entfernen.
+2. Hybridkarten mit echter Kreatur-Token-Produktion, Anthem, Evasion oder nützlicher Interaktion weiterhin zulassen.
+3. Aristocrats-Verfügbarkeit unverändert erhalten.
+4. Workflow sichtbar `Token Go Wide – Remove Sacrifice Outlets` benennen.
+5. Nur bei grünem Gate und stabilem oder verbessertem Gesamtbild beibehalten.
 
 ## Prioritäten danach
 
@@ -54,4 +57,4 @@ Referenzarchetypen: Burn, Tokens, Artifacts, Control und Mill.
 
 ## Genau ein nächster ausführbarer Schritt
 
-Immediate-Maker-Scoring veröffentlichen, den sprechend benannten Workflow und sein Artefakt vollständig auswerten und danach die Änderung behalten oder evidenzbasiert zurückrollen.
+Outlet-Filter veröffentlichen, Workflow und Artefakt vollständig auswerten und danach die Änderung behalten oder evidenzbasiert zurückrollen.

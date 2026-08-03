@@ -147,6 +147,28 @@ def _is_reasonable_token_card(knowledge: CardKnowledge) -> bool:
     return _is_token_plan_card(knowledge) or _is_sparse_pool_filler(knowledge)
 
 
+def _is_plan_compatible_card(
+    knowledge: CardKnowledge,
+    plan: TokenPlan,
+) -> bool:
+    """Exclude pure package pieces that conflict with the selected Token plan."""
+
+    if plan != TokenPlan.GO_WIDE:
+        return True
+    signals = analyze_token_package(knowledge.analysis)
+    if not signals.sacrifice_outlet:
+        return True
+    supports_go_wide = any(
+        (
+            signals.creates_creature_tokens,
+            signals.anthem,
+            signals.evasion_payoff,
+            bool(knowledge.roles.intersection({"removal", "card_draw", "protection"})),
+        )
+    )
+    return supports_go_wide
+
+
 def _copy_capacity(cards: tuple[CardKnowledge, ...], max_copies: int) -> int:
     return len({card.analysis.name.casefold() for card in cards}) * max_copies
 
@@ -253,11 +275,15 @@ def generate_token_deck(
     plan_cards = tuple(card for card in token_cards if _is_token_plan_card(card))
     plan_report = detect_token_plan(plan_cards, max_copies=max_copies)
     configured_profile = token_profile_for_plan(plan_report.plan, lands=lands)
-    composition_cards = _composition_candidates(
-        token_cards,
-        plan_cards,
-        spell_slots=configured_profile.spell_slots(deck_size),
-        max_copies=max_copies,
+    composition_cards = tuple(
+        card
+        for card in _composition_candidates(
+            token_cards,
+            plan_cards,
+            spell_slots=configured_profile.spell_slots(deck_size),
+            max_copies=max_copies,
+        )
+        if _is_plan_compatible_card(card, plan_report.plan)
     )
     profile, capacity_warnings = capacity_checked_token_profile(
         configured_profile,

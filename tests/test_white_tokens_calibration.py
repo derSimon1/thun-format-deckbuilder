@@ -2,9 +2,11 @@ from thun_deckbuilder.card_analyzer import analyze_card
 from thun_deckbuilder.knowledge_base import CardKnowledge
 from thun_deckbuilder.token_generator import (
     _go_wide_production_adjustment,
+    _is_plan_compatible_card,
     _is_reasonable_token_card,
     _score_for_composition,
 )
+from thun_deckbuilder.token_plan import TokenPlan
 from thun_deckbuilder.token_scoring import estimated_token_output, score_token_card
 
 
@@ -125,3 +127,13 @@ def test_go_wide_scales_activated_penalty_with_mana_cost():
     assert expensive_adjustment == -3.0
     assert expensive_adjustment < cheap_adjustment
     assert reason == "Go Wide: zusätzliche Aktivierungskosten"
+
+
+def test_go_wide_rejects_pure_sacrifice_outlet():
+    outlet = knowledge(
+        "Sacrifice a creature: Create a Food token.",
+        ("sacrifice", "sacrifice_outlet"),
+        mana_value=1,
+    )
+    assert not _is_plan_compatible_card(outlet, TokenPlan.GO_WIDE)
+    assert _is_plan_compatible_card(outlet, TokenPlan.ARISTOCRATS)

@@ -1,5 +1,5 @@
 name: Global Calibration PR
-run-name: Token Go Wide – Immediate Maker Scoring
+run-name: Token Go Wide – Remove Sacrifice Outlets
 
 on:
   pull_request:

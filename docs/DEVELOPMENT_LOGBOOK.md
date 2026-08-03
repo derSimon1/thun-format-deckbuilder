@@ -18,39 +18,37 @@ Eine vollständig qualifizierte v2-KGB existiert noch nicht. `baseline: none` be
 
 - Commit `94c8430835222b63b40a8b8465ef35df17787526`.
 - Workflow `30827014882`, erfolgreich; Artefakt `8861386466`.
-- 302 Tests, Fast und Diagnose grün.
 - `Warping Wail` wurde wegen nicht unterstützter `{C}`-Kosten ausgeschlossen und durch `Parting Gust` ersetzt.
 - Benchmarks 83/96/90/85/80 für Burn/Tokens/Artifacts/Control/Mill.
-- Token: 23,58 Schaden, 62 % Killrate, Board 9,20, Keepability/Planfähigkeit 77/77 %.
 - KGB: keine neue KGB.
 
-### 23-Land-Experiment – Run 71
+### 23-Land-Experiment und Rollback – Runs 71–72
 
-- Commit `d50680c828067f9ada586c8bd0564f3b6abcd5d2`.
-- Workflow `30827655973`, technisch rot wegen eines noch auf 24 Länder gebundenen Strukturtests; Fast und Diagnose liefen erfolgreich.
-- Artefakt `global-calibration-pr-71`, ID `8861699274`.
-- fachliches Delta gegen Run 70: Benchmark 96→94; Mana-Screw-Hände 13→16; Early Play T2/T3 94/96→92/94 %; Schaden 23,58→23,66; Killrate 62→63 %; ungenutztes Mana 3,33→3,14.
-- Interpretation: minimale Goldfish-Verbesserung bei klar schlechterer Starthand- und Kurvenstabilität. Hypothese widerlegt.
-- Entscheidung: 23 Länder werden verworfen; Rückkehr zu 24 Plains und 36 Spells.
+- 23 Länder verbesserten Schaden und Killrate nur minimal, verschlechterten aber Benchmark, Mana-Screw und Early Play deutlich.
+- Commit `b5e1b0bd1def26a9ce62b24fe0a5ffe12a765e1b` stellte 24 Plains wieder her.
+- Workflow `30828260897`, Run 72, erfolgreich; Artefakt `8861942756`.
 - KGB: keine neue KGB.
 
-### Rollback-Bestätigung – Run 72
+### Immediate-Maker-Scoring – Run 73
 
-- Commit `b5e1b0bd1def26a9ce62b24fe0a5ffe12a765e1b`.
-- Workflow `30828260897`, erfolgreich; Artefakt `8861942756`.
-- 302 Tests, Fast und Diagnose grün.
-- Benchmarks wieder 83/96/90/85/80; Token-Paket 36 Maker mit 24 sofortigen, 6 Death-, 3 bedingten und 3 aktivierten Kopien.
-- KGB: keine neue KGB.
+- Commit `0ad7852eeba872eedf2eb77dc7d69e5e9cd273ee`.
+- Workflow `Token Go Wide – Immediate Maker Scoring`, ID `30830854931`, erfolgreich; Artefakt `8862990345`.
+- 305 Tests, Fast und Diagnose grün.
+- Benchmarks: Burn 83, Tokens 98, Artifacts 90, Control 85, Mill 80; keine Regression.
+- Produktionsmodi: sofortige Maker 24→30, bedingte 3→0, aktivierte 3→0, Death 6→3.
+- Token-Material 36→33; zwei Kopien `Witch's Oven` wurden als reine Opfer-Outlets gewählt.
+- Interpretation: Kernhypothese klar bestätigt, aber ein neuer planfremder Auswahlfehler wurde sichtbar.
+- KGB: keine neue KGB, da `baseline: none` fortbesteht und der Outlet-Fehler zuerst korrigiert wird.
 
-## Aktueller Zyklus – Immediate Maker Scoring
+## Aktueller Zyklus – Remove Sacrifice Outlets
 
-- **Ursache:** Neun von 36 Maker-Kopien produzieren nicht sofort; Death-, bedingte und aktivierte Maker werden im Go-Wide-Scoring trotz geringerer Zuverlässigkeit noch zu ähnlich zu sofortigen Makern bewertet.
-- **Hypothese:** Modusspezifische Abwertungen für Death-, bedingte und aktivierte Produktion erhöhen den Anteil sofortiger Produktion oder verbessern die konkrete Kartenauswahl, ohne Pflichtdichten und andere Archetypen zu regressieren.
-- **Änderungen:** direkte Go-Wide-Produktionsanpassung im Kompositionsscore; Regressionstests für alle drei Modi; sprechender Workflow-Run-Name `Token Go Wide – Immediate Maker Scoring`.
-- **Erfolg:** vollständige Testsuite, Fast-Validierung und Token-Diagnose grün; sofortige Maker nicht niedriger als 24; Benchmark und Starthandstabilität mindestens auf Run-72-Niveau oder ein klar begründetes positives Deckdelta.
-- **Rollback:** bei sinkender Pflichtrollendichte, Benchmark-Regressionssignal oder schlechterer Starthand-/Goldfish-Gesamtwirkung.
-- **KGB-Entscheidung vor Push:** keine neue KGB; erst nach Artefaktauswertung.
+- **Ursache:** Reine Opfer-Outlets wie `Witch's Oven` erfüllen keinen Go-Wide-Hauptplan und verdrängen Kreatur-Token-Maker.
+- **Hypothese:** Planabhängige Kandidatenfilterung entfernt reine Opfer-Outlets aus Go Wide, erhält sie aber für Aristocrats. Dadurch steigt das echte Token-Material ohne Verlust der Run-73-Verbesserungen.
+- **Änderungen:** reine Opfer-Outlets nach Planerkennung für Go Wide ausschließen; Regressionstest gegen ein Food-Outlet; Workflow-Run-Name `Token Go Wide – Remove Sacrifice Outlets`.
+- **Erfolg:** vollständige Testsuite, Fast und Diagnose grün; Outlet-Kopien 0; Material mindestens 33, sofortige Maker mindestens 30, Token-Benchmark mindestens 98 und andere Benchmarks stabil.
+- **Rollback:** bei Benchmark-, Opening-Hand- oder Goldfish-Gesamtregression ohne kompensierenden fachlichen Gewinn.
+- **KGB-Entscheidung vor Push:** keine neue KGB; Entscheidung nach Artefaktauswertung.
 
 ## Nächster ausführbarer Schritt
 
-Den Immediate-Maker-Scoring-Zyklus veröffentlichen, den sprechend benannten Workflow vollständig auswerten und anhand von Deckliste, Produktionsmodi, Opening Hands, Goldfish und Matchups über Behalten oder Rollback entscheiden.
+Den Outlet-Filter veröffentlichen und anhand des sprechend benannten Workflows, der Deckliste sowie Produktions-, Opening-Hand-, Goldfish- und Matchup-Metriken vollständig bewerten.
