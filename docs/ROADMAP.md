@@ -17,12 +17,10 @@ Referenzarchetypen: Burn, Tokens, Artifacts, Control und Mill.
 
 - [x] Go-Wide-Planwahl auf sofortige Maker, Multi-Maker und Anthems ausgerichtet
 - [x] Go-Wide-Profil mit kapazitätsgeprüften Mindestdichten
-- [x] Fast-Validierung erzeugt Profil Go Wide
-- [x] Benchmark 96 und stabile andere Referenzbenchmarks
-- [x] Artefakte bestätigen 36 Kreatur-Token-Maker, 25 sofortige Maker, 21 Multi-Maker und 6 Anthems
-- [x] Full-Pool-Test explizit an `data/cards.db` gebunden
-- [x] drei vollständige grüne Bestätigungsläufe auf demselben Head abgeschlossen
-- [ ] explizite `{C}`-Kosten ohne farblose Quellen aus der Komposition ausschließen
+- [x] drei vollständige grüne Bestätigungsläufe auf demselben Head
+- [x] explizite `{C}`-Kosten ohne farblose Quellen aus der Komposition ausgeschlossen
+- [ ] 23-Land-Variante gegen bestätigte 24-Land-Liste bewerten
+- [ ] planfremde bedingte, Death- und aktivierte Maker reduzieren
 - [ ] Arena-Import und 100 Hände final bewerten
 
 ## Aktuelle Pflichtdichten
@@ -32,23 +30,25 @@ Referenzarchetypen: Burn, Tokens, Artifacts, Control und Mill.
 - mindestens 6 garantierte Multi-Maker
 - mindestens 3 Anthems
 
-## Aktuelle Evidenz
+## Run-70-Evidenz
 
-- stabiler Head vor Castability-Fix: `2bd921c1688c72d4b5949bd0f93cb65a9d1d206c`
-- drei grüne Run-69-Ausführungen, jeweils 301 Tests
-- Benchmarks 83/96/90/85/80 für Burn/Tokens/Artifacts/Control/Mill
-- Token-Arena-Liste enthält `Warping Wail`, obwohl die Manabasis nur 24 Plains erzeugt
+- Head `94c8430835222b63b40a8b8465ef35df17787526`
+- 302 Tests, Fast und Diagnose grün
+- Benchmarks 83/96/90/85/80
+- `Warping Wail` entfernt; `Parting Gust` spielbar
+- 24 Plains, empfohlen 23; 3,33 ungenutztes Mana
+- Keepability/Planfähigkeit 77/77 %, Manafehler 22 %
+- Goldfish 23,58 Schaden, 62 % Killrate, Board 9,20
 
 ## Prioritäten
 
-1. Farblose Pflichtmanaanforderungen in Manabasis und Castability berücksichtigen.
+1. 23 statt 24 Länder als kontrollierte Variante messen.
 2. Go-Wide-Auswahl auf garantierte Sofortproduktion, effiziente Multi-Maker und echte Anthems optimieren.
 3. Strategy Commitment und Opening-Hand-Klassifikation auf präzise Go-Wide-Rollen prüfen.
 4. Anthem-Wirkung und Boardaufbau im Combatmodell prüfen.
 5. Burn-Matchup anhand realer Sequenzen und relevanter Schutz-/Tempooptionen untersuchen.
-6. Go Wide, Value Tokens und Aristocrats getrennt erzeugen.
-7. Regression-Baseline statt `baseline: none`.
+6. Regression-Baseline statt `baseline: none`.
 
 ## Genau ein nächster ausführbarer Schritt
 
-Das generische Eligibility-Gate für explizite `{C}`-Kosten veröffentlichen, CI und Artefakte auswerten und das neue Token-Deck exakt gegen Run 69 vergleichen.
+23-Land-Commit veröffentlichen, CI und Artefakt vollständig auswerten und anhand von Keepability, Manafehlern, Goldfish und Matchups über Behalten oder Rollback entscheiden.

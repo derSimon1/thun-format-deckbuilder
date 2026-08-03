@@ -17,7 +17,7 @@ class TokenStrategy:
         deck = generate_token_deck(
             knowledge_base=knowledge_base,
             deck_size=request.deck_size,
-            lands=24,
+            lands=23,
             max_copies=request.max_copies,
         )
         from thun_deckbuilder.sideboard_builder import SideboardBuilder
