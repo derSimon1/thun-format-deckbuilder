@@ -5,13 +5,7 @@
 
 ## Verwendung
 
-Der externe Auftrag nennt nur:
-
-- Repository,
-- Branch und Pull Request,
-- verfügbare Laufzeit `X` in Stunden.
-
-Diese Datei enthält die vollständige Arbeitsanweisung.
+Der externe Auftrag nennt nur Repository, Branch/Pull Request und die verfügbare Laufzeit `X` in Stunden. Diese Datei enthält die vollständige Arbeitsanweisung.
 
 Beispiel:
 
@@ -31,14 +25,14 @@ Lies zu Beginn vollständig:
 
 Diese Repository-Dokumente sind verbindlich und haben Vorrang vor älteren Aufgabenformulierungen und allgemeinen Annahmen.
 
-Prüfe anschließend:
+Prüfe danach:
 
 - aktuellen Branch- und PR-Head,
 - Mergeability,
 - aktive CI-Runs,
 - letzten erfolgreichen Workflow,
 - Jobs, Logs und Artefakte,
-- letzte Known Good Baseline,
+- letzte dokumentierte Known Good Baseline,
 - zuletzt dokumentierten nächsten ausführbaren Schritt,
 - ob der vorherige Zyklus vollständig abgeschlossen wurde.
 
@@ -46,11 +40,11 @@ PR #13 bleibt unangetastet.
 
 ## 2. Mehrstundenbetrieb
 
-Arbeite für die im externen Auftrag genannte Laufzeit kontinuierlich im selben Lauf. Es werden keine separaten 15-Minuten-Aufgaben benötigt.
+Arbeite für die extern genannte Laufzeit kontinuierlich im selben Lauf. Es werden keine separaten 15-Minuten-Aufgaben benötigt.
 
 Führe so viele vollständige produktive Kalibrierungszyklen wie sinnvoll möglich durch. Ein Zyklus ist nur abgeschlossen, wenn Hypothese, Änderung oder belegter No-Change-Befund, Validierung, Baseline-Vergleich, Reflexion und Dokumentation vollständig vorliegen.
 
-Starte keinen neuen Zyklus, wenn er innerhalb der verbleibenden Laufzeit voraussichtlich nicht mehr vollständig implementiert, getestet, validiert, dokumentiert und abgeschlossen werden kann. Nutze die Restzeit für Abschlussvalidierung, CI-Auswertung, Artefaktprüfung, Logbook, Roadmap und Abschlussbericht.
+Starte keinen neuen Zyklus, wenn er innerhalb der Restzeit nicht vollständig implementiert, getestet, validiert, dokumentiert und abgeschlossen werden kann. Nutze die Restzeit für Abschlussvalidierung, CI-Auswertung, Artefaktprüfung, Logbook, Roadmap und Abschlussbericht.
 
 GitHub Actions ist Validator und kein Entwicklungsagent.
 
@@ -58,15 +52,16 @@ GitHub Actions ist Validator und kein Entwicklungsagent.
 
 Beginne mit dem in Logbook und Roadmap festgelegten nächsten ausführbaren Schritt, sofern keine neue belegte Evidenz eine andere Priorität rechtfertigt.
 
-Aktuelle globale Priorität:
+Aktuelle Reihenfolge:
 
-1. belastbare Token-Subarchetyp-Erkennung für Go Wide, Value Tokens und Aristocrats,
-2. planabhängige Starthand- und Sequenzbewertung,
-3. Control als allgemeiner Referenzarchetyp für das Verhindern gegnerischer Pläne,
-4. Strategy Commitment,
-5. Engine Density,
-6. Finish Density,
-7. belastbare Baseline und Meta-Benchmark.
+1. letzte belastbare Known Good Baseline bestimmen und dokumentieren,
+2. reproduzierbaren `OpeningHandPlanReport` mit genau 100 gespeicherten Händen je verwendeter Referenzdeckliste implementieren,
+3. Go Wide, Value Tokens und Aristocrats anhand planfähiger Hände vergleichen,
+4. Control als allgemeinen Referenzarchetyp vollständig integrieren,
+5. Strategy Commitment in den allgemeinen Qualitätsbericht integrieren,
+6. Engine Density archetypenübergreifend abstrahieren,
+7. Finish Density und klare Wincondition-Erkennung,
+8. Meta-Benchmark.
 
 Die fünf verbindlichen Referenzarchetypen sind Burn, Tokens, Artifacts, Control und Mill. Shrines ist kein Pflicht- oder Referenzarchetyp.
 
@@ -74,7 +69,21 @@ Wähle pro Zyklus genau eine testbare Hypothese mit hohem erwartetem globalem Qu
 
 Keine Dummy-Commits, keine Grenzwertverschiebung nur zum Bestehen und keine unbelegten archetypspezifischen Sonderfälle.
 
-## 4. Verbindliche 100-Starthände-Regel
+## 4. Known-Good-Baseline-Bootstrap
+
+Falls noch keine nach Development System v2.0 qualifizierte KGB existiert, dokumentiere dies ausdrücklich. Verwende den letzten belegten grünen Stand höchstens als `Legacy-KGB-Kandidat`, nicht als voll qualifizierte v2.0-KGB.
+
+Der erste produktive Zyklus muss dann einen belastbaren Ausgangsvergleich herstellen oder exakt dokumentieren, welche fehlende Messung die KGB-Qualifikation verhindert.
+
+Jeder Zyklus endet mit genau einer Entscheidung:
+
+- neue KGB,
+- keine neue KGB,
+- Regression festgestellt.
+
+Grüne CI allein genügt nicht.
+
+## 5. Verbindliche 100-Starthände-Regel
 
 Für jede erzeugte oder als aktuelle Referenz verwendete Deckliste simuliere genau 100 reproduzierbare Sieben-Karten-Starthände mit dokumentiertem festem Zufallsseed.
 
@@ -104,7 +113,7 @@ Keepability, Early Play und Planfähigkeit bleiben getrennte Metriken.
 
 Speichere Rohdaten oder eine kompakte maschinenlesbare Zusammenfassung unter `artifacts/global` oder `docs/reports`. Erfinde keine Einzelhände aus aggregierten Daten.
 
-## 5. Archetypabhängige Kriterien
+## 6. Archetypabhängige Kriterien
 
 - **Burn:** frühe Pressure- oder Burn-Dichte und realistische Schadenssequenz.
 - **Tokens – Go Wide:** frühe Maker plus passendes Scaling- oder Payoff-Fenster.
@@ -114,7 +123,7 @@ Speichere Rohdaten oder eine kompakte maschinenlesbare Zusammenfassung unter `ar
 - **Control:** relevante frühe Interaktion gegen den konkreten gegnerischen Plan, Stabilisierung, Kartenvorteil und belastbare Wincondition. Situativ tote Antworten zählen nicht als echte Abdeckung.
 - **Mill:** frühe Mill-Engine oder wiederholbare Mill-Quelle plus Schutz, Interaktion oder Tempo.
 
-## 6. Validierung vor Commit
+## 7. Validierung vor Commit
 
 Vor jedem Commit:
 
@@ -126,27 +135,11 @@ Vor jedem Commit:
 6. Control gegen Aggro, Tokens und einen Nichtkreaturen- oder Engine-Plan prüfen,
 7. BO3-Berichte prüfen,
 8. Laufzeit unter zehn Minuten bestätigen,
-9. gegen die letzte Known Good Baseline vergleichen,
+9. gegen die letzte KGB oder den dokumentierten Legacy-KGB-Kandidaten vergleichen,
 10. unbegründete Regressionen ausschließen,
 11. Branch-Head, PR-Head, Mergeability und aktive CI erneut prüfen.
 
 Bei erfolgreicher Validierung erstelle pro Zyklus genau einen sinnvollen Commit und aktualisiere `docs/DEVELOPMENT_LOGBOOK.md` sowie `docs/ROADMAP.md` im selben Commit.
-
-## 7. Known Good Baseline
-
-Jeder Zyklus beginnt mit der letzten dokumentierten Known Good Baseline und endet mit genau einer Entscheidung:
-
-- neue KGB,
-- keine neue KGB,
-- Regression festgestellt.
-
-Eine neue KGB ist nur zulässig, wenn vollständige Tests, Fast-Validierung, Referenzvergleiche und CI erfolgreich sind, keine unbegründeten Regressionen vorliegen und der Qualitätsvergleich dokumentiert ist.
-
-Grüne CI allein genügt nicht.
-
-Bei zwei aufeinanderfolgenden unbegründeten Regressionen derselben Hypothese pausiere diese Hypothese und wechsle zum nächsten priorisierten Roadmap-Punkt.
-
-Prüfe bei größeren stabilen Meilensteinen, ob ein Git-Tag nach dem Muster `calibration-vX.Y` sinnvoll ist. Nicht jede KGB benötigt einen Tag.
 
 ## 8. Commit, Workflow und Artefakte
 
@@ -159,7 +152,7 @@ Nach jedem Push:
 
 Während ein Workflow läuft, darf nur an einem nachweislich unabhängigen Schritt gearbeitet werden. Erzeuge keinen Dummy-Commit zum Triggern.
 
-## 9. No-Change und Rollback
+## 9. No-Change, Regression, Tags und Rollback
 
 Falls kein sinnvoller Commit möglich ist, dokumentiere:
 
@@ -171,7 +164,9 @@ Falls kein sinnvoller Commit möglich ist, dokumentiere:
 - mindestens zwei Folgeschritte,
 - genau einen priorisierten nächsten ausführbaren Schritt.
 
-Nach zwei No-Change-Zyklen derselben Ursache wechsle zum nächsten Roadmap-Punkt.
+Nach zwei No-Change-Zyklen derselben Ursache oder zwei unbegründeten Regressionen derselben Hypothese wechsle zum nächsten Roadmap-Punkt. Eine Rückkehr ist erst bei neuer belegter Evidenz zulässig.
+
+Prüfe bei größeren stabilen Meilensteinen einen Git-Tag nach dem Muster `calibration-vX.Y`. Nicht jede KGB benötigt einen Tag.
 
 Wird eine KGB später als fehlerhaft erkannt, dokumentiere einen bewussten Rollback auf die letzte belastbare KGB mit Ursache, betroffenen Metriken, Tests, CI und nächstem Schritt.
 
@@ -200,7 +195,7 @@ Nach Zeitlimit, Verbindungsabbruch oder externem Abbruch:
 
 1. lies alle verbindlichen Repository-Dokumente vollständig,
 2. prüfe Branch- und PR-Head,
-3. ermittle die letzte KGB,
+3. ermittle die letzte KGB beziehungsweise den Legacy-KGB-Kandidaten,
 4. prüfe, ob der letzte Zyklus vollständig abgeschlossen wurde,
 5. setze beim dokumentierten nächsten ausführbaren Schritt fort.
 
