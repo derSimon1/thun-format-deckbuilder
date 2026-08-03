@@ -21,7 +21,8 @@
 - [x] Rollen-Mischmasch im Strategy-Commitment-Bericht negativ bewerten
 - [x] Strategy-Commitment-Bericht mit Plan, Dichten und Warnungen
 - [ ] Strategy Commitment in den allgemeinen Qualitätsbericht integrieren
-- [ ] Engine Density modellieren
+- [x] Engine Density für Token-Pläne messen und berichten
+- [ ] Engine Density archetypenübergreifend abstrahieren
 - [ ] Finish Density modellieren
 - [ ] klare Wincondition-Erkennung
 - [ ] Regeln archetypenübergreifend abstrahieren
@@ -44,9 +45,9 @@
 
 ## Aktuelle Priorität
 
-1. PR-Validierung und Artefaktprüfung des Strategy-Commitment-Berichts
-2. Engine Density
-3. Finish Density
+1. PR-Validierung und Artefaktprüfung der Token-Engine-Density
+2. Finish Density
+3. Engine Density archetypenübergreifend abstrahieren
 4. Strategy Commitment in den allgemeinen Qualitätsbericht integrieren
 5. belastbare Vergleichsbaseline
 6. Meta-Benchmark
@@ -58,6 +59,7 @@
 - Der gewählte Token-Plan ist im erzeugten Profil und Bericht sichtbar.
 - Planprägende Rollen werden als Dichteziele bevorzugt, ohne sparse Kartenpools zu blockieren.
 - Rollen-Mischmasch erzeugt eine explizite Warnung und einen nachvollziehbaren Commitment-Score.
+- Wiederholbare Engines werden von einmaligem Material getrennt und kopiengewichtet berichtet.
 - Harte Mindestdichten werden erst nach Kapazitätsprüfung aktiviert.
 - Fast-Validierung bleibt unter zehn Minuten.
 - Keine unbegründete Regression bei Burn, Artifacts, Shrines oder Mill.

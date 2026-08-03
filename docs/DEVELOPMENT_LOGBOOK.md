@@ -214,13 +214,55 @@ Ein kopiengewichteter Commitment-Bericht kann planprägende, planfremde und neut
 
 ### Validierung
 
-- Quellcodeänderung und Tests in einem zusammenhängenden Commit vorbereitet
+- Workflow Run `30787546422`, erfolgreich
+- vollständige Testsuite und Fast-Validierung grün
+- fünf Archetypen, drei Token-Matchups und BO3-Berichte ohne unbegründete Regression
+
+### Ergebnis
+
+Strategy Commitment ist als explizites, kopiengewichtetes Ergebnis sichtbar. Planfremde Rollen erzeugen eine Warnung und senken den Score, während neutrale Interaktion nicht negativ bewertet wird.
+
+### Confidence
+
+Hoch für die technische Integration; spielerische Grenzwerte bleiben bis zum Pioneer- und Club-Benchmark offen.
+
+### Nächster Schritt
+
+Engine Density als nächstes unabhängiges Qualitätsmerkmal modellieren.
+
+---
+
+## 2026-08-03 – Zwei-Stunden-Kalibrierung, Zyklus 5: Token Engine Density
+
+### Ziel
+
+Wiederholbare, planrelevante Engines von einmaligem Token-Material trennen und kopiengewichtet sichtbar machen.
+
+### Ausgangslage
+
+- Ausgangs-Head: `fb6a84440700c72d4e74ee33ef693b3e5d5c3db6`
+- PR #14 offen, mergeable und Draft
+- Workflow Run `30787546422`: erfolgreich
+- Strategy Commitment war messbar; Engine Density fehlte weiterhin als eigener Befund.
+
+### Hypothese
+
+Oracle-Text-Signale können konservativ unterscheiden, ob eine Karte den gewählten Token-Plan wiederholt antreibt oder nur einmal Material erzeugt. Eine kopiengewichtete Dichte plus Zahl unterschiedlicher Engines ist aussagekräftiger als reine Rollenanzahl.
+
+### Änderungen
+
+1. Neuer `EngineDensityReport` mit Engine-Kopien, Zauberkopien, Dichte, unterschiedlichen Engine-Namen und Warnungen.
+2. Token-Generator berichtet die Engine Density neben Strategy Commitment; One-shot-Maker zählen nicht als Engines.
+3. Drei Regressionstests sichern One-shot-Abgrenzung, wiederholbare Value-Quellen und Aristocrats-Death-Payoffs.
+
+### Validierung
+
 - vollständige Testsuite und Fast-Validierung: durch den neuen PR-Workflow zu verifizieren
 - fünf Archetypen, drei Token-Matchups und BO3-Berichte: durch Workflow-Artefakte zu prüfen
 
 ### Vorläufiges Ergebnis
 
-Strategy Commitment ist erstmals als explizites, kopiengewichtetes Ergebnis sichtbar. Ein hoher Rollenwert allein genügt damit nicht mehr: planfremde Rollen erzeugen eine Warnung und senken den Score, während neutrale Interaktion nicht negativ bewertet wird.
+Engine Density wird ohne künstlichen Mindestgrenzwert berichtet. Null Engines und Abhängigkeit von nur einer unterschiedlichen Engine erzeugen transparente Warnungen. Damit wird ein hoher Maker- oder Commitment-Wert nicht mehr mit nachhaltigem Kartenvorteil beziehungsweise wiederholbarer Planprogression verwechselt.
 
 ### Confidence
 
@@ -228,10 +270,10 @@ Mittel bis zur grünen vollständigen CI und Artefaktprüfung.
 
 ### Offene Risiken
 
-- Der Bericht verwendet Rollen statt vollständiger Oracle-Signale; hybride Karten können deshalb zugleich committed und potenziell widersprüchlich sein.
-- Der Score wird zunächst als Warn- und Berichtssignal verwendet und noch nicht in den allgemeinen Quality Score eingerechnet.
-- Engine Density und Finish Density bleiben separat zu modellieren.
+- Die Engine-Erkennung ist zunächst tokenspezifisch und muss später archetypenübergreifend abstrahiert werden.
+- Planabhängige Engine-Signale sind konservativ; einzelne ungewöhnlich formulierte Karten können unentdeckt bleiben.
+- Es wird bewusst noch kein universeller Mindestwert erzwungen, bevor externe Pioneer- und Clubdaten vorliegen.
 
 ### Nächster Schritt
 
-PR-Workflow und Token-Artefakte prüfen. Danach Engine Density als nächstes unabhängiges Qualitätsmerkmal modellieren.
+PR-Workflow und Artefakte prüfen. Danach Finish Density als getrenntes Qualitätsmerkmal modellieren.

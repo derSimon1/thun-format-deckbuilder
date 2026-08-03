@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from thun_deckbuilder.deck_generator import GeneratedDeck
+from thun_deckbuilder.engine_density import evaluate_token_engine_density
 from thun_deckbuilder.knowledge_base import CardKnowledge, KnowledgeBase
 from thun_deckbuilder.strategy_commitment import evaluate_token_commitment
 from thun_deckbuilder.token_plan import TokenPlan, detect_token_plan
@@ -112,6 +113,11 @@ def generate_token_deck(
         score_card=lambda card: _score_for_composition(card, plan_report.plan),
     )
     commitment = evaluate_token_commitment(result.entries, plan_report.plan)
+    engine_density = evaluate_token_engine_density(
+        result.entries,
+        eligible_cards,
+        plan_report.plan,
+    )
 
     from thun_deckbuilder.mana_base_builder import ManaBaseBuilder
     from thun_deckbuilder.deck_quality import with_mana_quality
@@ -128,13 +134,25 @@ def generate_token_deck(
         f"conflicting={commitment.conflicting_cards}, "
         f"neutral={commitment.neutral_cards}"
     )
+    engine_summary = (
+        f"Engine Density {plan_report.plan.label}: "
+        f"{engine_density.engine_density:.0%}; "
+        f"copies={engine_density.engine_copies}/{engine_density.spell_copies}, "
+        f"distinct={engine_density.distinct_engines}"
+    )
     return GeneratedDeck(
         mainboard=result.entries,
         lands=profile.lands,
         profile_name=profile.name,
         requested_roles=result.requested_roles,
         fulfilled_roles=result.fulfilled_roles,
-        warnings=(commitment_summary, *result.warnings, *commitment.warnings),
+        warnings=(
+            commitment_summary,
+            engine_summary,
+            *result.warnings,
+            *commitment.warnings,
+            *engine_density.warnings,
+        ),
         selections=result.selections,
         quality_report=with_mana_quality(result.quality_report, mana.quality),
         mana_base=mana.distribution,
