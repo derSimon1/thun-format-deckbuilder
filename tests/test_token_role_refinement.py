@@ -1,15 +1,23 @@
 from thun_deckbuilder.card_analyzer import analyze_card
 from thun_deckbuilder.knowledge_base import CardKnowledge
 from thun_deckbuilder.token_generator import (
+    _composition_candidates,
     _is_reasonable_token_card,
     _with_precise_token_roles,
 )
 
 
-def knowledge(name: str, text: str, roles: tuple[str, ...], *, type_line="Artifact"):
+def knowledge(
+    name: str,
+    text: str,
+    roles: tuple[str, ...],
+    *,
+    type_line="Artifact",
+    mana_value=2,
+):
     raw = {
         "name": name,
-        "mana_value": 2,
+        "mana_value": mana_value,
         "mana_cost": "{1}{W}",
         "colors": ["W"],
         "color_identity": ["W"],
@@ -83,3 +91,55 @@ def test_real_outlet_and_death_payoff_receive_precise_roles():
     )
     assert _is_reasonable_token_card(outlet)
     assert _is_reasonable_token_card(payoff)
+
+
+def test_neutral_fillers_are_excluded_when_plan_capacity_is_sufficient():
+    maker = _with_precise_token_roles(
+        knowledge(
+            "Maker",
+            "Create a 1/1 white Soldier creature token.",
+            ("token_maker",),
+            type_line="Sorcery",
+        )
+    )
+    filler = _with_precise_token_roles(
+        knowledge(
+            "Vanilla",
+            "Vigilance.",
+            (),
+            type_line="Creature — Soldier",
+        )
+    )
+    selected = _composition_candidates(
+        (maker, filler),
+        (maker,),
+        spell_slots=3,
+        max_copies=3,
+    )
+    assert selected == (maker,)
+
+
+def test_neutral_fillers_are_added_only_for_a_real_sparse_pool_gap():
+    maker = _with_precise_token_roles(
+        knowledge(
+            "Maker",
+            "Create a 1/1 white Soldier creature token.",
+            ("token_maker",),
+            type_line="Sorcery",
+        )
+    )
+    filler = _with_precise_token_roles(
+        knowledge(
+            "Vanilla",
+            "Vigilance.",
+            (),
+            type_line="Creature — Soldier",
+        )
+    )
+    selected = _composition_candidates(
+        (maker, filler),
+        (maker,),
+        spell_slots=4,
+        max_copies=3,
+    )
+    assert selected == (maker, filler)

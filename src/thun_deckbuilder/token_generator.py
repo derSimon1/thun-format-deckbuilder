@@ -122,17 +122,42 @@ def _is_token_plan_card(knowledge: CardKnowledge) -> bool:
     return plan_piece or utility
 
 
-def _is_reasonable_token_card(knowledge: CardKnowledge) -> bool:
-    """Allow coherent plan cards plus low-curve neutral sparse-pool fillers."""
-
-    if _is_token_plan_card(knowledge):
-        return True
+def _is_sparse_pool_filler(knowledge: CardKnowledge) -> bool:
     analysis = knowledge.analysis
     return (
         _base_token_candidate(knowledge)
         and analysis.is_creature
         and analysis.mana_value <= 3
     )
+
+
+def _is_reasonable_token_card(knowledge: CardKnowledge) -> bool:
+    """Compatibility helper for tests and external callers."""
+
+    return _is_token_plan_card(knowledge) or _is_sparse_pool_filler(knowledge)
+
+
+def _copy_capacity(cards: tuple[CardKnowledge, ...], max_copies: int) -> int:
+    return len({card.analysis.name.casefold() for card in cards}) * max_copies
+
+
+def _composition_candidates(
+    token_cards: tuple[CardKnowledge, ...],
+    plan_cards: tuple[CardKnowledge, ...],
+    *,
+    spell_slots: int,
+    max_copies: int,
+) -> tuple[CardKnowledge, ...]:
+    """Add neutral creatures only when plan cards cannot fill the spell section."""
+
+    if _copy_capacity(plan_cards, max_copies) >= spell_slots:
+        return plan_cards
+    fillers = tuple(
+        card
+        for card in token_cards
+        if card not in plan_cards and _is_sparse_pool_filler(card)
+    )
+    return (*plan_cards, *fillers)
 
 
 def _score_for_composition(
@@ -197,26 +222,28 @@ def generate_token_deck(
         _with_precise_token_roles(card)
         for card in knowledge_base.cards
     )
-    plan_cards = tuple(
-        card for card in token_cards if _is_token_plan_card(card)
-    )
-    composition_cards = tuple(
-        card for card in token_cards if _is_reasonable_token_card(card)
-    )
+    plan_cards = tuple(card for card in token_cards if _is_token_plan_card(card))
     plan_report = detect_token_plan(plan_cards)
     configured_profile = token_profile_for_plan(plan_report.plan, lands=lands)
+    composition_cards = _composition_candidates(
+        token_cards,
+        plan_cards,
+        spell_slots=configured_profile.spell_slots(deck_size),
+        max_copies=max_copies,
+    )
     profile, capacity_warnings = capacity_checked_token_profile(
         configured_profile,
         composition_cards,
         max_copies=max_copies,
         deck_size=deck_size,
     )
+    allowed_names = {card.analysis.name for card in composition_cards}
     result = build_composition(
         composition_cards,
         profile=profile,
         deck_size=deck_size,
         max_copies=max_copies,
-        eligible=_is_reasonable_token_card,
+        eligible=lambda card: card.analysis.name in allowed_names,
         score_card=lambda card: _score_for_composition(card, plan_report.plan),
     )
     commitment = evaluate_token_commitment(result.entries, plan_report.plan)
@@ -237,8 +264,7 @@ def generate_token_deck(
     plan_summary = (
         f"Token Plan {plan_report.plan.label}: confidence={plan_report.confidence:.0%}; "
         + ", ".join(
-            f"{plan.value}={score:.1f}"
-            for plan, score in plan_report.scores
+            f"{plan.value}={score:.1f}" for plan, score in plan_report.scores
         )
     )
     commitment_summary = (

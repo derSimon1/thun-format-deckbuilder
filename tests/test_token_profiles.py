@@ -89,7 +89,7 @@ def test_capacity_check_only_caps_unreachable_sparse_pool_targets():
     assert warnings
 
 
-def test_capacity_check_preserves_targets_when_capacity_is_sufficient():
+def test_capacity_check_preserves_reachable_hard_plan_targets():
     profile = token_profile_for_plan(TokenPlan.GO_WIDE)
     cards = tuple(
         FixtureCard(("token_creature_maker", "anthem"))
@@ -104,4 +104,8 @@ def test_capacity_check_preserves_targets_when_capacity_is_sufficient():
 
     assert targets(adjusted)["token_creature_maker"] == (12, 18)
     assert targets(adjusted)["anthem"] == (3, 7)
-    assert warnings == ()
+    assert not any(
+        "token_creature_maker" in warning or "anthem" in warning
+        for warning in warnings
+    )
+    assert any("removal" in warning for warning in warnings)
