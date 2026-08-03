@@ -12,17 +12,19 @@ Referenzarchetypen: Burn, Tokens, Artifacts, Control und Mill. Shrines bleibt nu
 - [x] genau 100 reproduzierbare Starthände je erzeugtem Referenzdeck
 - [x] Keepability, Early Play und Planfähigkeit getrennt
 - [x] Manafehler dürfen nicht als planfähige Hände gelten
-- [x] Control-Scoring, Dimir-Strategie, Sideboard, Benchmark und v2-Validator implementiert
+- [x] Control-Scoring, Dimir-Strategie, Sideboard, Benchmark und v2-Validator
 - [x] Pflichtvalidator erzeugt Burn, Tokens, Artifacts, Control und Mill
 - [x] Fast-Validator prüft drei Token- und drei Control-Matchups
-- [x] veralteten Unknown-Archetype-Test aktualisiert; Run `30796896850` grün
+- [x] Control enthält mindestens drei Finisher; Run `30797591719` behält sechs
+- [x] Control-Benchmark 85 und Finisher-Zugang 53 %
 
-## Offen – Control
+## Offen – Control und Sideboard
 
-- [ ] mindestens drei belastbare Control-Finisher im final optimierten Mainboard sicherstellen
+- [ ] matchupabhängige Sideboard-Relevanz im neuen Workflow bestätigen
+- [ ] relevante Antworten aus konkretem Gegnerdeck statt nur Archetyp ableiten
 - [ ] Wincondition-Zugang nach Stabilisierung messen
-- [ ] relevante Antworten matchupabhängig statt nur über Dichte bewerten
 - [ ] Stabilisierung bis Zug 4 oder 5 explizit modellieren
+- [ ] Control-Basisfortschritt im Matchupmodell an tatsächliche Finisher koppeln
 
 ## Offen – globale Qualität
 
@@ -30,28 +32,27 @@ Referenzarchetypen: Burn, Tokens, Artifacts, Control und Mill. Shrines bleibt nu
 - [ ] Token-Subarchetypen mit separaten Referenzdecks vergleichen
 - [ ] Strategy Commitment und Engine Density archetypenübergreifend abstrahieren
 - [ ] Finish Density allgemein modellieren
-- [ ] erste vollständig qualifizierte v2-KGB erzeugen
-- [ ] Meta- und Club-Benchmark aufbauen
+- [ ] belastbare Regressionsbaseline statt `baseline: none`
+- [ ] erste vollständig qualifizierte v2-KGB
+- [ ] Meta- und Club-Benchmark
 
 ## Aktuelle Priorität
 
-1. Workflow der Control-Finisher-Mindestdichte vollständig auswerten
-2. falls nötig Optimierer-Guardrail für drei Finisher ergänzen
-3. Control-Hände, Early Play, Mana, Benchmark und BO3 gegen Run 45 vergleichen
-4. matchupabhängige Control-Antwortabdeckung modellieren
-5. Mill-Messauffälligkeit untersuchen
+1. Workflow der matchupabhängigen Sideboard-Relevanz vollständig auswerten
+2. prüfen, dass Control gegen Burn/Tokens/Artifacts kein Graveyard-Hate mehr einwechselt
+3. Matchup- und BO3-Änderungen auf unbegründete Regressionen prüfen
+4. Mill-Messauffälligkeit anhand der 100 Rohhände untersuchen
+5. relevante Control-Antworten aus dem konkreten Gegnerdeck ableiten
 6. Token-Subarchetypen separat benchmarken
-7. erste v2-KGB dokumentieren
+7. Regressionsbaseline und erste v2-KGB aufbauen
 
 ## Definition of Done für den nächsten Zyklus
 
 - vollständige Testsuite und Fast-Validierung grün
-- Burn, Tokens, Artifacts, Control und Mill erzeugt
-- sechs priorisierte Matchups und BO3-Berichte vorhanden
+- fünf Referenzarchetypen und sechs priorisierte Matchups vorhanden
 - Fast-Lauf unter zehn Minuten
 - je Deck exakt 100 Hände mit Seed `1701`
-- Control ist legal 60/15
-- finales Control-Mainboard enthält mindestens drei Finisher
-- Control-Finisher-Zugang ist größer als 0 %
-- Early Play, Mana und Matchups zeigen keine unbegründete Regression
-- Logbook enthält KGB-Entscheidung und nächsten Schritt
+- kein `Tormod's Crypt` gegen Burn, Tokens oder Artifacts
+- relevante Sideboardkarten werden weiterhin eingewechselt, sofern im Sideboard vorhanden
+- BO3-Berichte und Laufzeit zeigen keine unbegründete Regression
+- Logbook enthält KGB-Entscheidung, Reflexion und genau einen nächsten Schritt

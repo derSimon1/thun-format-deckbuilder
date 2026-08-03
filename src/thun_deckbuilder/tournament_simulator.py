@@ -10,6 +10,7 @@ from thun_deckbuilder.sideboard_optimizer import (
     SideboardPlan,
     _compress,
     _expand,
+    _sideboard_relevant,
     _sideboard_value,
     optimize_sideboard_plan,
 )
@@ -35,8 +36,13 @@ def board_for_matchup(deck: GeneratedDeck, *, opponent_archetype: str, max_swaps
     if max_swaps < 0:
         raise ValueError("max_swaps cannot be negative")
     main = _expand(deck.mainboard)
-    side = sorted(_expand(deck.sideboard), key=lambda entry: (-_sideboard_value(entry, opponent_archetype), entry.name))
-    relevant = [entry for entry in side if _sideboard_value(entry, opponent_archetype) >= entry.score + 5]
+    side = sorted(
+        _expand(deck.sideboard),
+        key=lambda entry: (-_sideboard_value(entry, opponent_archetype), entry.name),
+    )
+    relevant = [
+        entry for entry in side if _sideboard_relevant(entry, opponent_archetype)
+    ]
     incoming = relevant[: min(max_swaps, len(relevant), len(main))]
     outgoing = sorted(main, key=lambda entry: (entry.score, -entry.mana_value, entry.name))[: len(incoming)]
     for entry in outgoing:

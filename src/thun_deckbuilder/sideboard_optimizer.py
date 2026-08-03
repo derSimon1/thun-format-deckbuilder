@@ -29,23 +29,104 @@ class OptimizedSideboardPlan:
     impacts: tuple[SideboardCardImpact, ...]
 
 
+_LABEL_MATCHUPS: dict[str, frozenset[str]] = {
+    "graveyard hate": frozenset({"mill"}),
+    "creature sweeper": frozenset({"burn", "tokens"}),
+    "countermagic": frozenset({"burn", "artifacts", "control", "mill", "shrines"}),
+    "anti-aggro removal": frozenset({"burn", "tokens"}),
+    "hand disruption": frozenset({"artifacts", "control", "mill", "shrines"}),
+    "artifact/enchantment answer": frozenset({"artifacts", "shrines"}),
+    "answer opposing artifacts": frozenset({"artifacts"}),
+    "protect artifacts": frozenset({"control", "mill", "shrines"}),
+    "protection": frozenset({"burn", "control", "tokens"}),
+    "anti-lifegain": frozenset({"control", "tokens"}),
+    "protect enchantments": frozenset({"control", "mill"}),
+    "enchantment recursion": frozenset({"control", "mill"}),
+    "protect mill plan": frozenset({"control", "mill"}),
+}
+
+_FALLBACK_SIGNALS: dict[str, tuple[str, ...]] = {
+    "burn": (
+        "destroy target creature",
+        "exile target creature",
+        "target creature gets -",
+        "damage to each creature",
+        "life gain",
+        "lifegain",
+        "counter target spell",
+    ),
+    "tokens": (
+        "destroy all creatures",
+        "exile all creatures",
+        "damage to each creature",
+        "target creature gets -",
+        "destroy target creature",
+        "exile target creature",
+    ),
+    "artifacts": (
+        "destroy target artifact",
+        "exile target artifact",
+        "gain control of target artifact",
+        "counter target spell",
+        "target opponent discards",
+    ),
+    "control": (
+        "counter target spell",
+        "target opponent discards",
+        "can't be countered",
+    ),
+    "mill": (
+        "graveyard",
+        "shuffle",
+        "counter target spell",
+        "hexproof",
+        "target opponent discards",
+    ),
+    "shrines": (
+        "destroy target enchantment",
+        "exile target enchantment",
+        "counter target spell",
+        "target opponent discards",
+    ),
+}
+
+
 def _text(entry: DeckEntry) -> str:
     return " ".join((entry.name, entry.type_line, *entry.roles, *entry.reasons)).lower()
 
 
-def _sideboard_value(entry: DeckEntry, opponent: str) -> float:
+def _sideboard_labels(entry: DeckEntry) -> tuple[str, ...]:
+    prefix = "sideboard: "
+    return tuple(
+        reason.lower()[len(prefix) :].strip()
+        for reason in entry.reasons
+        if reason.lower().startswith(prefix)
+    )
+
+
+def _sideboard_relevant(entry: DeckEntry, opponent: str) -> bool:
+    """Return whether a sideboard card addresses the declared opponent plan.
+
+    SideboardBuilder labels are authoritative. This prevents generic words such
+    as ``exile`` on graveyard hate from being misread as creature or artifact
+    interaction. Hand-authored fixtures without labels use conservative exact
+    text signals as a compatibility fallback.
+    """
+
+    labels = _sideboard_labels(entry)
+    if labels:
+        return any(
+            opponent in _LABEL_MATCHUPS.get(label, frozenset())
+            for label in labels
+        )
     text = _text(entry)
-    score = entry.score
-    signals = {
-        "burn": ("removal", "destroy", "exile", "lifegain", "life gain", "each creature"),
-        "tokens": ("removal", "destroy", "exile", "lifegain", "each creature"),
-        "mill": ("graveyard", "shuffle", "counter", "hexproof", "draw"),
-        "artifacts": ("artifact", "destroy", "exile", "counter"),
-        "shrines": ("enchantment", "destroy", "exile", "counter"),
-    }
-    if any(key in text for key in signals.get(opponent, ())):
-        score += 8
-    return score
+    return any(
+        phrase in text for phrase in _FALLBACK_SIGNALS.get(opponent, ())
+    )
+
+
+def _sideboard_value(entry: DeckEntry, opponent: str) -> float:
+    return entry.score + (8 if _sideboard_relevant(entry, opponent) else 0)
 
 
 def _expand(entries: tuple[DeckEntry, ...]) -> list[DeckEntry]:
@@ -88,7 +169,14 @@ def optimize_sideboard_plan(
     used_names: set[str] = set()
     used_in: list[DeckEntry] = []
     used_out: list[DeckEntry] = []
-    available = sorted(_expand(deck.sideboard), key=lambda entry: (-_sideboard_value(entry, opponent_archetype), entry.name))
+    available = sorted(
+        (
+            entry
+            for entry in _expand(deck.sideboard)
+            if _sideboard_relevant(entry, opponent_archetype)
+        ),
+        key=lambda entry: (-_sideboard_value(entry, opponent_archetype), entry.name),
+    )
 
     for step in range(max_swaps):
         best = None
