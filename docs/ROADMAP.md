@@ -15,16 +15,17 @@ Referenzarchetypen: Burn, Tokens, Artifacts, Control und Mill. Shrines bleibt nu
 - [x] Control-Scoring, Dimir-Strategie, Sideboard, Benchmark und v2-Validator
 - [x] Pflichtvalidator erzeugt Burn, Tokens, Artifacts, Control und Mill
 - [x] Fast-Validator prüft drei Token- und drei Control-Matchups
-- [x] Control enthält mindestens drei Finisher; Run `30797591719` behält sechs
-- [x] Control-Benchmark 85 und Finisher-Zugang 53 %
+- [x] Control-Benchmark 85, sechs Finisher, Finisher-Zugang 53 %
+- [x] erste Sideboard-Relevanzregel durch reale Artefakte als unzureichend widerlegt
 
-## Offen – Control und Sideboard
+## Offen – Sideboard und Control
 
-- [ ] matchupabhängige Sideboard-Relevanz im neuen Workflow bestätigen
+- [ ] maschinenlesbare Sideboard-Kategorien im realen BO3-Pfad bestätigen
+- [ ] kein Graveyard-Hate gegen Burn, Tokens oder Artifacts
 - [ ] relevante Antworten aus konkretem Gegnerdeck statt nur Archetyp ableiten
 - [ ] Wincondition-Zugang nach Stabilisierung messen
 - [ ] Stabilisierung bis Zug 4 oder 5 explizit modellieren
-- [ ] Control-Basisfortschritt im Matchupmodell an tatsächliche Finisher koppeln
+- [ ] Control-Abschlussdruck im Matchupmodell berücksichtigen
 
 ## Offen – globale Qualität
 
@@ -38,10 +39,10 @@ Referenzarchetypen: Burn, Tokens, Artifacts, Control und Mill. Shrines bleibt nu
 
 ## Aktuelle Priorität
 
-1. Workflow der matchupabhängigen Sideboard-Relevanz vollständig auswerten
-2. prüfen, dass Control gegen Burn/Tokens/Artifacts kein Graveyard-Hate mehr einwechselt
-3. Matchup- und BO3-Änderungen auf unbegründete Regressionen prüfen
-4. Mill-Messauffälligkeit anhand der 100 Rohhände untersuchen
+1. Workflow der maschinenlesbaren Sideboard-Marker vollständig auswerten
+2. alle sechs BO3-Pläne prüfen; insbesondere kein `Tormod's Crypt` gegen Burn, Tokens oder Artifacts
+3. bei erneutem Scheitern exakten Marker-Verlust dokumentieren und nach zwei Sideboard-Zyklen zwingend zu Mill wechseln
+4. bei Erfolg Mill-Messauffälligkeit anhand der 100 Rohhände untersuchen
 5. relevante Control-Antworten aus dem konkreten Gegnerdeck ableiten
 6. Token-Subarchetypen separat benchmarken
 7. Regressionsbaseline und erste v2-KGB aufbauen
@@ -52,7 +53,8 @@ Referenzarchetypen: Burn, Tokens, Artifacts, Control und Mill. Shrines bleibt nu
 - fünf Referenzarchetypen und sechs priorisierte Matchups vorhanden
 - Fast-Lauf unter zehn Minuten
 - je Deck exakt 100 Hände mit Seed `1701`
+- Sideboard-Einträge enthalten maschinenlesbare `sideboard_*`-Marker
 - kein `Tormod's Crypt` gegen Burn, Tokens oder Artifacts
-- relevante Sideboardkarten werden weiterhin eingewechselt, sofern im Sideboard vorhanden
+- relevante Sideboardkarten werden weiterhin eingewechselt, sofern vorhanden
 - BO3-Berichte und Laufzeit zeigen keine unbegründete Regression
 - Logbook enthält KGB-Entscheidung, Reflexion und genau einen nächsten Schritt

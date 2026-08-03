@@ -50,11 +50,12 @@ def test_bo3_reports_impacts_and_advisor_uses_them():
     assert any(item.archetype == "burn" for item in advice)
 
 
-def test_graveyard_hate_is_not_generic_exile_interaction():
+def test_graveyard_hate_marker_is_not_generic_exile_interaction():
     crypt = entry(
         "Tormod's Crypt",
         3,
         score=4,
+        roles=("sideboard_graveyard_hate",),
         reasons=("Sideboard: graveyard hate",),
         type_line="Artifact",
     )
@@ -64,7 +65,7 @@ def test_graveyard_hate_is_not_generic_exile_interaction():
     assert not _sideboard_relevant(crypt, "artifacts")
 
 
-def test_fast_boarding_uses_only_matchup_relevant_sideboard_cards():
+def test_fast_boarding_uses_only_matchup_relevant_sideboard_markers():
     player = deck(
         (entry("Weak", 6, score=0.1), entry("Answer", 30, score=3, roles=("removal",))),
         (
@@ -72,6 +73,7 @@ def test_fast_boarding_uses_only_matchup_relevant_sideboard_cards():
                 "Tormod's Crypt",
                 3,
                 score=6,
+                roles=("sideboard_graveyard_hate",),
                 reasons=("Sideboard: graveyard hate",),
                 type_line="Artifact",
             ),
@@ -79,7 +81,7 @@ def test_fast_boarding_uses_only_matchup_relevant_sideboard_cards():
                 "Disfigure",
                 3,
                 score=4,
-                roles=("removal",),
+                roles=("removal", "sideboard_anti_aggro_removal"),
                 reasons=("Sideboard: anti-aggro removal",),
             ),
         ),

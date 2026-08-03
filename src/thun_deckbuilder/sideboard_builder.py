@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from collections import Counter
 from dataclasses import dataclass
 from typing import Iterable
@@ -14,6 +15,11 @@ class SideboardRule:
     phrases: tuple[str, ...]
     roles: tuple[str, ...] = ()
     priority: float = 1.0
+
+
+def sideboard_role_marker(label: str) -> str:
+    normalized = re.sub(r"[^a-z0-9]+", "_", label.lower()).strip("_")
+    return f"sideboard_{normalized}"
 
 
 ARTIFACT_ENCHANTMENT_ANSWER = SideboardRule(
@@ -210,6 +216,7 @@ class SideboardBuilder:
                 3,
                 remaining,
             )
+            markers = {sideboard_role_marker(reason) for reason in reasons}
             entries.append(
                 DeckEntry(
                     name=knowledge.analysis.name,
@@ -224,7 +231,9 @@ class SideboardBuilder:
                         f"Sideboard: {reason}" for reason in reasons
                     ),
                     roles=tuple(
-                        sorted(str(role) for role in knowledge.roles)
+                        sorted(
+                            {str(role) for role in knowledge.roles}.union(markers)
+                        )
                     ),
                 )
             )

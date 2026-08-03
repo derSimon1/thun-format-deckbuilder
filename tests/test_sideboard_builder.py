@@ -18,6 +18,19 @@ def test_sideboard_selects_relevant_on_color_cards():
     result = SideboardBuilder().build(cards, GeneratedDeck((), 24), archetype="burn", colors=("R",), size=6)
     assert {entry.name for entry in result} == {"Smash", "No Healing"}
     assert sum(entry.quantity for entry in result) == 6
+    assert all(any(role.startswith("sideboard_") for role in entry.roles) for entry in result)
+
+
+def test_sideboard_encodes_graveyard_hate_as_machine_readable_role():
+    result = SideboardBuilder().build(
+        (k("Crypt", "Exile all cards from target player's graveyard."),),
+        GeneratedDeck((), 24),
+        archetype="burn",
+        colors=("R",),
+        size=3,
+    )
+    assert result[0].reasons == ("Sideboard: graveyard hate",)
+    assert "sideboard_graveyard_hate" in result[0].roles
 
 
 def test_sideboard_respects_combined_copy_limit():

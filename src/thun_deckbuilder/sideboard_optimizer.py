@@ -45,6 +45,22 @@ _LABEL_MATCHUPS: dict[str, frozenset[str]] = {
     "protect mill plan": frozenset({"control", "mill"}),
 }
 
+_MARKER_MATCHUPS: dict[str, frozenset[str]] = {
+    "sideboard_graveyard_hate": frozenset({"mill"}),
+    "sideboard_creature_sweeper": frozenset({"burn", "tokens"}),
+    "sideboard_countermagic": frozenset({"burn", "artifacts", "control", "mill", "shrines"}),
+    "sideboard_anti_aggro_removal": frozenset({"burn", "tokens"}),
+    "sideboard_hand_disruption": frozenset({"artifacts", "control", "mill", "shrines"}),
+    "sideboard_artifact_enchantment_answer": frozenset({"artifacts", "shrines"}),
+    "sideboard_answer_opposing_artifacts": frozenset({"artifacts"}),
+    "sideboard_protect_artifacts": frozenset({"control", "mill", "shrines"}),
+    "sideboard_protection": frozenset({"burn", "control", "tokens"}),
+    "sideboard_anti_lifegain": frozenset({"control", "tokens"}),
+    "sideboard_protect_enchantments": frozenset({"control", "mill"}),
+    "sideboard_enchantment_recursion": frozenset({"control", "mill"}),
+    "sideboard_protect_mill_plan": frozenset({"control", "mill"}),
+}
+
 _FALLBACK_SIGNALS: dict[str, tuple[str, ...]] = {
     "burn": (
         "destroy target creature",
@@ -104,15 +120,24 @@ def _sideboard_labels(entry: DeckEntry) -> tuple[str, ...]:
     )
 
 
+def _sideboard_markers(entry: DeckEntry) -> tuple[str, ...]:
+    return tuple(role for role in entry.roles if role.startswith("sideboard_"))
+
+
 def _sideboard_relevant(entry: DeckEntry, opponent: str) -> bool:
     """Return whether a sideboard card addresses the declared opponent plan.
 
-    SideboardBuilder labels are authoritative. This prevents generic words such
-    as ``exile`` on graveyard hate from being misread as creature or artifact
-    interaction. Hand-authored fixtures without labels use conservative exact
-    text signals as a compatibility fallback.
+    Machine-readable sideboard role markers are authoritative and survive all
+    deck-entry transformations. Human-readable reasons remain supported for
+    older entries. Only unlabeled fixtures use conservative text fallback.
     """
 
+    markers = _sideboard_markers(entry)
+    if markers:
+        return any(
+            opponent in _MARKER_MATCHUPS.get(marker, frozenset())
+            for marker in markers
+        )
     labels = _sideboard_labels(entry)
     if labels:
         return any(
