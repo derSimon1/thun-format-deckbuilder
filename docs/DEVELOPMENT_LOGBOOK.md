@@ -123,3 +123,59 @@ Hoch. Branch-Historie, PR-Head und Workflowverhalten bestätigen die Diagnose.
 ### Nächster Schritt
 
 Development System v1.0 im Repository verankern und den nächsten Lauf ausschließlich über die versionierte Spezifikation und den versionierten Kalibrierungsprompt steuern.
+
+---
+
+## 2026-08-03 – Zwei-Stunden-Kalibrierung, Zyklus 1: Token-Plan-Erkennung
+
+### Ziel
+
+Den Token-Hauptplan vor der Kartenauswahl explizit bestimmen und die Kartenbewertung an diesen Plan binden.
+
+### Ausgangslage
+
+- Ausgangs-Head: `ec0748574e639d3902f356b2872d0ebe6c730b57`
+- PR #14 offen, mergeable und Draft
+- letzter PR-Workflow: Run `30784219809`, erfolgreich
+- bisherige Token-Bewertung war faktisch auf Go Wide zugeschnitten und konnte Value Tokens oder Aristocrats nicht als eigenständige Pläne behandeln
+
+### Hypothese
+
+Eine konservative, kartenname-unabhängige Signalerkennung kann Go Wide, Value Tokens und Aristocrats unterscheiden. Wird genau ein Plan vor der Komposition ausgewählt und in der Bewertung verwendet, sinkt das Risiko von Rollen-Mischmasch.
+
+### Änderungen
+
+1. Neuer Token-Plan-Detektor mit strukturierten Signalen, Supportwerten und Confidence.
+2. Planabhängige Token-Kartenbewertung für Go Wide, Value Tokens und Aristocrats.
+3. Token-Generator bestimmt den Plan vor der Auswahl, lässt echte Sacrifice-Pieces zu und schreibt den gewählten Plan in den Profilnamen.
+4. Vier gezielte Regressionstests für alle drei Pläne und planfremde Kartenpakete.
+
+### Validierung
+
+- isolierte zielgerichtete Tests der neuen Plan- und Scoringlogik: 4 bestanden
+- Syntaxprüfung der neuen und geänderten Module: bestanden
+- vollständige Repository-Tests und PR-Fast-Validierung: nach Commit durch den neuen PR-Workflow zu verifizieren
+
+### Vorläufiges Ergebnis
+
+Der Hauptplan wird jetzt vor der Komposition gewählt und die Bewertung bevorzugt Karten, die diesen Plan unterstützen. Der bisherige Standard bleibt bei Gleichstand konservativ Go Wide.
+
+### Confidence
+
+Mittel. Die Kernlogik ist gezielt getestet; hohe Confidence erst nach grüner vollständiger CI und Prüfung der erzeugten Token-Artefakte.
+
+### Lessons Learned
+
+- Subarchetypen lassen sich über wiederverwendbare Oracle-Text- und Rollensignale modellieren, ohne konkrete Kartenlisten fest zu codieren.
+- Ein einzelnes Sacrifice- oder Draw-Wording darf nicht den gesamten Plan umleiten; deshalb werden Pläne ohne mehrere Supportsignale abgewertet.
+- Planerkennung allein reicht noch nicht: Die Rollenminimums des Deckprofils sind weiterhin für alle Token-Pläne identisch.
+
+### Offene Risiken
+
+- Die Auswahl erfolgt aus der gesamten legalen Mono-White-Kandidatenmenge; die Verteilung realer Karten kann einen Plan durch reine Verfügbarkeit bevorzugen.
+- Planspezifische Rollenminimums, Engine Density und Finish Density fehlen noch.
+- Matchup-Extreme müssen weiterhin gegen echte Clubtests geprüft werden.
+
+### Nächster Schritt
+
+PR-Workflow und Artefakte prüfen. Danach planspezifische Rollenminimums sowie einen expliziten Strategy-Commitment-Bericht ergänzen.

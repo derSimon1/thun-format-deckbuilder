@@ -1,9 +1,10 @@
 from __future__ import annotations
 
-from thun_deckbuilder.token_scoring import score_token_card
 from thun_deckbuilder.deck_generator import GeneratedDeck
 from thun_deckbuilder.deck_profile import DeckProfile, TOKENS_PROFILE
 from thun_deckbuilder.knowledge_base import CardKnowledge, KnowledgeBase
+from thun_deckbuilder.token_plan import TokenPlan, detect_token_plan
+from thun_deckbuilder.token_scoring import score_token_card
 
 
 def _is_mono_white(knowledge: CardKnowledge) -> bool:
@@ -15,7 +16,14 @@ def _is_reasonable_token_card(knowledge: CardKnowledge) -> bool:
     if analysis.is_land or not _is_mono_white(knowledge) or analysis.mana_value > 6:
         return False
     if not knowledge.roles.intersection(
-        {"token_maker", "token_payoff", "removal", "card_draw", "protection"}
+        {
+            "token_maker",
+            "token_payoff",
+            "sacrifice",
+            "removal",
+            "card_draw",
+            "protection",
+        }
     ):
         return False
     text = analysis.oracle_text.lower()
@@ -30,31 +38,58 @@ def _is_reasonable_token_card(knowledge: CardKnowledge) -> bool:
         return False
 
     # Cards that merely mention or interact with tokens are not automatically
-    # suitable.  A token card must create material, reward a wide board, or
-    # provide one of the explicitly supported utility roles.
+    # suitable. A token card must create material, reward a token board, provide
+    # supported utility, or be a real sacrifice piece for an Aristocrats plan.
     creates_tokens = "create" in text and "token" in text
     token_payoff = "token_payoff" in knowledge.roles
-    utility = bool(knowledge.roles.intersection({"removal", "card_draw", "protection"}))
-    return creates_tokens or token_payoff or utility
+    utility = bool(
+        knowledge.roles.intersection({"removal", "card_draw", "protection"})
+    )
+    sacrifice_piece = "sacrifice" in knowledge.roles
+    return creates_tokens or token_payoff or utility or sacrifice_piece
 
 
-def _score_for_composition(knowledge: CardKnowledge) -> tuple[float, tuple[str, ...]]:
-    scored = score_token_card(knowledge.analysis)
+def _score_for_composition(
+    knowledge: CardKnowledge,
+    plan: TokenPlan = TokenPlan.GO_WIDE,
+) -> tuple[float, tuple[str, ...]]:
+    scored = score_token_card(knowledge.analysis, plan=plan)
     score = scored.score
     reasons = list(scored.reasons)
-    role_bonuses = {
-        "token_maker": (2.0, "Token-Erzeuger"),
-        "token_payoff": (3.0, "Token-Payoff"),
+
+    common_bonuses = {
         "removal": (2.0, "Interaktion"),
-        "card_draw": (1.5, "Kartennachschub"),
         "protection": (1.5, "Schutz"),
     }
-    for role, (bonus, reason) in role_bonuses.items():
+    plan_bonuses = {
+        TokenPlan.GO_WIDE: {
+            "token_maker": (2.0, "Go Wide: Token-Erzeuger"),
+            "token_payoff": (3.0, "Go Wide: Board-Payoff"),
+            "card_draw": (1.5, "Kartennachschub"),
+            "sacrifice": (-1.5, "Go Wide: planfremde Opferrolle"),
+        },
+        TokenPlan.VALUE: {
+            "token_maker": (1.5, "Value Tokens: Material"),
+            "token_payoff": (2.5, "Value Tokens: Payoff"),
+            "card_draw": (3.0, "Value Tokens: Kartenvorteil"),
+            "sacrifice": (-0.5, "Value Tokens: schwache Planbindung"),
+        },
+        TokenPlan.ARISTOCRATS: {
+            "token_maker": (1.5, "Aristocrats: Opfermaterial"),
+            "token_payoff": (2.5, "Aristocrats: Death-Payoff"),
+            "card_draw": (1.5, "Kartennachschub"),
+            "sacrifice": (4.0, "Aristocrats: Opfermöglichkeit"),
+        },
+    }
+    for role, (bonus, reason) in {
+        **common_bonuses,
+        **plan_bonuses[plan],
+    }.items():
         if role in knowledge.roles:
             score += bonus
             if reason not in reasons:
                 reasons.append(reason)
-    return score, tuple(reasons or ["Passt zum Token-Profil"])
+    return score, tuple(reasons or [f"Passt zum Token-Plan {plan.label}"])
 
 
 def generate_token_deck(
@@ -65,27 +100,33 @@ def generate_token_deck(
 ) -> GeneratedDeck:
     from thun_deckbuilder.composition_engine import build_composition
 
-    profile = TOKENS_PROFILE
-    if lands != TOKENS_PROFILE.lands:
-        profile = DeckProfile(
-            name=TOKENS_PROFILE.name,
-            lands=lands,
-            role_targets=TOKENS_PROFILE.role_targets,
-            curve_targets=TOKENS_PROFILE.curve_targets,
-        )
+    eligible_cards = tuple(
+        card
+        for card in knowledge_base.cards
+        if _is_reasonable_token_card(card)
+    )
+    plan_report = detect_token_plan(eligible_cards)
+    profile = DeckProfile(
+        name=f"{TOKENS_PROFILE.name} — {plan_report.plan.label}",
+        lands=lands,
+        role_targets=TOKENS_PROFILE.role_targets,
+        curve_targets=TOKENS_PROFILE.curve_targets,
+    )
     result = build_composition(
         knowledge_base.cards,
         profile=profile,
         deck_size=deck_size,
         max_copies=max_copies,
         eligible=_is_reasonable_token_card,
-        score_card=_score_for_composition,
+        score_card=lambda card: _score_for_composition(card, plan_report.plan),
     )
     from thun_deckbuilder.mana_base_builder import ManaBaseBuilder
     from thun_deckbuilder.deck_quality import with_mana_quality
 
     mana = ManaBaseBuilder().build(
-        result.entries, total_lands=profile.lands, deck_size=deck_size
+        result.entries,
+        total_lands=profile.lands,
+        deck_size=deck_size,
     )
     return GeneratedDeck(
         mainboard=result.entries,

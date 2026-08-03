@@ -13,9 +13,11 @@
 
 ## Phase 2 – Strategy Commitment
 
-- [ ] Token-Subarchetypen erkennen: Go Wide, Value Tokens, Aristocrats
-- [ ] planabhängige Rollenprioritäten
-- [ ] Rollen-Mischmasch negativ bewerten
+- [x] Token-Hauptplan vor der Kartenauswahl bestimmen
+- [x] Signale für Go Wide, Value Tokens und Aristocrats unterscheiden
+- [x] Token-Karten planabhängig bewerten
+- [ ] planspezifische Rollenminimums und Dichteziele
+- [ ] Rollen-Mischmasch im Qualitätsbericht negativ bewerten
 - [ ] Engine Density modellieren
 - [ ] Finish Density modellieren
 - [ ] klare Wincondition-Erkennung
@@ -39,8 +41,8 @@
 
 ## Aktuelle Priorität
 
-1. Token-Subarchetyp-Erkennung
-2. Strategy Commitment
+1. PR-Validierung der Token-Plan-Erkennung und Artefaktprüfung
+2. planspezifische Rollenminimums und Strategy-Commitment-Bericht
 3. Engine Density
 4. Finish Density
 5. belastbare Vergleichsbaseline
@@ -50,6 +52,8 @@
 
 - Token-Hauptplan wird vor Kartenauswahl bestimmt.
 - Mindestens drei gezielte Regressionstests decken Subarchetyp-Kohärenz ab.
+- Der gewählte Token-Plan ist im erzeugten Profil und Bericht sichtbar.
+- Planspezifische Rollenminimums verhindern Rollen-Mischmasch.
 - Fast-Validierung bleibt unter zehn Minuten.
 - Keine unbegründete Regression bei Burn, Artifacts, Shrines oder Mill.
 - Logbuch, Entscheidungen und bekannte Probleme sind aktualisiert.

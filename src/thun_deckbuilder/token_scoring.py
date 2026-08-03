@@ -4,6 +4,7 @@ import re
 
 from thun_deckbuilder.card_analyzer import CardAnalysis
 from thun_deckbuilder.card_scoring import ScoreBreakdown
+from thun_deckbuilder.token_plan import TokenPlan, token_card_signals
 
 
 _NUMBER_WORDS = {
@@ -22,7 +23,7 @@ def estimated_token_output(text: str) -> int | None:
     """Return the smallest explicit number of tokens created by the card.
 
     ``None`` represents variable output (for example ``create X`` or
-    ``for each``).  The conservative minimum is used because overestimating a
+    ``for each``). The conservative minimum is used because overestimating a
     conditional token card was a recurring source of poor White Tokens picks.
     """
 
@@ -74,12 +75,15 @@ def _is_global_anthem(text: str) -> bool:
     )
 
 
-def score_token_card(analysis: CardAnalysis) -> ScoreBreakdown:
-    """Score a card specifically for a mono-white go-wide token deck.
+def score_token_card(
+    analysis: CardAnalysis,
+    plan: TokenPlan = TokenPlan.GO_WIDE,
+) -> ScoreBreakdown:
+    """Score a token card for one explicitly selected strategic plan.
 
-    The calibration rewards reliable board development and persistent payoffs.
-    It deliberately discounts conditional copy effects, temporary pumps and
-    expensive cards that produce too little material.
+    The shared base rewards efficient board development. Plan-specific signals
+    then reward commitment to Go Wide, Value Tokens, or Aristocrats and discount
+    packages that pull the deck in a different direction.
     """
 
     score = 0.0
@@ -162,7 +166,7 @@ def score_token_card(analysis: CardAnalysis) -> ScoreBreakdown:
 
     if any(phrase in text for phrase in ("destroy all creatures", "exile all creatures")):
         score -= 7.0
-        reasons.append("Widerspricht dem eigenen Go-wide-Spielplan")
+        reasons.append("Widerspricht dem eigenen Token-Spielplan")
 
     if "token that's a copy" in text and any(
         phrase in text
@@ -174,5 +178,43 @@ def score_token_card(analysis: CardAnalysis) -> ScoreBreakdown:
     if "sacrifice a creature" in text and "create" not in text:
         score -= 2.0
         reasons.append("Verbraucht das eigene Board ohne Token-Ersatz")
+
+    signals = token_card_signals(analysis)
+    if plan is TokenPlan.GO_WIDE:
+        if signals.creates_multiple_tokens:
+            score += 1.5
+            reasons.append("Go Wide: mehrere Körper")
+        if signals.anthem or signals.evasion_payoff:
+            score += 2.0
+            reasons.append("Go Wide: Team-Finisher")
+        if signals.sacrifice and not signals.creates_tokens:
+            score -= 2.0
+            reasons.append("Go Wide: planfremdes Opferpaket")
+    elif plan is TokenPlan.VALUE:
+        if signals.repeatable_source:
+            score += 3.0
+            reasons.append("Value Tokens: wiederholbare Engine")
+        if signals.card_advantage:
+            score += 2.5
+            reasons.append("Value Tokens: Kartenvorteil")
+        if signals.token_value_payoff:
+            score += 2.0
+            reasons.append("Value Tokens: Token-Value-Payoff")
+        if signals.sacrifice and not signals.death_payoff:
+            score -= 1.0
+            reasons.append("Value Tokens: ungestütztes Opferpaket")
+    else:
+        if signals.sacrifice:
+            score += 5.0
+            reasons.append("Aristocrats: Opfermöglichkeit")
+        if signals.death_payoff:
+            score += 4.0
+            reasons.append("Aristocrats: Todestrigger")
+        if signals.drain_payoff:
+            score += 3.0
+            reasons.append("Aristocrats: Drain-Finisher")
+        if signals.anthem and not signals.death_payoff:
+            score -= 1.5
+            reasons.append("Aristocrats: planfremder Anthem-Payoff")
 
     return ScoreBreakdown(score=score, reasons=tuple(reasons))
