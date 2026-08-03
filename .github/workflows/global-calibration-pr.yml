@@ -1,4 +1,5 @@
 name: Global Calibration PR
+run-name: Token Go Wide – Immediate Maker Scoring
 
 on:
   pull_request:

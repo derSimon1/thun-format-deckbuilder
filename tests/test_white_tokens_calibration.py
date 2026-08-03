@@ -1,6 +1,10 @@
 from thun_deckbuilder.card_analyzer import analyze_card
 from thun_deckbuilder.knowledge_base import CardKnowledge
-from thun_deckbuilder.token_generator import _is_reasonable_token_card, _score_for_composition
+from thun_deckbuilder.token_generator import (
+    _go_wide_production_adjustment,
+    _is_reasonable_token_card,
+    _score_for_composition,
+)
 from thun_deckbuilder.token_scoring import estimated_token_output, score_token_card
 
 
@@ -79,8 +83,6 @@ def test_board_wipe_is_not_eligible_for_go_wide_tokens():
 
 def test_card_that_only_mentions_tokens_is_not_eligible():
     card = knowledge("Exile target token.", ("removal",), mana_value=1)
-    # It remains useful interaction and is therefore eligible through its
-    # utility role; a pure token mention without utility must be rejected.
     pure_mention = knowledge("Target token gains flying until end of turn.", ("token_maker",), mana_value=1)
     assert _is_reasonable_token_card(card)
     assert not _is_reasonable_token_card(pure_mention)
@@ -92,3 +94,34 @@ def test_composition_score_prefers_reliable_multi_body_card():
     multi_score, _ = _score_for_composition(multi)
     single_score, _ = _score_for_composition(single)
     assert multi_score > single_score
+
+
+def test_go_wide_penalizes_death_delayed_production():
+    card = knowledge(
+        "When this creature dies, create two 1/1 white Soldier creature tokens.",
+        ("token_maker",),
+    )
+    adjustment, reason = _go_wide_production_adjustment(card)
+    assert adjustment == -2.5
+    assert reason == "Go Wide: Produktion erst nach eigenem Tod"
+
+
+def test_go_wide_penalizes_conditional_production():
+    card = knowledge(
+        "If you control an artifact, create two 1/1 white Soldier creature tokens.",
+        ("token_maker",),
+    )
+    adjustment, reason = _go_wide_production_adjustment(card)
+    assert adjustment == -1.5
+    assert reason == "Go Wide: bedingte Produktion"
+
+
+def test_go_wide_scales_activated_penalty_with_mana_cost():
+    cheap = knowledge("{1}{W}: Create a 1/1 white Soldier creature token.", ("token_maker",))
+    expensive = knowledge("{4}{W}: Create a 1/1 white Soldier creature token.", ("token_maker",))
+    cheap_adjustment, _ = _go_wide_production_adjustment(cheap)
+    expensive_adjustment, reason = _go_wide_production_adjustment(expensive)
+    assert cheap_adjustment == -2.0
+    assert expensive_adjustment == -3.0
+    assert expensive_adjustment < cheap_adjustment
+    assert reason == "Go Wide: zusätzliche Aktivierungskosten"

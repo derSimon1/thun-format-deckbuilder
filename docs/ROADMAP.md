@@ -32,19 +32,26 @@ Referenzarchetypen: Burn, Tokens, Artifacts, Control und Mill.
 
 ## Evidenz
 
-- bestätigter 24-Land-Stand aus Run 70: Benchmark 96, T2/T3 94/96 %, Schaden 23,58, Killrate 62 %
+- bestätigter 24-Land-Stand aus Run 72: Benchmark 96, 36 Maker; Produktionsmodi 24 sofortig, 6 Death, 3 bedingt, 3 aktiviert
 - 23-Land-Run 71: Benchmark 94, T2/T3 92/94 %, Mana-Screw 16 statt 13 Hände, Schaden 23,66, Killrate 63 %
 - Entscheidung: 24 Plains bleiben wegen klar besserer Starthand- und Kurvenstabilität
 
-## Prioritäten
+## Aktueller Zyklus
 
-1. Rollback auf 24 Länder vollständig grün bestätigen.
-2. Go-Wide-Auswahl auf garantierte Sofortproduktion, effiziente Multi-Maker und echte Anthems optimieren.
-3. Strategy Commitment und Opening-Hand-Klassifikation auf präzise Go-Wide-Rollen prüfen.
-4. Anthem-Wirkung und Boardaufbau im Combatmodell prüfen.
-5. Burn-Matchup anhand realer Sequenzen und relevanter Schutz-/Tempooptionen untersuchen.
-6. Regression-Baseline statt `baseline: none`.
+1. Death-Produktion im Go-Wide-Score abwerten, da sie einen eigenen Todesfall voraussetzt.
+2. Bedingte Produktion moderat abwerten, da sie nicht zuverlässig zum geplanten Zeitpunkt verfügbar ist.
+3. Aktivierte Produktion abhängig von den zusätzlichen Manakosten abwerten.
+4. Workflow-Run sichtbar `Token Go Wide – Immediate Maker Scoring` benennen.
+5. Nur bei grünem Gate und positivem Gesamtbild beibehalten.
+
+## Prioritäten danach
+
+1. Strategy Commitment und Opening-Hand-Klassifikation auf präzise Go-Wide-Rollen prüfen.
+2. Anthem-Wirkung und Boardaufbau im Combatmodell prüfen.
+3. Burn-Matchup anhand realer Sequenzen und relevanter Schutz-/Tempooptionen untersuchen.
+4. Arena-Import und 100 Hände final bewerten.
+5. Regression-Baseline statt `baseline: none`.
 
 ## Genau ein nächster ausführbarer Schritt
 
-24-Land-Rollback veröffentlichen, CI und Artefakt bestätigen und anschließend bedingte, Death- und teure aktivierte Maker im Go-Wide-Scoring gegenüber sofortigen Multi-Makern abwerten.
+Immediate-Maker-Scoring veröffentlichen, den sprechend benannten Workflow und sein Artefakt vollständig auswerten und danach die Änderung behalten oder evidenzbasiert zurückrollen.

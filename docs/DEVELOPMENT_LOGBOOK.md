@@ -34,14 +34,23 @@ Eine vollständig qualifizierte v2-KGB existiert noch nicht. `baseline: none` be
 - Entscheidung: 23 Länder werden verworfen; Rückkehr zu 24 Plains und 36 Spells.
 - KGB: keine neue KGB.
 
-## Aktueller Rollback-Zyklus
+### Rollback-Bestätigung – Run 72
 
-- **Ursache:** Die 23-Land-Variante verschlechtert Benchmark und Early-Play-Stabilität stärker, als sie Schaden und Killrate verbessert.
-- **Änderung:** TokenStrategy und Integrationsverträge auf den bestätigten 24/36-Stand zurücksetzen; Dokumentation aktualisieren.
-- **Erfolg:** 302 Tests, Fast und Diagnose grün; Run-70-Deck und -Metriken wiederhergestellt.
-- **Rollback:** nicht erforderlich; dies ist der evidenzbasierte Rückbau der gescheiterten Variante.
-- **KGB-Entscheidung:** keine neue KGB.
+- Commit `b5e1b0bd1def26a9ce62b24fe0a5ffe12a765e1b`.
+- Workflow `30828260897`, erfolgreich; Artefakt `8861942756`.
+- 302 Tests, Fast und Diagnose grün.
+- Benchmarks wieder 83/96/90/85/80; Token-Paket 36 Maker mit 24 sofortigen, 6 Death-, 3 bedingten und 3 aktivierten Kopien.
+- KGB: keine neue KGB.
+
+## Aktueller Zyklus – Immediate Maker Scoring
+
+- **Ursache:** Neun von 36 Maker-Kopien produzieren nicht sofort; Death-, bedingte und aktivierte Maker werden im Go-Wide-Scoring trotz geringerer Zuverlässigkeit noch zu ähnlich zu sofortigen Makern bewertet.
+- **Hypothese:** Modusspezifische Abwertungen für Death-, bedingte und aktivierte Produktion erhöhen den Anteil sofortiger Produktion oder verbessern die konkrete Kartenauswahl, ohne Pflichtdichten und andere Archetypen zu regressieren.
+- **Änderungen:** direkte Go-Wide-Produktionsanpassung im Kompositionsscore; Regressionstests für alle drei Modi; sprechender Workflow-Run-Name `Token Go Wide – Immediate Maker Scoring`.
+- **Erfolg:** vollständige Testsuite, Fast-Validierung und Token-Diagnose grün; sofortige Maker nicht niedriger als 24; Benchmark und Starthandstabilität mindestens auf Run-72-Niveau oder ein klar begründetes positives Deckdelta.
+- **Rollback:** bei sinkender Pflichtrollendichte, Benchmark-Regressionssignal oder schlechterer Starthand-/Goldfish-Gesamtwirkung.
+- **KGB-Entscheidung vor Push:** keine neue KGB; erst nach Artefaktauswertung.
 
 ## Nächster ausführbarer Schritt
 
-Nach grünem Rollback die Kartenauswahl bei 24 Ländern optimieren: bedingte, Death- und teure aktivierte Maker im Go-Wide-Scoring gezielt gegenüber garantierter Sofortproduktion abwerten.
+Den Immediate-Maker-Scoring-Zyklus veröffentlichen, den sprechend benannten Workflow vollständig auswerten und anhand von Deckliste, Produktionsmodi, Opening Hands, Goldfish und Matchups über Behalten oder Rollback entscheiden.

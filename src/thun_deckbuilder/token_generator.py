@@ -168,6 +168,22 @@ def _composition_candidates(
     return (*plan_cards, *fillers)
 
 
+def _go_wide_production_adjustment(knowledge: CardKnowledge) -> tuple[float, str | None]:
+    """Prefer reliable bodies over delayed or mana-intensive Token production."""
+
+    production = analyze_token_production(knowledge.analysis)
+    if not production.creates_creature_tokens:
+        return 0.0, None
+    if production.mode == "death":
+        return -2.5, "Go Wide: Produktion erst nach eigenem Tod"
+    if production.mode == "conditional":
+        return -1.5, "Go Wide: bedingte Produktion"
+    if production.mode == "activated":
+        penalty = 1.0 + 0.5 * min(production.activation_mana, 4)
+        return -penalty, "Go Wide: zusätzliche Aktivierungskosten"
+    return 0.0, None
+
+
 def _score_for_composition(
     knowledge: CardKnowledge,
     plan: TokenPlan = TokenPlan.GO_WIDE,
@@ -214,6 +230,11 @@ def _score_for_composition(
             score += bonus
             if reason not in reasons:
                 reasons.append(reason)
+    if plan == TokenPlan.GO_WIDE:
+        adjustment, reason = _go_wide_production_adjustment(knowledge)
+        score += adjustment
+        if reason is not None and reason not in reasons:
+            reasons.append(reason)
     if not reasons and knowledge.analysis.is_creature:
         score -= 2.0
         reasons.append("Neutraler Sparse-Pool-Füller")
