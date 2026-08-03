@@ -89,9 +89,17 @@ jobs:
             | tee artifacts/global/global-validation.log
           VALIDATION_STATUS=${PIPESTATUS[0]}
 
+          TOKEN_DIAGNOSTICS_STATUS=0
+          if [ "$VALIDATION_STATUS" -eq 0 ]; then
+            THUN_REUSE_CARD_DATABASE=1 python scripts/ci_token_diagnostics.py 2>&1 \
+              | tee artifacts/global/token-diagnostics.log
+            TOKEN_DIAGNOSTICS_STATUS=${PIPESTATUS[0]}
+          fi
+
           {
             echo "TEST_STATUS=${TEST_STATUS}"
             echo "VALIDATION_STATUS=${VALIDATION_STATUS}"
+            echo "TOKEN_DIAGNOSTICS_STATUS=${TOKEN_DIAGNOSTICS_STATUS}"
             echo "VALIDATION_MODE=${VALIDATION_MODE}"
           } > artifacts/global/status.env
           exit 0
@@ -114,8 +122,10 @@ jobs:
             exit 1
           fi
           source artifacts/global/status.env
-          if [ "$TEST_STATUS" -ne 0 ] || [ "$VALIDATION_STATUS" -ne 0 ]; then
-            echo "Global validation failed: tests=$TEST_STATUS validation=$VALIDATION_STATUS mode=${VALIDATION_MODE:-unknown}"
+          if [ "$TEST_STATUS" -ne 0 ] \
+            || [ "$VALIDATION_STATUS" -ne 0 ] \
+            || [ "${TOKEN_DIAGNOSTICS_STATUS:-1}" -ne 0 ]; then
+            echo "Global validation failed: tests=$TEST_STATUS validation=$VALIDATION_STATUS token_diagnostics=${TOKEN_DIAGNOSTICS_STATUS:-missing} mode=${VALIDATION_MODE:-unknown}"
             exit 1
           fi
-          echo "Tests and global validation passed in ${VALIDATION_MODE:-unknown} mode."
+          echo "Tests, global validation and Token diagnostics passed in ${VALIDATION_MODE:-unknown} mode."

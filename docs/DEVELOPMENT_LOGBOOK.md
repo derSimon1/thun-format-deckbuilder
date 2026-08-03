@@ -7,8 +7,9 @@ Detaillierte frühere Fassungen bleiben über die Git-Historie erhalten. Jeder Z
 Eine vollständig qualifizierte Development-System-v2-KGB existiert noch nicht.
 
 - v2-Bootstrap-Vergleichsstand: Commit `31f6c1e053976435481c07ab2098430bc2a45471`, Run `30792560878`
-- aktueller technischer Sicherungspunkt: Commit `937f10f699814e271dd7f8b11b874b0a8f64270c`, Run `30801497068`
-- der aktuelle Sicherungspunkt ist keine v2-KGB, weil der Vergleich weiterhin `baseline: none` meldet und Mill keinen belastbaren Hauptplan besitzt
+- letzter vollständig dokumentierter technischer Sicherungspunkt: Commit `937f10f699814e271dd7f8b11b874b0a8f64270c`, Run `30801497068`
+- aktueller grüner Messstand: Commit `397d989bb19b2c78e4d2f17dcef00b6b572b5aa4`, Run `30803643342`
+- keiner dieser Stände ist eine v2-KGB, weil der Vergleich weiterhin `baseline: none` meldet und externe Club-/Meta-Evidenz fehlt
 
 ## Laufübersicht 2026-08-03
 
@@ -23,6 +24,8 @@ Eine vollständig qualifizierte Development-System-v2-KGB existiert noch nicht.
 | Sideboard-Marker v2 | `84c82fc4a795b5d14ef30ecc7debd24f0cef4478` | `30799228495` | technisch grün, falsche BO3-Pläne |
 | Phrase-first + Diagnose | `3e6b23067d5811f12b0f6dae2325fb777776d5df` | `30800668838` | Produktion fachlich korrekt, Testannahme rot |
 | Test-Invariante | `937f10f699814e271dd7f8b11b874b0a8f64270c` | `30801497068` | vollständiger grüner Sideboard-Abschluss |
+| Mill-Definition | `70f538ce52593e4ab7485f59bf801081cc069601` | `30803091071` | zentrale Mill-Messung; ausgeschriebene Zahlen fehlten |
+| Mill-Messkompatibilität | `397d989bb19b2c78e4d2f17dcef00b6b572b5aa4` | `30803643342` | 40 legale Quellen; Benchmark 80; 55 % planfähige Hände |
 
 ## Abgeschlossener Sideboard-Zyklus – Run 50
 
@@ -46,55 +49,79 @@ Eine vollständig qualifizierte Development-System-v2-KGB existiert noch nicht.
 - `control-sideboard.json` enthält finale Mengen, Scores, Gründe und Rollenmarker
 - Sideboard-Diagnoseartefakte liegen für alle fünf Referenzarchetypen vor
 
+### Ergebnis und KGB-Entscheidung
+
+Phrase-first-Klassifikation ist als globale Regel bestätigt. Keine neue v2-KGB: `baseline: none` besteht fort und die Sideboard-Relevanz wird noch über Archetyp-Matrizen statt konkrete Gegnerdecks bestimmt.
+
+## Mill-Messzyklus – Runs 53/54
+
+### Ursache und Hypothese
+
+Vier voneinander abweichende Mill-Erkennungen führten zu 0 erkannten Quellen im Benchmark und 0 % planfähigen Händen. Eine zentrale Oracle-Text-Definition sollte Builder, Rollen, Benchmark und Handanalyse ausrichten.
+
 ### Ergebnis
 
-Phrase-first-Klassifikation ist als globale Regel bestätigt. Spezifische Oracle-Text-Phrasen werden vor breiten Rollen ausgewertet; Rollen bleiben Fallback. Der Regressionstest injiziert die breite Rolle bewusst und prüft nur die relevante Invariante.
+- Commit `70f538ce52593e4ab7485f59bf801081cc069601`, Run 53: rot; ausgeschriebene Mengen wie `two` und `three` wurden unterschätzt
+- Commit `397d989bb19b2c78e4d2f17dcef00b6b572b5aa4`, Run 54: erfolgreich
+- 267 Tests bestanden
+- Artefakt `global-calibration-pr-54`, ID `8851950460`, 45 Dateien
+- 40 unterschiedliche legale Dimir-Millquellen, maximal 120 Kopien bei drei Kopien je Karte
+- aktuelles Milldeck: 15 Quellenkopien
+- Mill-Benchmark: 78 → 80
+- Planfähigkeit: 0 % → 55 %
+- marginale Hände: 100 % → 45 %
+- Keepability: 74 %
+- fehlender Mill-Zugang: 13 %
 
 ### KGB-Entscheidung
 
-Keine neue v2-KGB.
+Keine neue v2-KGB. Die Messdefinition ist verbessert, aber die geplante kapazitätsgeprüfte Mill-Komposition mit mindestens 18 Quellen und sechs echten Engines ist noch nicht veröffentlicht.
 
-Begründung:
+### Prioritätsentscheidung für den aktuellen Lauf
 
-- `baseline: none` besteht fort
-- Mill hat weiterhin 0 % planfähige Hände
-- Sideboard-Relevanz wird noch über Archetyp-Matrix statt konkretes Gegnerdeck bestimmt
+Der veröffentlichte Mill-Messzyklus ist vollständig abgeschlossen und grün. Der verbleibende Kompositionsschritt wird nicht als erledigt dargestellt, aber aufgrund des ausdrücklich vorgegebenen Token-Fokus für diesen Vier-Stunden-Lauf pausiert. Der Rückkehrpunkt bleibt dokumentiert.
 
-### Reflexion
+## 2026-08-03 – Vier-Stunden-Lauf, Token-Zyklus 1: Paketdiagnose
 
-- Zwei grüne Sideboard-Runs waren fachlich falsch; erst maschinenlesbare Artefakte und eine Root-Cause-Invariante schlossen die Ursache.
-- Direkte Diagnoseartefakte sind wirksamer als Rückschlüsse aus aggregierten BO3-Werten.
-- Phrase-first kann ungewöhnliche Kartentexte übersehen; der Rollenfallback bleibt notwendig.
-- Weitere Sideboard-Kalibrierung wird pausiert, solange keine neue Evidenz eine konkrete andere Ursache zeigt.
+### Session-Snapshot
 
-## Prozesszyklus – Global Calibration Prompt 2.1
+- Ausgangs-Head: `397d989bb19b2c78e4d2f17dcef00b6b572b5aa4`
+- PR #14: offen, Draft, mergeable
+- letzter Run: `30803643342`, erfolgreich
+- Ausgangsartefakt: `global-calibration-pr-54`, ID `8851950460`
+- Token-Benchmark: 90
+- Token-Plan: Aristocrats
+- Keepability/Planfähigkeit: 73/73 %
+- Goldfish bis Zug 5: 66 % Killrate, 18,69 durchschnittlicher Schaden
+- Matchups: 0 % gegen Burn, 2 % gegen Artifacts, 100 % gegen Mill
+- Strategy Commitment: 100 %
+- Engine Density: 64 %
 
-### Ziel
+### Belegte Auffälligkeit
 
-Den nächsten Drei-Stunden-Lauf produktiver machen: weniger wiederholte Statusprüfung, früherer Artefaktvergleich, verbindliche Abschlussreserve und ein klar begrenztes Mill-Ziel.
+Das finale Deck enthält viele Food-, Artefakt- und allgemeine Sacrifice-Karten. Die aktuelle Rollenlogik zählt jedes erzeugte Token als Material, jedes Vorkommen von `sacrifice` als Outlet-Nähe und auch Self-Death-Effekte als Aristocrats-Payoff. Damit können Commitment und Handklassifikation einen vollständigen Material/Outlet/Death-Payoff-Kern vortäuschen.
 
-### Änderungen
+### Zyklusvertrag
 
-1. Einmaliger Session-Snapshot statt vollständigem Neustart vor jedem Zyklus.
-2. Echtes 180-Minuten-Budget: maximal 20 Minuten Start, bis zu 120 Minuten produktive Zyklen einschließlich Fallback, mindestens 30 Minuten Abschluss und 10 Minuten Puffer.
-3. Artifact-first-Evidenztabelle mit vorher/nachher/Delta/Interpretation/Confidence.
-4. Zyklusvertrag vor Code: Ursache, Hypothese, Metriken, Invarianten, Erfolg, Abbruch und Zeitschätzung.
-5. Connector-only-Regel: Commit bleibt bis vollständiger CI- und Artefaktauswertung vorläufig.
-6. Schleifenschutz: keine dritte Variante derselben gescheiterten Heuristik ohne neue Root-Cause-Evidenz.
-7. Mill-Komposition wird das einzige primäre Entwicklungsziel des nächsten Drei-Stunden-Laufs.
+- **Ursache:** breite Token-/Sacrifice-Rollen unterscheiden keine Kreatur-Tokens, echten wiederholbaren Creature-Sacrifice-Outlets und Other-Creature-Death-Payoffs
+- **Hypothese:** eine zentrale paketbezogene Oracle-Text-Diagnose zeigt, welche der hohen Aristocrats-Metriken echte Paketbestandteile und welche breite Rollen-Fehlpositive sind
+- **Änderungen:** zentrale Token-Paketsignale; maschinenlesbares Deck-/Pool-Artefakt; Regressionstests
+- **Erwartete Metriken:** reale Material-, Outlet-, Death-/Drain-Payoff- und False-Positive-Kopien
+- **Invarianten:** keine Kartenauswahl- oder Schwellenwertänderung; fünf Referenzarchetypen, Seed 1701 und bestehende Benchmarks bleiben unverändert
+- **Erfolg:** `tokens/token-packages.json` enthält Namen, Mengen, Kategorien, Poolkapazität und breite Rollen-Fehlpositive
+- **Abbruch:** zeigt die Diagnose bereits einen belastbaren Aristocrats-Kern, wird nicht künstlich umgebaut; dann ist Matchup-/Combatmodell die nächste Ursache
+- **geschätzte Zeit:** 45–60 Minuten inklusive Workflow und Artefaktauswertung
 
-### Erwarteter Nutzen
+### Änderung vor Push
 
-- weniger identische CI-Abfragen
-- keine neuen Zyklen ohne ausreichenden Abschluss- und Workflowpuffer
-- fachliche Fehler werden über Artefakte früher erkannt
-- klarere Ursache-Wirkungs-Zuordnung je Commit
-- mehr Zeit für echte Deckqualität statt Prozesswiederholung
+1. `token_packages.py` trennt Kreatur-Token von Food/Clue/Blood/Treasure, echte aktivierte Creature-Sacrifice-Outlets von One-Shot-Sacrifice sowie Other-Creature-Death-Payoffs von Self-Death-Value.
+2. Der PR-Workflow erzeugt nach erfolgreicher Globalvalidierung `tokens/token-packages.json` und behandelt einen Diagnosefehler als roten Lauf.
+3. Gezielte Tests sichern die zentralen Abgrenzungen und eine vollständige Fixture-Diagnose.
 
-### KGB-Entscheidung
+### KGB-Entscheidung vor Push
 
-Keine neue v2-KGB. Der Prozess verbessert Reproduzierbarkeit und Sicherheit, verändert aber noch keine Mill-Qualität und stellt keine Regression-Baseline wieder her.
+Keine neue v2-KGB. Dieser Zyklus verbessert zunächst Messbarkeit; eine Deckverbesserung darf erst nach CI- und Artefaktauswertung behauptet werden.
 
-## Priorisierter nächster ausführbarer Schritt
+### Priorisierter nächster ausführbarer Schritt
 
-Die Mill-Komposition reparieren. Eine zentrale Definition für Gegner-Mill-Quellen einführen, die reale Kartenpoolkapazität messen und erst danach eine kapazitätsgeprüfte Mindestdichte festlegen. Komposition, Optimierer, Benchmark und 100-Hand-Analyse müssen dieselbe Definition verwenden. Keine Schwellenwertsenkung nur zum Bestehen.
+Den neuen Workflow vollständig auswerten. Bei bestätigter Rollenüberzählung Planerkennung, Komposition, Commitment und Handklassifikation in einem zweiten Zyklus auf dieselbe zentrale Paketdefinition umstellen. Bei vollständigem echtem Paket stattdessen Token-Combat und Matchupmodell untersuchen.

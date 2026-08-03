@@ -17,89 +17,87 @@ Referenzarchetypen: Burn, Tokens, Artifacts, Control und Mill. Shrines bleibt op
 - [x] maschinenlesbare Sideboard-Marker und Diagnoseartefakte
 - [x] Phrase-first-Sideboardklassifikation durch Run 50 bestätigt
 - [x] kein Graveyard-Hate gegen Burn, Tokens oder Artifacts
-- [x] Prompt 2.1 mit Artifact-first, Zyklusvertrag und Abschlussreserve vorbereitet
+- [x] Prompt 2.1 mit Artifact-first, Zyklusvertrag und Abschlussreserve
+- [x] zentrale Mill-Quellen-Definition und Poolkapazität: 40 Quellen / 120 Kopien
+- [x] Mill-Benchmark 80 und 55 % planfähige Hände im Messstand Run 54
 
-## Nächster Drei-Stunden-Lauf – Primärziel Mill
+## Aktueller Vier-Stunden-Lauf – Token-Fokus
 
-### Session-Start, maximal 20 Minuten
+### Ausgangsbefund Run 54
 
-- [ ] Branch-/PR-Head, Mergeability und aktive CI prüfen
-- [ ] Run 50 als technischen Ausgangsstand bestätigen
-- [ ] aktuelles Mill-Artefakt und 100 Rohhände auswerten
-- [ ] Zyklusvertrag mit Erfolg, Invarianten, Abbruch und Zeitschätzung festhalten
+- Token-Plan: Aristocrats
+- Benchmark 90
+- Keepability/Planfähigkeit 73/73 %
+- Strategy Commitment 100 %
+- Engine Density 64 %
+- Goldfish bis Zug 5: 66 % Killrate
+- Matchups: 0 % Burn, 2 % Artifacts, 100 % Mill
+- Deckliste enthält starke Food-/Artefakt- und breite Sacrifice-Anteile
 
-### Mill-Zyklus 1 – Definition und Kapazität
+### Token-Zyklus 1 – Paketdiagnose
 
-- [ ] zentrale Definition einer Gegner-Mill-Quelle erstellen
-- [ ] feste, skalierende und wiederholbare Mill-Quellen unterscheiden
-- [ ] legalen Dimir-Kartenpool nach der zentralen Definition auswerten
-- [ ] maximal verfügbare Kopien und Kurvenverteilung dokumentieren
-- [ ] Mindestdichte erst nach der Kapazitätsanalyse festlegen
+- [x] zentrale Oracle-Text-Signale für Kreatur-Token-Material definieren
+- [x] echte wiederholbare Creature-Sacrifice-Outlets von One-Shot-Sacrifice trennen
+- [x] Other-Creature-Death-/Drain-Payoffs von Self-Death-Value trennen
+- [x] gezielte Regressionstests vorbereiten
+- [x] Workflow-Diagnose `tokens/token-packages.json` vorbereiten
+- [ ] CI, Laufzeit und Artefakt vollständig auswerten
 
-### Mill-Zyklus 2 – Komposition und Optimierer
+### Entscheidung nach Zyklus 1
 
-- [ ] dedizierte Mill-Quellenrolle oder gleichwertigen maschinenlesbaren Marker einführen
-- [ ] Mill-Profil erhält kapazitätsgeprüfte Mindestdichte
-- [ ] Optimierer darf die Startdichte nicht unterschreiten
-- [ ] Eligibility bevorzugt echte Millquellen, ohne Schutz und Interaktion vollständig auszuschließen
-- [ ] gezielte Regressionstests für `target player mills`, `target opponent mills`, wiederholbare und skalierende Quellen
+Falls breite Rollen das Paket überzählen:
 
-### Mill-Zyklus 3 – Gemeinsame Messdefinition
+- [ ] Planerkennung nutzt echte Creature-Material-/Outlet-/Death-Payoff-Signale
+- [ ] Aristocrats-Profil erhält kapazitätsgeprüfte Paketminimums
+- [ ] Strategy Commitment verwendet dieselbe Paketdefinition
+- [ ] Opening-Hand-Klassifikation verwendet dieselbe Paketdefinition
+- [ ] Builderausgabe und 100 Hände gegen Run 54 vergleichen
 
-- [ ] Benchmark `mill_sources` nutzt dieselbe zentrale Definition
-- [ ] Opening-Hand-Analyse nutzt dieselbe Definition
-- [ ] Fast-Validator schreibt Mill-Quellen-Diagnose mit Namen, Mengen und Kategorie
-- [ ] genau 100 Hände mit Seed `1701`
-- [ ] Vergleich gegen Run 50
+Falls ein vollständiger echter Kern belegt ist:
 
-### Fachliche Erfolgskriterien
+- [ ] keine künstlichen Paketminimums setzen
+- [ ] Token-Combat-/Matchupmodell gegen Burn und Artifacts diagnostizieren
+- [ ] echte Boardentwicklung, Opfersequenzen und Payoff-Schaden getrennt messen
 
-- [ ] legales 60/15-Deck
-- [ ] finales Mainboard besitzt eine belegte Mill-Quellendichte
-- [ ] Benchmark meldet nicht länger 0 Mill-Quellen
-- [ ] Planfähigkeit steigt über 0 %
-- [ ] fehlender Enabler-/Payoff-Zugang sinkt deutlich unter 72 %
-- [ ] Keepability und Manafehler verschlechtern sich nicht unbegründet
-- [ ] Deck bleibt nicht überwiegend Draw/Counter/Removal ohne Wincondition
-- [ ] Mill gegen Tokens und mindestens einen Control-/Engine-Plan geprüft
+### Fachliche Token-Erfolgskriterien
 
-### Fallback innerhalb des Entwicklungsbudgets, maximal 20 Minuten
+- [ ] legales 60/15-Deck und Fast-Lauf unter zehn Minuten
+- [ ] Go Wide, Value Tokens und Aristocrats werden anhand echter Planbestandteile unterschieden
+- [ ] Food/Clue/Blood/Treasure zählen nicht automatisch als Kreatur-Token-Material
+- [ ] One-Shot-Sacrifice zählt nicht automatisch als Outlet
+- [ ] Self-Death-Value zählt nicht automatisch als Death-Payoff
+- [ ] Commitment und 100-Hand-Klassifikation verwenden dieselbe Definition wie der Builder
+- [ ] Matchupverbesserung wird nicht nur aus einem höheren Benchmark abgeleitet
+- [ ] Burn, Artifacts, Control und Mill zeigen keine unbegründeten Regressionen
 
-Falls der legale Kartenpool die geplante Mindestdichte nicht ermöglicht:
+## Pausierter Mill-Rückkehrpunkt
 
-- [ ] exakte Poolkapazität dokumentieren
-- [ ] keinen künstlichen Mindestwert setzen
-- [ ] Eligibility-, Oracle-Text- oder Rollenweitergabe als isolierte Ursache bestimmen
-- [ ] produktiven No-Change-Zyklus mit genau einem nächsten Schritt abschließen
+Der Mill-Messzyklus ist grün abgeschlossen. Nach dem aktuellen Token-Fokus bleibt folgender nächste Mill-Schritt offen:
 
-### Abschlussreserve, mindestens 30 Minuten
-
-- [ ] letzter Workflow vollständig beendet
-- [ ] Jobs und Logs einmal vollständig gelesen
-- [ ] Artefakt einmal heruntergeladen und maschinenlesbar ausgewertet
-- [ ] Evidenztabelle vorher/nachher/Delta/Interpretation/Confidence
-- [ ] Logbook, Roadmap und KGB-Entscheidung aktualisiert
-- [ ] kein neuer Zyklus mehr begonnen
+- [ ] mindestens 18 Mill-Quellen, Ziel 20
+- [ ] mindestens 6 echte wiederholbare Engines, Ziel 8
+- [ ] Komposition und Optimierer erhalten diese kapazitätsgeprüfte Dichte
+- [ ] Benchmark und Opening-Hand-Analyse bleiben auf der zentralen Definition
 
 ## Danach
 
-1. relevante Control-Antworten aus konkreten Gegnerdecks ableiten
-2. Token-Subarchetypen als separate Referenzdecks benchmarken
-3. Strategy Commitment und Engine Density archetypenübergreifend abstrahieren
-4. Finish Density allgemein modellieren
-5. belastbare Regression-Baseline statt `baseline: none`
-6. erste vollständig qualifizierte v2-KGB
-7. Meta- und Club-Benchmark
+1. Token-Subarchetypen als separate Referenzdecks benchmarken
+2. relevante Control-Antworten aus konkreten Gegnerdecks ableiten
+3. Mill-Kompositionsschritt abschließen
+4. Strategy Commitment und Engine Density archetypenübergreifend abstrahieren
+5. Finish Density allgemein modellieren
+6. belastbare Regression-Baseline statt `baseline: none`
+7. erste vollständig qualifizierte v2-KGB
+8. Meta- und Club-Benchmark
 
-## Definition of Done für den ersten Mill-Meilenstein
+## Definition of Done für den Token-Diagnosemeilenstein
 
-- zentrale Mill-Quellen-Definition in Builder, Optimierer, Benchmark und Handanalyse identisch
-- Kartenpoolkapazität dokumentiert
-- keine Grenzwertsenkung nur zum Bestehen
+- zentrale Token-Paketdefinition ist getestet
+- reales Deck und legaler Mono-White-Pool werden maschinenlesbar ausgewertet
 - vollständige Testsuite und Fast-Validierung grün
 - Fast-Lauf unter zehn Minuten
 - fünf Referenzarchetypen und sechs priorisierte Matchups
 - genau 100 Hände je Deck mit dokumentiertem Seed
-- Mill-Metriken gegen Run 50 verglichen
-- keine unbegründete Regression bei Burn, Tokens, Artifacts oder Control
-- genau ein weiterer priorisierter Schritt dokumentiert
+- Token-Metriken gegen Run 54 verglichen
+- keine unbegründete Regression bei Burn, Artifacts, Control oder Mill
+- KGB-Entscheidung und genau ein weiterer priorisierter Schritt dokumentiert
