@@ -57,6 +57,22 @@ COUNTERSPELL = SideboardRule(
     ("counter target spell", "counter target noncreature spell"),
     priority=3.5,
 )
+TOKEN_PROTECTION = SideboardRule(
+    "protection",
+    (
+        "creatures you control gain indestructible",
+        "creatures you control gain hexproof",
+        "you gain 2 life",
+        "you gain 3 life",
+        "you gain 4 life",
+        "you gain 5 life",
+        "you gain life equal to",
+        "prevent all damage",
+        "prevent the next",
+    ),
+    roles=("protection",),
+    priority=6,
+)
 
 
 RULES: dict[str, tuple[SideboardRule, ...]] = {
@@ -71,17 +87,9 @@ RULES: dict[str, tuple[SideboardRule, ...]] = {
         CREATURE_SWEEPER,
     ),
     "tokens": (
+        TOKEN_PROTECTION,
         ARTIFACT_ENCHANTMENT_ANSWER,
         GRAVEYARD_HATE,
-        SideboardRule(
-            "protection",
-            (
-                "creatures you control gain indestructible",
-                "creatures you control gain hexproof",
-            ),
-            roles=("protection",),
-            priority=4,
-        ),
         CREATURE_SWEEPER,
     ),
     "artifacts": (
@@ -164,18 +172,11 @@ def _matching_rules(
     knowledge: CardKnowledge,
     rules: tuple[SideboardRule, ...],
 ) -> tuple[SideboardRule, ...]:
-    """Prefer exact Oracle-text categories over broad functional roles.
-
-    Broad roles such as ``removal`` are useful only as a fallback. Once a card
-    matches a specific rule phrase, adding role-only categories can turn
-    graveyard hate into anti-aggro removal or produce similar false positives.
-    """
+    """Prefer exact Oracle-text categories over broad functional roles."""
 
     text = knowledge.analysis.oracle_text.lower()
     phrase_matches = tuple(
-        rule
-        for rule in rules
-        if any(phrase in text for phrase in rule.phrases)
+        rule for rule in rules if any(phrase in text for phrase in rule.phrases)
     )
     if phrase_matches:
         return phrase_matches
@@ -244,19 +245,13 @@ class SideboardBuilder:
                 DeckEntry(
                     name=knowledge.analysis.name,
                     quantity=quantity,
-                    mana_cost=parse_mana_cost(
-                        str(knowledge.card.get("mana_cost", ""))
-                    ),
+                    mana_cost=parse_mana_cost(str(knowledge.card.get("mana_cost", ""))),
                     mana_value=knowledge.analysis.mana_value,
                     type_line=knowledge.analysis.type_line,
                     score=score,
-                    reasons=tuple(
-                        f"Sideboard: {reason}" for reason in reasons
-                    ),
+                    reasons=tuple(f"Sideboard: {reason}" for reason in reasons),
                     roles=tuple(
-                        sorted(
-                            {str(role) for role in knowledge.roles}.union(markers)
-                        )
+                        sorted({str(role) for role in knowledge.roles}.union(markers))
                     ),
                 )
             )

@@ -8,67 +8,34 @@ Eine vollständig qualifizierte v2-KGB existiert noch nicht. `baseline: none` be
 
 ## Token Go Wide
 
-### Stabiler Bestätigungsstand
+### Stabiler Deckstand bis Run 74
 
-- Commit `2bd921c1688c72d4b5949bd0f93cb65a9d1d206c` beseitigte den Full-Pool-Test-Leak.
-- Workflow `30824779542`, Run 69, wurde dreimal vollständig auf demselben Head ausgeführt.
-- alle drei Durchgänge grün; jeweils 301 Tests, Fast-Validierung und Token-Diagnose erfolgreich.
+- Full-Pool-Test-Leak in Commit `2bd921c1688c72d4b5949bd0f93cb65a9d1d206c` behoben und dreimal grün bestätigt.
+- `{C}`-Castability korrigiert; 23-Land-Experiment verworfen.
+- Immediate-Maker-Scoring erhöhte den Token-Benchmark auf 98.
+- Commit `9b4cdb57e92f3753d434fef8c522ed0885aaacd0` entfernte reine Opfer-Outlets.
+- Run 74: 306 Tests grün, Benchmarks 83/98/90/85/80, 35 Maker, 30 sofortige Maker, 22 Multi-Maker, 7 Anthems, 0 Outlets.
+- Opening Hands 77/77 %, Goldfish 24,94 Schaden, 66 % Killrate, Board 9,10.
 
-### Castability-Zyklus – Run 70
+### Lethal-Race-Modell – Runs 75–76
 
-- Commit `94c8430835222b63b40a8b8465ef35df17787526`.
-- Workflow `30827014882`, erfolgreich; Artefakt `8861386466`.
-- `Warping Wail` wurde wegen nicht unterstützter `{C}`-Kosten ausgeschlossen und durch `Parting Gust` ersetzt.
-- Benchmarks 83/96/90/85/80 für Burn/Tokens/Artifacts/Control/Mill.
-- KGB: keine neue KGB.
+- Run 75 mit harter Kappung bei 20 Schaden wurde verworfen: 307 Tests bestanden, 1 Rundungstest rot; Tokens–Artifacts kippte 76→0 %, Control–Burn 0→100 %.
+- Korrekturcommit `08dbde0f261c9d2d1a780c1805a93753fc268f9c` verwendet linearen Fortschritt bis lethal und logarithmisch abnehmenden Nutzen darüber sowie einen kleinen Killratenbonus.
+- Workflow `Token Go Wide – Lethal Race Diminishing Returns`, ID `30833119876`, Run 76, erfolgreich; Artefakt `8863859222`.
+- 308 Tests, Fast und Token-Diagnose grün; Deck-Hash unverändert `133e45be5a4ca94dc6bb8dddeb6c811db9e2889ced915f54c018898441668815`.
+- Benchmarks und Deckmetriken unverändert; Matchups Tokens gegen Burn/Artifacts/Mill nun 0/64/100 %, Control gegen Burn/Tokens/Artifacts 0/20/50 %.
+- Interpretation: archetypenübergreifende Skala bleibt stabil; Burn bleibt ein realer offener Engpass.
+- KGB: keine neue KGB, da `baseline: none` fortbesteht.
 
-### 23-Land-Experiment und Rollback – Runs 71–72
+## Aktueller Zyklus – Burn Stabilization Sideboard
 
-- 23 Länder verbesserten Schaden und Killrate nur minimal, verschlechterten aber Benchmark, Mana-Screw und Early Play deutlich.
-- Commit `b5e1b0bd1def26a9ce62b24fe0a5ffe12a765e1b` stellte 24 Plains wieder her.
-- Workflow `30828260897`, Run 72, erfolgreich; Artefakt `8861942756`.
-- KGB: keine neue KGB.
-
-### Immediate-Maker-Scoring – Run 73
-
-- Commit `0ad7852eeba872eedf2eb77dc7d69e5e9cd273ee`.
-- Workflow `Token Go Wide – Immediate Maker Scoring`, ID `30830854931`, erfolgreich; Artefakt `8862990345`.
-- 305 Tests, Fast und Diagnose grün.
-- Benchmarks: Burn 83, Tokens 98, Artifacts 90, Control 85, Mill 80; keine Regression.
-- Produktionsmodi: sofortige Maker 24→30, bedingte 3→0, aktivierte 3→0, Death 6→3.
-- Token-Material 36→33; zwei Kopien `Witch's Oven` wurden als reine Opfer-Outlets gewählt.
-- KGB: keine neue KGB.
-
-### Remove Sacrifice Outlets – Run 74
-
-- Commit `9b4cdb57e92f3753d434fef8c522ed0885aaacd0`.
-- Workflow `Token Go Wide – Remove Sacrifice Outlets`, ID `30831547747`, erfolgreich; Artefakt `8863249096`.
-- 306 Tests, Fast und Diagnose grün.
-- Benchmarks stabil bei 83/98/90/85/80; reine Opfer-Outlets 2→0.
-- echtes Token-Material 33→35, sofortige Maker 30, Multi-Maker 22, Anthems 7.
-- Opening Hands 77 % Keepability und Planfähigkeit; Goldfish 24,94 Schaden, 66 % Killrate, Board 9,10.
-- Matchups Tokens gegen Burn/Artifacts/Mill: 0/76/100 %.
-- KGB: keine neue KGB; `baseline: none` besteht fort.
-
-### Lethal-Race-Hartkappung – Run 75
-
-- Commit `c197679978ae117ddc93846a895f0773f3634df0`.
-- Workflow `Token Go Wide – Lethal Race Calibration`, ID `30832425136`, fehlgeschlagen; Artefakt `8863583892`.
-- Fast-Validierung und Token-Diagnose grün; 307 Tests bestanden, 1 Test scheiterte an einer Monte-Carlo-Rundungsdifferenz von 0,001.
-- Die wichtigere fachliche Auswertung widerlegte die harte Kappung: Tokens–Artifacts fiel 76→0 %, Control–Burn sprang 0→100 %.
-- Ursache: Eine vollständige Deckelung bei 20 zerstört die zwischen den Archetypen kalibrierte Fortschrittsskala.
-- Entscheidung: harte Kappung verwerfen und zuerst korrigieren; kein weiterer Optimierungszyklus vor grünem Gate.
-- KGB: keine neue KGB.
-
-## Aktueller Zyklus – Lethal Race Diminishing Returns
-
-- **Ursache:** Lineare Überkill-Wertung ist zu dominant, harte Kappung ist jedoch zu aggressiv und verzerrt archetypenübergreifende Vergleiche.
-- **Hypothese:** Schaden bis 20 bleibt linear; darüber erhält zusätzlicher Schaden nur logarithmischen Nutzen. Die Killrate liefert einen kleinen Konsistenzbonus. Dadurch bleibt Tokens gegen Artifacts vergleichbar, während Burns Überkill nicht mehr doppelt zählt.
-- **Änderungen:** logarithmisch abnehmender Überkill-Nutzen; robuster Unit-Test direkt auf der Fortschrittsfunktion; Workflow-Run-Name `Token Go Wide – Lethal Race Diminishing Returns`.
-- **Erfolg:** vollständige Testsuite, Fast und Diagnose grün; Deck-Hash und Benchmarks unverändert; Tokens–Artifacts bleibt konkurrenzfähig; Control–Burn und Tokens–Burn zeigen plausible Richtung ohne harte 0/100-Artefakte allein durch Skalierung.
-- **Rollback:** wenn die archetypenübergreifenden Matchups erneut kippen oder der Burn-Überkill weiterhin praktisch linear wirkt.
-- **KGB-Entscheidung vor Push:** keine neue KGB; Diagnosekalibrierung bei fortbestehendem `baseline: none`.
+- **Ursache:** Das Token-Sideboard aus Run 76 enthält ausschließlich fünf Pakete mit Artifact-/Enchantment-Antworten und keine Burn-Stabilisierung.
+- **Hypothese:** Präzise Lebensgewinn- und Schadensverhinderungsphrasen innerhalb der bestehenden maschinenlesbaren Schutzkategorie priorisieren legale Mono-White-Burn-Antworten, ohne Mainboard oder andere Archetypen zu verändern.
+- **Änderungen:** Token-Schutzregel um Lebensgewinn und Schadensverhinderung ergänzt und höher priorisiert; Regressionstest für die Auswahl; Workflow `Token Go Wide – Burn Stabilization Sideboard`.
+- **Erfolg:** vollständige Testsuite, Fast und Diagnose grün; Mainboard-Hash und Benchmarks unverändert; mindestens eine Schutz-/Burn-Stabilisierungsoption im 15-Karten-Sideboard; Artifact-/Enchantment-Antworten bleiben vorhanden.
+- **Rollback:** wenn das Sideboard einseitig in Lebensgewinn kippt, keine relevante Karte gefunden wird oder Mainboard-/Benchmarkwerte unerwartet ändern.
+- **KGB-Entscheidung vor Push:** keine neue KGB; Sideboardverbesserung bei fortbestehendem `baseline: none`.
 
 ## Nächster ausführbarer Schritt
 
-Den Diminishing-Returns-Fix veröffentlichen und Workflow, Tests, Deck-Hash, Matchups sowie Artefakte vollständig auswerten. Erst danach weiter optimieren.
+Burn-Stabilisierungsregel veröffentlichen und Sideboardliste, BO3-Pläne, vollständige Tests, Benchmarks und Artefakte auswerten. Erst nach grünem Gate weiterarbeiten.

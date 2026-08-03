@@ -1,5 +1,5 @@
 name: Global Calibration PR
-run-name: Token Go Wide – Lethal Race Diminishing Returns
+run-name: Token Go Wide – Burn Stabilization Sideboard
 
 on:
   pull_request:
@@ -54,10 +54,8 @@ jobs:
         run: |
           python - <<'PY'
           import sys
-
           sys.path.insert(0, "scripts")
           import ci_global_validation as validation
-
           validation._prepare_database()
           PY
 
@@ -75,28 +73,21 @@ jobs:
         run: |
           set +e
           mkdir -p artifacts/global
-
           python -m pytest 2>&1 | tee artifacts/global/pytest.log
           TEST_STATUS=${PIPESTATUS[0]}
-
           if [ "$VALIDATION_MODE" = "full" ]; then
             VALIDATION_SCRIPT=scripts/ci_global_validation_v2.py
           else
             VALIDATION_SCRIPT=scripts/ci_global_validation_fast.py
           fi
           echo "Validation mode: $VALIDATION_MODE ($VALIDATION_SCRIPT)"
-
-          THUN_REUSE_CARD_DATABASE=1 python "$VALIDATION_SCRIPT" 2>&1 \
-            | tee artifacts/global/global-validation.log
+          THUN_REUSE_CARD_DATABASE=1 python "$VALIDATION_SCRIPT" 2>&1 | tee artifacts/global/global-validation.log
           VALIDATION_STATUS=${PIPESTATUS[0]}
-
           TOKEN_DIAGNOSTICS_STATUS=0
           if [ "$VALIDATION_STATUS" -eq 0 ]; then
-            THUN_REUSE_CARD_DATABASE=1 python scripts/ci_token_diagnostics.py 2>&1 \
-              | tee artifacts/global/token-diagnostics.log
+            THUN_REUSE_CARD_DATABASE=1 python scripts/ci_token_diagnostics.py 2>&1 | tee artifacts/global/token-diagnostics.log
             TOKEN_DIAGNOSTICS_STATUS=${PIPESTATUS[0]}
           fi
-
           {
             echo "TEST_STATUS=${TEST_STATUS}"
             echo "VALIDATION_STATUS=${VALIDATION_STATUS}"
@@ -123,9 +114,7 @@ jobs:
             exit 1
           fi
           source artifacts/global/status.env
-          if [ "$TEST_STATUS" -ne 0 ] \
-            || [ "$VALIDATION_STATUS" -ne 0 ] \
-            || [ "${TOKEN_DIAGNOSTICS_STATUS:-1}" -ne 0 ]; then
+          if [ "$TEST_STATUS" -ne 0 ] || [ "$VALIDATION_STATUS" -ne 0 ] || [ "${TOKEN_DIAGNOSTICS_STATUS:-1}" -ne 0 ]; then
             echo "Global validation failed: tests=$TEST_STATUS validation=$VALIDATION_STATUS token_diagnostics=${TOKEN_DIAGNOSTICS_STATUS:-missing} mode=${VALIDATION_MODE:-unknown}"
             exit 1
           fi

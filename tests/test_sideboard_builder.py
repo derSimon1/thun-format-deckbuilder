@@ -57,9 +57,6 @@ def test_sideboard_encodes_graveyard_hate_as_machine_readable_role():
 
 
 def test_specific_phrase_prevents_generic_role_double_classification():
-    # Register the Control sideboard rule set. The broad removal role is
-    # deliberately injected to reproduce the class of false positive that
-    # phrase-first matching must prevent.
     ControlStrategy()
     graveyard_card_with_broad_role = k(
         "Graveyard Device",
@@ -109,3 +106,20 @@ def test_sideboard_excludes_off_color_cards():
         colors=("R",),
     )
     assert result == ()
+
+
+def test_token_sideboard_prioritizes_burn_stabilization():
+    cards = (
+        k("Life Cleric", "When this enters, you gain 2 life.", colors=("W",)),
+        k("Disenchant", "Destroy target artifact or enchantment.", colors=("W",)),
+    )
+    result = SideboardBuilder().build(
+        cards,
+        GeneratedDeck((), 24),
+        archetype="tokens",
+        colors=("W",),
+        size=3,
+    )
+    assert result[0].name == "Life Cleric"
+    assert result[0].reasons == ("Sideboard: protection",)
+    assert "sideboard_protection" in result[0].roles
