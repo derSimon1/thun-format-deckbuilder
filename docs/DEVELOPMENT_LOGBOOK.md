@@ -77,6 +77,11 @@ Eine vollständig qualifizierte v2-KGB existiert noch nicht. `baseline: none` be
 - **KGB-Entscheidung vor Push:** keine neue KGB. Der frühere stabile Kern wird
   reproduzierbar wiederhergestellt, aber `baseline: none` bleibt bis zur
   ausdrücklichen v2-Qualifikation bestehen.
+- **CI-Abschluss:** Commit `8e3aa9a62250a1974a5f1b4f2ac475d93a5cd038`,
+  Workflow `Token Go Wide – Mana Strain`, Run `30856406328`, Job
+  `91828344196`, 325 Tests in 47,38 s, Gesamtlauf 3:59, Artefakt
+  `global-calibration-pr-85` (ID `8872721218`); 447 Logzeilen und 49
+  Artefaktdateien geprüft, keine fachliche Regression.
 
 ## Nächster ausführbarer Schritt
 
