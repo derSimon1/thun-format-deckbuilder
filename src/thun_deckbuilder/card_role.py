@@ -16,6 +16,8 @@ class CardRole(StrEnum):
     BURN = "burn"
     CARD_DRAW = "card_draw"
     FINISHER = "finisher"
+    MILL_ENGINE = "mill_engine"
+    MILL_SOURCE = "mill_source"
     PROTECTION = "protection"
     RAMP = "ramp"
     REMOVAL = "removal"

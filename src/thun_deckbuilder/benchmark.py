@@ -12,6 +12,7 @@ class SignatureTarget:
     target: int
     type_phrases: tuple[str, ...] = ()
     reason_phrases: tuple[str, ...] = ()
+    roles: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -64,11 +65,7 @@ BENCHMARKS: dict[str, BenchmarkProfile] = {
         curve_targets=(("1", 10), ("2", 14), ("3", 9), ("4+", 5)),
         lands=22,
         signature_targets=(
-            SignatureTarget(
-                "artifact_cards",
-                28,
-                type_phrases=("artifact",),
-            ),
+            SignatureTarget("artifact_cards", 28, type_phrases=("artifact",)),
             SignatureTarget(
                 "artifact_payoffs",
                 6,
@@ -113,11 +110,7 @@ BENCHMARKS: dict[str, BenchmarkProfile] = {
         curve_targets=(("1", 3), ("2", 8), ("3", 11), ("4+", 14)),
         lands=24,
         signature_targets=(
-            SignatureTarget(
-                "shrine_cards",
-                15,
-                type_phrases=("shrine",),
-            ),
+            SignatureTarget("shrine_cards", 15, type_phrases=("shrine",)),
             SignatureTarget(
                 "fixing_sources",
                 7,
@@ -132,17 +125,7 @@ BENCHMARKS: dict[str, BenchmarkProfile] = {
         curve_targets=(("1", 6), ("2", 12), ("3", 10), ("4+", 8)),
         lands=24,
         signature_targets=(
-            SignatureTarget(
-                "mill_sources",
-                20,
-                reason_phrases=(
-                    "Millt ",
-                    "Wiederholbares Mill",
-                    "Skalierendes Mill",
-                    "Sehr effizientes Mill",
-                    "Effizientes Mill",
-                ),
-            ),
+            SignatureTarget("mill_sources", 20, roles=("mill_source",)),
         ),
     ),
 }
@@ -175,12 +158,15 @@ def _curve_band(mana_value: float) -> str:
 def _matches_signature(entry, target: SignatureTarget) -> bool:
     type_line = entry.type_line.lower()
     reasons = tuple(reason.lower() for reason in entry.reasons)
-    return any(
-        phrase.lower() in type_line for phrase in target.type_phrases
-    ) or any(
-        phrase.lower() in reason
-        for phrase in target.reason_phrases
-        for reason in reasons
+    roles = {str(role) for role in entry.roles}
+    return (
+        any(phrase.lower() in type_line for phrase in target.type_phrases)
+        or any(
+            phrase.lower() in reason
+            for phrase in target.reason_phrases
+            for reason in reasons
+        )
+        or bool(roles.intersection(target.roles))
     )
 
 

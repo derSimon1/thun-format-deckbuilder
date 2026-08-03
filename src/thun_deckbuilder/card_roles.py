@@ -4,6 +4,7 @@ import re
 
 from thun_deckbuilder.card_analyzer import CardAnalysis
 from thun_deckbuilder.card_role import CardRole
+from thun_deckbuilder.mill_signals import analyze_mill
 
 
 def detect_roles(analysis: CardAnalysis) -> frozenset[CardRole]:
@@ -42,6 +43,12 @@ def detect_roles(analysis: CardAnalysis) -> frozenset[CardRole]:
         )
     ):
         roles.add(CardRole.BURN)
+
+    mill = analyze_mill(analysis)
+    if mill.source:
+        roles.add(CardRole.MILL_SOURCE)
+    if mill.engine:
+        roles.add(CardRole.MILL_ENGINE)
 
     anthem_patterns = (
         "creatures you control get +",

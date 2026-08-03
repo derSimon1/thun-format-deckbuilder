@@ -6,7 +6,10 @@ from itertools import combinations as all_combinations
 
 import ci_global_validation_v2 as v2
 
+from thun_deckbuilder.card_analyzer import analyze_card
+from thun_deckbuilder.card_database import CardDatabase
 from thun_deckbuilder.matchup_simulator import MatchupSimulator
+from thun_deckbuilder.mill_signals import analyze_mill
 from thun_deckbuilder.opening_hand_simulator import OpeningHandSimulator
 from thun_deckbuilder.tournament_simulator import (
     BestOfThreeReport,
@@ -152,13 +155,73 @@ def _sideboard_diagnostics(deck) -> dict[str, object]:
     }
 
 
+def _mill_deck_diagnostics(deck) -> dict[str, object]:
+    cards = [
+        {
+            "name": entry.name,
+            "quantity": entry.quantity,
+            "mana_value": entry.mana_value,
+            "engine": "mill_engine" in entry.roles,
+            "roles": list(entry.roles),
+            "reasons": list(entry.reasons),
+        }
+        for entry in deck.mainboard
+        if "mill_source" in entry.roles
+    ]
+    return {
+        "source_copies": sum(card["quantity"] for card in cards),
+        "engine_copies": sum(
+            card["quantity"] for card in cards if card["engine"]
+        ),
+        "distinct_sources": len(cards),
+        "cards": cards,
+    }
+
+
+def _write_mill_capacity() -> None:
+    cards: list[dict[str, object]] = []
+    allowed_colors = {"U", "B"}
+    with CardDatabase(validation.DATABASE_FILE) as database:
+        for card in database.get_all_legal_cards():
+            analysis = analyze_card(card)
+            if analysis.is_land:
+                continue
+            if not set(analysis.color_identity).issubset(allowed_colors):
+                continue
+            signals = analyze_mill(analysis)
+            if not signals.source:
+                continue
+            cards.append(
+                {
+                    "name": analysis.name,
+                    "mana_value": analysis.mana_value,
+                    "color_identity": list(analysis.color_identity),
+                    "engine": signals.engine,
+                    "scalable": signals.scalable,
+                    "fixed_cards": signals.fixed_cards,
+                }
+            )
+    cards.sort(key=lambda item: (item["mana_value"], item["name"]))
+    payload = {
+        "distinct_sources": len(cards),
+        "maximum_copies_at_three": len(cards) * 3,
+        "engine_sources": sum(bool(card["engine"]) for card in cards),
+        "scalable_sources": sum(bool(card["scalable"]) for card in cards),
+        "cards": cards,
+    }
+    (validation.ARTIFACT_DIR / "mill-capacity.json").write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+
+
 def validate_archetype_with_plan_hands(
     database,
     archetype,
     colors,
     legal_cards,
 ):
-    """Add reproducible hand and sideboard diagnostics to fast artifacts."""
+    """Add reproducible hand, sideboard and Mill diagnostics."""
 
     deck, metrics = _BASE_VALIDATE_ARCHETYPE(
         database,
@@ -190,6 +253,13 @@ def validate_archetype_with_plan_hands(
         json.dumps(sideboard_payload, indent=2, sort_keys=True) + "\n",
         encoding="utf-8",
     )
+    if archetype == "mill":
+        mill_payload = _mill_deck_diagnostics(deck)
+        metrics["mill_diagnostics"] = mill_payload
+        (prefix / "mill-sources.json").write_text(
+            json.dumps(mill_payload, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
     (prefix / f"{archetype}-validation.json").write_text(
         json.dumps(metrics, indent=2, sort_keys=True) + "\n",
         encoding="utf-8",
@@ -211,6 +281,13 @@ def validate_archetype_with_plan_hands(
             f"cards:{sideboard_payload['total_cards']} "
             f"entries:{len(sideboard_payload['cards'])}\n"
         )
+        if archetype == "mill":
+            output.write(
+                "mill_diagnostics="
+                f"sources:{metrics['mill_diagnostics']['source_copies']} "
+                f"engines:{metrics['mill_diagnostics']['engine_copies']} "
+                f"distinct:{metrics['mill_diagnostics']['distinct_sources']}\n"
+            )
     return deck, metrics
 
 
@@ -221,6 +298,7 @@ def main() -> None:
     validation.BestOfThreeSimulator = FastBestOfThreeSimulator
     validation._validate_archetype = validate_archetype_with_plan_hands
     validation.main()
+    _write_mill_capacity()
 
 
 if __name__ == "__main__":
