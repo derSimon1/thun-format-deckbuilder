@@ -69,7 +69,7 @@ def _arena_import(deck) -> str:
     if deck.mana_base is not None:
         mainboard_lines.extend(
             f"{allocation.quantity} {allocation.land_name}"
-            for allocation in deck.mana_base.allocations
+            for allocation in deck.mana_base.lands
             if allocation.quantity
         )
     elif deck.lands:
