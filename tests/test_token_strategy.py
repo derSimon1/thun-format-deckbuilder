@@ -45,7 +45,7 @@ def test_full_pool_selects_and_fulfils_reliable_go_wide_package():
     role_counts: dict[str, int] = {}
     for entry in deck.mainboard:
         for role in set(entry.roles):
-            normalized_role = str(role)
+            normalized_role = getattr(role, "value", str(role))
             role_counts[normalized_role] = (
                 role_counts.get(normalized_role, 0) + entry.quantity
             )
