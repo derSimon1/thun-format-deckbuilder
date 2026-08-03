@@ -18,8 +18,9 @@
 - [x] Token-Karten planabhängig bewerten
 - [x] planspezifische weiche Dichteziele
 - [ ] kapazitätsgeprüfte harte Mindestdichten für planprägende Rollen
-- [ ] Rollen-Mischmasch im Qualitätsbericht negativ bewerten
-- [ ] Strategy-Commitment-Bericht mit Plan, Dichten und Warnungen
+- [x] Rollen-Mischmasch im Strategy-Commitment-Bericht negativ bewerten
+- [x] Strategy-Commitment-Bericht mit Plan, Dichten und Warnungen
+- [ ] Strategy Commitment in den allgemeinen Qualitätsbericht integrieren
 - [ ] Engine Density modellieren
 - [ ] Finish Density modellieren
 - [ ] klare Wincondition-Erkennung
@@ -43,10 +44,10 @@
 
 ## Aktuelle Priorität
 
-1. CI-Stabilität der planspezifischen Token-Profile bestätigen
-2. Strategy-Commitment-Bericht und negative Bewertung von Rollen-Mischmasch
-3. Engine Density
-4. Finish Density
+1. PR-Validierung und Artefaktprüfung des Strategy-Commitment-Berichts
+2. Engine Density
+3. Finish Density
+4. Strategy Commitment in den allgemeinen Qualitätsbericht integrieren
 5. belastbare Vergleichsbaseline
 6. Meta-Benchmark
 
@@ -56,6 +57,7 @@
 - Mindestens drei gezielte Regressionstests decken Subarchetyp-Kohärenz ab.
 - Der gewählte Token-Plan ist im erzeugten Profil und Bericht sichtbar.
 - Planprägende Rollen werden als Dichteziele bevorzugt, ohne sparse Kartenpools zu blockieren.
+- Rollen-Mischmasch erzeugt eine explizite Warnung und einen nachvollziehbaren Commitment-Score.
 - Harte Mindestdichten werden erst nach Kapazitätsprüfung aktiviert.
 - Fast-Validierung bleibt unter zehn Minuten.
 - Keine unbegründete Regression bei Burn, Artifacts, Shrines oder Mill.

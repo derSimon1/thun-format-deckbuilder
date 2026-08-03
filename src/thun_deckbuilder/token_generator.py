@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from thun_deckbuilder.deck_generator import GeneratedDeck
 from thun_deckbuilder.knowledge_base import CardKnowledge, KnowledgeBase
+from thun_deckbuilder.strategy_commitment import evaluate_token_commitment
 from thun_deckbuilder.token_plan import TokenPlan, detect_token_plan
 from thun_deckbuilder.token_profiles import token_profile_for_plan
 from thun_deckbuilder.token_scoring import score_token_card
@@ -37,9 +38,6 @@ def _is_reasonable_token_card(knowledge: CardKnowledge) -> bool:
     if any(phrase in text for phrase in excluded_phrases):
         return False
 
-    # Cards that merely mention or interact with tokens are not automatically
-    # suitable. A token card must create material, reward a token board, provide
-    # supported utility, or be a real sacrifice piece for an Aristocrats plan.
     creates_tokens = "create" in text and "token" in text
     token_payoff = "token_payoff" in knowledge.roles
     utility = bool(
@@ -101,9 +99,7 @@ def generate_token_deck(
     from thun_deckbuilder.composition_engine import build_composition
 
     eligible_cards = tuple(
-        card
-        for card in knowledge_base.cards
-        if _is_reasonable_token_card(card)
+        card for card in knowledge_base.cards if _is_reasonable_token_card(card)
     )
     plan_report = detect_token_plan(eligible_cards)
     profile = token_profile_for_plan(plan_report.plan, lands=lands)
@@ -115,6 +111,8 @@ def generate_token_deck(
         eligible=_is_reasonable_token_card,
         score_card=lambda card: _score_for_composition(card, plan_report.plan),
     )
+    commitment = evaluate_token_commitment(result.entries, plan_report.plan)
+
     from thun_deckbuilder.mana_base_builder import ManaBaseBuilder
     from thun_deckbuilder.deck_quality import with_mana_quality
 
@@ -123,13 +121,20 @@ def generate_token_deck(
         total_lands=profile.lands,
         deck_size=deck_size,
     )
+    commitment_summary = (
+        f"Strategy Commitment {plan_report.plan.label}: "
+        f"{commitment.commitment_score:.0%}; "
+        f"committed={commitment.committed_cards}, "
+        f"conflicting={commitment.conflicting_cards}, "
+        f"neutral={commitment.neutral_cards}"
+    )
     return GeneratedDeck(
         mainboard=result.entries,
         lands=profile.lands,
         profile_name=profile.name,
         requested_roles=result.requested_roles,
         fulfilled_roles=result.fulfilled_roles,
-        warnings=result.warnings,
+        warnings=(commitment_summary, *result.warnings, *commitment.warnings),
         selections=result.selections,
         quality_report=with_mana_quality(result.quality_report, mana.quality),
         mana_base=mana.distribution,

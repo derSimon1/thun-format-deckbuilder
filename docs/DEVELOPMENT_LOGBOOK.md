@@ -26,13 +26,6 @@ Nächster Schritt
 
 Archetypenübergreifende Kalibrierung für Burn, Tokens, Artifacts, Shrines und Mill; Tokens als priorisierter Problemfall.
 
-### Ausgangslage
-
-- Branch: `codex/global-deckbuilder-calibration`
-- PR: #14
-- Izzet-Prowess-Arbeiten in PR #13 getrennt
-- Fast-Validierung mit fünf Archetypen und drei Token-Matchups
-
 ### Bestätigte Verbesserungen
 
 - robuste Scryfall-Bulkdatenbank und Cache
@@ -59,32 +52,15 @@ Archetypenübergreifende Kalibrierung für Burn, Tokens, Artifacts, Shrines und 
 5. Ein klarer Token-Subarchetyp muss vor der Kartenauswahl feststehen.
 6. Strategy Commitment, Engine Density und Finish Density sind zentrale nächste Bausteine.
 
-### Offene Fragen
-
-- Wie werden Go Wide, Value Tokens und Aristocrats zuverlässig erkannt?
-- Wie wird verhindert, dass der Builder Rollen-Mischmasch als hohe Qualität bewertet?
-- Wie werden Engine- und Finisher-Dichten archetypenübergreifend modelliert?
-- Wie werden Referenzdecks und Thun-Meta-Benchmarks sauber integriert?
-
-### Nächster Schritt
-
-Token-Subarchetyp-Erkennung und planabhängige Rollenpriorisierung implementieren und mit gezielten Regressionstests absichern.
-
 ---
 
 ## 2026-08-02/03 – Nachtkalibrierung fehlgeschlagen
-
-### Ziel
-
-Mehrstündige autonome Kalibrierung mit vier ChatGPT-Aufgaben pro Stunde und einem GitHub-Zeitplan-Workflow.
 
 ### Tatsächliches Ergebnis
 
 - über Nacht liefen nur drei sichtbare GitHub-Workflows
 - auf PR #14 entstand kein neuer Code- oder Testcommit
-- der Branch-Head blieb auf `3fa9b104d8e38a260ab1240df97bec206a17a1df`
 - die Aufgaben wiederholten überwiegend Status- und Sicherheitsprüfungen
-- die geplante Dokumentationsstruktur wurde in der Nacht nicht erstellt
 - der Abschlussjob deaktivierte den automatischen Zeitplan planmäßig
 
 ### Ursachenanalyse
@@ -94,7 +70,6 @@ Mehrstündige autonome Kalibrierung mit vier ChatGPT-Aufgaben pro Stunde und ein
 3. Die ChatGPT-Aufgaben waren zu defensiv und stoppten häufig ohne Commit.
 4. Es fehlte eine Fortschrittsregel gegen wiederholte No-Change-Zyklen.
 5. Es fehlte ein persistentes Logbuch mit exaktem Stopgrund und nächster ausführbarer Hypothese.
-6. Die Anzahl der Workflowläufe wurde mit Produktivität verwechselt.
 
 ### Zentrale Entscheidung
 
@@ -102,7 +77,7 @@ GitHub Actions ist künftig Validator, nicht Entwicklungsagent. Ein produktiver 
 
 ### Confidence
 
-Hoch. Branch-Historie, PR-Head und Workflowverhalten bestätigen die Diagnose.
+Hoch.
 
 ---
 
@@ -117,7 +92,6 @@ Den Token-Hauptplan vor der Kartenauswahl explizit bestimmen und die Kartenbewer
 - Ausgangs-Head: `ec0748574e639d3902f356b2872d0ebe6c730b57`
 - PR #14 offen, mergeable und Draft
 - letzter PR-Workflow: Run `30784219809`, erfolgreich
-- bisherige Token-Bewertung war faktisch auf Go Wide zugeschnitten und konnte Value Tokens oder Aristocrats nicht als eigenständige Pläne behandeln
 
 ### Hypothese
 
@@ -126,33 +100,21 @@ Eine konservative, kartenname-unabhängige Signalerkennung kann Go Wide, Value T
 ### Änderungen
 
 1. Neuer Token-Plan-Detektor mit strukturierten Signalen, Supportwerten und Confidence.
-2. Planabhängige Token-Kartenbewertung für Go Wide, Value Tokens und Aristocrats.
-3. Token-Generator bestimmt den Plan vor der Auswahl, lässt echte Sacrifice-Pieces zu und schreibt den gewählten Plan in den Profilnamen.
-4. Vier gezielte Regressionstests für alle drei Pläne und planfremde Kartenpakete.
+2. Planabhängige Token-Kartenbewertung.
+3. Token-Generator bestimmt den Plan vor der Auswahl.
+4. Vier gezielte Regressionstests.
 
 ### Validierung
 
-- isolierte zielgerichtete Tests der neuen Plan- und Scoringlogik: 4 bestanden
-- Syntaxprüfung der neuen und geänderten Module: bestanden
 - vollständiger PR-Workflow: Run `30785153345`, erfolgreich
 
 ### Ergebnis
 
-Der Hauptplan wird vor der Komposition gewählt und die Bewertung bevorzugt Karten, die diesen Plan unterstützen. Der bisherige Standard bleibt bei Gleichstand konservativ Go Wide.
+Der Hauptplan wird vor der Komposition gewählt und die Bewertung bevorzugt Karten, die diesen Plan unterstützen.
 
 ### Confidence
 
 Hoch für die technische Integration, mittel für die spielerische Kalibrierung bis zum externen Pioneer- und Club-Benchmark.
-
-### Lessons Learned
-
-- Subarchetypen lassen sich über wiederverwendbare Oracle-Text- und Rollensignale modellieren, ohne konkrete Kartenlisten fest zu codieren.
-- Ein einzelnes Sacrifice- oder Draw-Wording darf nicht den gesamten Plan umleiten; deshalb werden Pläne ohne mehrere Supportsignale abgewertet.
-- Planerkennung allein reicht nicht: Die Rollenminimums des Deckprofils müssen den gewählten Plan ebenfalls ausdrücken.
-
-### Nächster Schritt
-
-Planspezifische Rollenminimums ergänzen und danach Strategy Commitment explizit berichten.
 
 ---
 
@@ -160,43 +122,30 @@ Planspezifische Rollenminimums ergänzen und danach Strategy Commitment explizit
 
 ### Ziel
 
-Den erkannten Token-Hauptplan in verbindliche Rollenminimums übersetzen, damit die Komposition nicht trotz korrekter Planerkennung in ein Rollen-Mischmasch zurückfällt.
+Den erkannten Token-Hauptplan in verbindliche Rollenminimums übersetzen.
 
 ### Ausgangslage
 
 - Ausgangs-Head: `5a1db8d9d83bca0ff639d72d9c8884551097cdfc`
-- PR #14 offen und mergeable
 - vorheriger Workflow: Run `30785153345`, erfolgreich
-- alle drei Token-Pläne verwendeten weiterhin das unveränderte Go-Wide-Profil
 
 ### Hypothese
 
-Konservative planspezifische Mindestdichten erzwingen die definierenden Pakete, ohne die 36 Zauberslots vollständig zu blockieren: Go Wide braucht Maker plus Board-Payoffs, Value Tokens braucht Maker plus Card Advantage, Aristocrats braucht Fodder plus Sacrifice-Outlets plus Death-Payoffs.
-
-### Änderungen
-
-1. Zentrale `token_profile_for_plan`-Funktion mit unterschiedlichen Rollenminimums und Dichtezielen.
-2. Token-Generator verwendet das ausgewählte Planprofil direkt bei der Komposition.
-3. Vier Regressionstests sichern definierende Mindestpakete und abweichende Landzahlen.
-
-### Validierung
-
-- statische Plausibilitätsprüfung: Mindestpakete bleiben unter den verfügbaren Zauberslots
-- vollständiger PR-Workflow: Run `30786201567`, fehlgeschlagen
-- Tests: 228 bestanden, 5 fehlgeschlagen
-- Fast-Validierung selbst: fünf Archetypen bestanden, drei Matchups geprüft, keine Regressionen
+Konservative planspezifische Mindestdichten erzwingen die definierenden Pakete.
 
 ### Ergebnis
 
-Die Hypothese war in ihrer harten Form zu optimistisch. Der Kompositionsalgorithmus reservierte die letzten vier Slots für eine planprägende Pflichtrolle, konnte aber im Testkartenpool keine weiteren geeigneten Kopien mehr wählen. Statische Summen der Mindestwerte reichen nicht aus, um die tatsächliche Rollenkapazität eines legalen Kartenpools zu beweisen.
+Die harte Form war zu optimistisch. Der Kompositionsalgorithmus reservierte die letzten vier Slots für eine planprägende Pflichtrolle, konnte aber im Testkartenpool keine weiteren geeigneten Kopien mehr wählen.
+
+### Validierung
+
+- Workflow Run `30786201567`, fehlgeschlagen
+- 228 Tests bestanden, 5 fehlgeschlagen
+- Fast-Validierung selbst grün, fünf Archetypen und drei Matchups, keine Regressionen
 
 ### Confidence
 
-Hoch. Fünf reproduzierbare Tests endeten mit demselben Fehler `Not enough eligible cards; 4 spell slots remain`.
-
-### Nächster Schritt
-
-Harte Mindestwerte für seltene planprägende Rollen bis zu einer kapazitätsbewussten Vorprüfung zurücknehmen; die unterschiedlichen Zielwerte als weiche Präferenz beibehalten.
+Hoch.
 
 ---
 
@@ -204,46 +153,85 @@ Harte Mindestwerte für seltene planprägende Rollen bis zu einer kapazitätsbew
 
 ### Ziel
 
-Die durch Zyklus 2 verursachte rote CI beheben, ohne die Token-Plan-Erkennung oder planspezifische Scoringlogik zurückzunehmen.
+Die durch Zyklus 2 verursachte rote CI beheben, ohne Planerkennung oder Scoring zurückzunehmen.
 
 ### Ausgangslage
 
 - Ausgangs-Head: `85b146f22118e43cc01c1cc7080c9c66b5be4b15`
-- PR #14 offen, mergeable und Draft
 - Workflow Run `30786201567`: fehlgeschlagen
-- belegte Ursache: harte Mindestwerte für `token_payoff`, `card_draw` oder `sacrifice` können den iterativen Composer in kleinen beziehungsweise sparse Kartenpools blockieren
-- Fast-Validierung war inhaltlich grün; ausschließlich die vollständige Testsuite war rot
 
 ### Hypothese
 
-Wenn nur der breit verfügbare `token_maker` als harte Mindestrolle bleibt und die planprägenden Supportrollen weiterhin unterschiedliche Zielwerte besitzen, bleibt die Planpräferenz erhalten, während der Composer nicht mehr wegen fehlender seltener Rollen deadlockt.
+Wenn nur `token_maker` als harte Mindestrolle bleibt und planprägende Supportrollen weiche Zielwerte besitzen, bleibt die Planpräferenz erhalten, ohne sparse Kartenpools zu blockieren.
 
 ### Änderungen
 
-1. Planprägende Supportrollen werden von harten Mindestwerten auf planspezifische weiche Zielwerte umgestellt.
-2. Profiltests unterscheiden nun ausdrücklich zwischen harten Maker-Mindestwerten und weichen Supportzielen.
-3. Roadmap und Logbuch dokumentieren die notwendige spätere kapazitätsbewusste Mindestprüfung.
+1. Planprägende Supportrollen auf weiche Ziele umgestellt.
+2. Profiltests unterscheiden harte Maker-Mindestwerte von weichen Supportzielen.
+3. Roadmap dokumentiert die spätere kapazitätsbewusste Mindestprüfung.
 
 ### Validierung
 
-- Vorabbeleg: fünf identische Composer-Fehler in Run `30786201567`; 228 übrige Tests bestanden
-- Fast-Validierung des fehlerhaften Heads: Burn 83, Tokens 90, Artifacts 90, Shrines 78, Mill 78; drei Matchups; null Regressionen
-- Zielvalidierung: vollständige Testsuite und Fast-Validierung durch den nachfolgenden PR-Workflow
+- Workflow Run `30786777460`, erfolgreich
+- vollständige Testsuite und Fast-Validierung grün
 
 ### Ergebnis
 
-Der Fix beseitigt die konkret belegte, neu eingeführte harte Reservierungsbedingung, ohne Planerkennung, Scoring oder weiche Dichteziele zu entfernen.
+Die konkret belegte Deadlock-Ursache wurde beseitigt, ohne Planerkennung, Scoring oder weiche Dichteziele zu entfernen.
 
 ### Confidence
 
-Hoch für die identifizierte CI-Ursache; endgültige Bestätigung nach grünem PR-Workflow.
-
-### Offene Risiken
-
-- Weiche Ziele garantieren allein noch kein Strategy Commitment.
-- Harte Mindestwerte für seltene Rollen benötigen vor Aktivierung eine Kapazitätsprüfung gegen den tatsächlich legalen Pool und das Kopienlimit.
-- Ein expliziter Strategy-Commitment-Bericht bleibt erforderlich, um Zielerfüllung und Mischmasch sichtbar zu machen.
+Hoch.
 
 ### Nächster Schritt
 
-Neuen PR-Workflow prüfen. Bei grüner CI als nächsten produktiven Schritt Strategy-Commitment-Bericht und Mischmasch-Warnungen implementieren.
+Strategy-Commitment-Bericht und Mischmasch-Warnungen implementieren.
+
+---
+
+## 2026-08-03 – Zwei-Stunden-Kalibrierung, Zyklus 4: Strategy-Commitment-Bericht
+
+### Ziel
+
+Den gewählten Token-Plan nach der Komposition messbar machen und reines Rollen-Mischmasch explizit warnen, ohne neutrale Interaktion zu bestrafen.
+
+### Ausgangslage
+
+- Ausgangs-Head: `c500e3dced798403f1bc4bddd30464748bc47285`
+- PR #14 offen, mergeable und Draft
+- Workflow Run `30786777460`: erfolgreich
+- Planerkennung und weiche Dichteziele waren vorhanden, aber das erzeugte Deck meldete keine nachvollziehbare Planbindung.
+
+### Hypothese
+
+Ein kopiengewichteter Commitment-Bericht kann planprägende, planfremde und neutrale Karten unterscheiden. Utility wie Removal und Protection muss neutral bleiben; ausschließlich planfremde Rollen ohne gleichzeitig planprägende Rolle sollen den Score senken.
+
+### Änderungen
+
+1. Neuer `StrategyCommitmentReport` mit Plan, Commitment-Score, Rollen-Dichten, committed/conflicting/neutral Kopien und Warnungen.
+2. Token-Generator berechnet den Bericht nach der Komposition und schreibt eine kompakte Zusammenfassung sowie Mischmasch-Warnungen in die Deckwarnungen.
+3. Drei Regressionstests sichern Go-Wide-Neutralität, planfremde Sacrifice-Pakete und Aristocrats-Rollenbindung.
+
+### Validierung
+
+- Quellcodeänderung und Tests in einem zusammenhängenden Commit vorbereitet
+- vollständige Testsuite und Fast-Validierung: durch den neuen PR-Workflow zu verifizieren
+- fünf Archetypen, drei Token-Matchups und BO3-Berichte: durch Workflow-Artefakte zu prüfen
+
+### Vorläufiges Ergebnis
+
+Strategy Commitment ist erstmals als explizites, kopiengewichtetes Ergebnis sichtbar. Ein hoher Rollenwert allein genügt damit nicht mehr: planfremde Rollen erzeugen eine Warnung und senken den Score, während neutrale Interaktion nicht negativ bewertet wird.
+
+### Confidence
+
+Mittel bis zur grünen vollständigen CI und Artefaktprüfung.
+
+### Offene Risiken
+
+- Der Bericht verwendet Rollen statt vollständiger Oracle-Signale; hybride Karten können deshalb zugleich committed und potenziell widersprüchlich sein.
+- Der Score wird zunächst als Warn- und Berichtssignal verwendet und noch nicht in den allgemeinen Quality Score eingerechnet.
+- Engine Density und Finish Density bleiben separat zu modellieren.
+
+### Nächster Schritt
+
+PR-Workflow und Token-Artefakte prüfen. Danach Engine Density als nächstes unabhängiges Qualitätsmerkmal modellieren.
