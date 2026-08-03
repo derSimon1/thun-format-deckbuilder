@@ -55,14 +55,20 @@ def _threat_density(deck: GeneratedDeck) -> float:
     return count / max(1, sum(item.quantity for item in deck.mainboard))
 
 
-def _lethal_race_progress(report: GoldfishReport) -> float:
-    """Measure damage-plan pressure with diminishing returns after lethal.
+def _burn_stabilization_density(deck: GeneratedDeck) -> float:
+    """Count only explicit postboard protection cards, not broad lifegain guesses."""
 
-    Damage up to 20 remains linear because it describes reaching lethal. Excess
-    damage still signals speed and reach, but receives only logarithmic credit
-    so a 40-damage goldfish does not count as twice as successful as a lethal
-    20-damage goldfish. Kill rate contributes a smaller consistency bonus.
-    """
+    total = max(1, sum(item.quantity for item in deck.mainboard))
+    count = sum(
+        entry.quantity
+        for entry in deck.mainboard
+        if "sideboard_protection" in entry.roles
+    )
+    return count / total
+
+
+def _lethal_race_progress(report: GoldfishReport) -> float:
+    """Measure damage pressure with diminishing returns after lethal."""
 
     ratio = max(0.0, report.average_damage / 20.0)
     if ratio <= 1.0:
@@ -86,13 +92,7 @@ def _base_progress(report: GoldfishReport, archetype: str) -> float:
 
 
 class MatchupSimulator:
-    """Compare two generated decks under simplified mutual interaction.
-
-    This is intentionally a deterministic heuristic model rather than a full
-    Magic rules engine. Goldfish progress supplies each deck's proactive plan;
-    interaction density suppresses opposing progress and threat density helps a
-    deck recover from disruption.
-    """
+    """Compare two generated decks under simplified mutual interaction."""
 
     def simulate(
         self,
@@ -117,6 +117,8 @@ class MatchupSimulator:
         interaction_b = _interaction_density(deck_b)
         threats_a = _threat_density(deck_a)
         threats_b = _threat_density(deck_b)
+        stabilization_a = _burn_stabilization_density(deck_a) if archetype_b == "burn" else 0.0
+        stabilization_b = _burn_stabilization_density(deck_b) if archetype_a == "burn" else 0.0
 
         rng = random.Random(seed)
         wins_a = wins_b = draws = 0
@@ -126,8 +128,20 @@ class MatchupSimulator:
             variance_b = rng.uniform(-0.12, 0.12)
             resilience_a = threats_a * 0.18
             resilience_b = threats_b * 0.18
-            score_a = progress_a + resilience_a - interaction_b * 0.65 + variance_a
-            score_b = progress_b + resilience_b - interaction_a * 0.65 + variance_b
+            score_a = (
+                progress_a
+                + resilience_a
+                + stabilization_a * 3.0
+                - interaction_b * 0.65
+                + variance_a
+            )
+            score_b = (
+                progress_b
+                + resilience_b
+                + stabilization_b * 3.0
+                - interaction_a * 0.65
+                + variance_b
+            )
             total_a += score_a
             total_b += score_b
             margin = score_a - score_b

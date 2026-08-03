@@ -1,5 +1,5 @@
 name: Global Calibration PR
-run-name: Token Go Wide – Burn Stabilization Sideboard
+run-name: Token Go Wide – Postboard Burn Stabilization
 
 on:
   pull_request:
@@ -11,9 +11,7 @@ on:
         required: false
         default: fast
         type: choice
-        options:
-          - fast
-          - full
+        options: [fast, full]
 
 permissions:
   contents: read
@@ -29,23 +27,19 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
-
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
           cache: pip
-
       - name: Restore card database cache
         id: cards-cache
         uses: actions/cache/restore@v4
         with:
           path: data/cards.db
           key: global-pr-cards-db-v3-${{ runner.os }}-${{ hashFiles('config/thun.toml') }}
-
       - name: Install project
         run: python -m pip install -e ".[dev]"
-
       - name: Prepare card database on cache miss
         if: steps.cards-cache.outputs.cache-hit != 'true'
         shell: bash
@@ -58,14 +52,12 @@ jobs:
           import ci_global_validation as validation
           validation._prepare_database()
           PY
-
       - name: Save card database cache immediately
         if: steps.cards-cache.outputs.cache-hit != 'true' && hashFiles('data/cards.db') != ''
         uses: actions/cache/save@v4
         with:
           path: data/cards.db
           key: global-pr-cards-db-v3-${{ runner.os }}-${{ hashFiles('config/thun.toml') }}
-
       - name: Run tests and global validation
         shell: bash
         env:
@@ -75,11 +67,7 @@ jobs:
           mkdir -p artifacts/global
           python -m pytest 2>&1 | tee artifacts/global/pytest.log
           TEST_STATUS=${PIPESTATUS[0]}
-          if [ "$VALIDATION_MODE" = "full" ]; then
-            VALIDATION_SCRIPT=scripts/ci_global_validation_v2.py
-          else
-            VALIDATION_SCRIPT=scripts/ci_global_validation_fast.py
-          fi
+          if [ "$VALIDATION_MODE" = "full" ]; then VALIDATION_SCRIPT=scripts/ci_global_validation_v2.py; else VALIDATION_SCRIPT=scripts/ci_global_validation_fast.py; fi
           echo "Validation mode: $VALIDATION_MODE ($VALIDATION_SCRIPT)"
           THUN_REUSE_CARD_DATABASE=1 python "$VALIDATION_SCRIPT" 2>&1 | tee artifacts/global/global-validation.log
           VALIDATION_STATUS=${PIPESTATUS[0]}
@@ -88,14 +76,8 @@ jobs:
             THUN_REUSE_CARD_DATABASE=1 python scripts/ci_token_diagnostics.py 2>&1 | tee artifacts/global/token-diagnostics.log
             TOKEN_DIAGNOSTICS_STATUS=${PIPESTATUS[0]}
           fi
-          {
-            echo "TEST_STATUS=${TEST_STATUS}"
-            echo "VALIDATION_STATUS=${VALIDATION_STATUS}"
-            echo "TOKEN_DIAGNOSTICS_STATUS=${TOKEN_DIAGNOSTICS_STATUS}"
-            echo "VALIDATION_MODE=${VALIDATION_MODE}"
-          } > artifacts/global/status.env
+          printf 'TEST_STATUS=%s\nVALIDATION_STATUS=%s\nTOKEN_DIAGNOSTICS_STATUS=%s\nVALIDATION_MODE=%s\n' "$TEST_STATUS" "$VALIDATION_STATUS" "$TOKEN_DIAGNOSTICS_STATUS" "$VALIDATION_MODE" > artifacts/global/status.env
           exit 0
-
       - name: Upload global validation artifacts
         if: always()
         uses: actions/upload-artifact@v4
@@ -104,15 +86,11 @@ jobs:
           path: artifacts/global/
           retention-days: 7
           if-no-files-found: error
-
       - name: Enforce results
         if: always()
         shell: bash
         run: |
-          if [ ! -f artifacts/global/status.env ]; then
-            echo "Global validation did not produce a status file."
-            exit 1
-          fi
+          test -f artifacts/global/status.env || { echo "Global validation did not produce a status file."; exit 1; }
           source artifacts/global/status.env
           if [ "$TEST_STATUS" -ne 0 ] || [ "$VALIDATION_STATUS" -ne 0 ] || [ "${TOKEN_DIAGNOSTICS_STATUS:-1}" -ne 0 ]; then
             echo "Global validation failed: tests=$TEST_STATUS validation=$VALIDATION_STATUS token_diagnostics=${TOKEN_DIAGNOSTICS_STATUS:-missing} mode=${VALIDATION_MODE:-unknown}"

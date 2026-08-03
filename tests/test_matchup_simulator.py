@@ -1,3 +1,5 @@
+from dataclasses import replace
+
 from thun_deckbuilder.deck_generator import DeckEntry, GeneratedDeck, ManaCost
 from thun_deckbuilder.goldfish_simulator import GoldfishReport
 from thun_deckbuilder.matchup_simulator import MatchupSimulator, _lethal_race_progress
@@ -116,3 +118,38 @@ def test_kill_consistency_breaks_equal_average_damage_tie():
         archetype_b="tokens",
     )
     assert result.wins_a_pct > result.wins_b_pct
+
+
+def test_explicit_postboard_protection_improves_burn_matchup_only():
+    plain = deck(
+        (entry("Token Maker", 12, 2, "Creature"),),
+        report("tokens", damage=18.0, kill_rate=40),
+    )
+    stabilized = replace(
+        plain,
+        mainboard=(
+            entry("Token Maker", 9, 2, "Creature"),
+            entry(
+                "Life Cleric",
+                3,
+                2,
+                "Creature",
+                roles=("sideboard_protection",),
+            ),
+        ),
+    )
+    burn = deck(
+        (entry("Bolt", 12, 1, "Instant", roles=("burn",)),),
+        report("burn", damage=24.0, kill_rate=75),
+    )
+    artifacts = deck(
+        (entry("Relic", 12, 1, "Artifact"),),
+        report("artifacts", artifacts=5.0),
+    )
+    simulator = MatchupSimulator()
+    burn_plain = simulator.simulate(plain, burn, archetype_a="tokens", archetype_b="burn")
+    burn_stabilized = simulator.simulate(stabilized, burn, archetype_a="tokens", archetype_b="burn")
+    artifacts_plain = simulator.simulate(plain, artifacts, archetype_a="tokens", archetype_b="artifacts")
+    artifacts_stabilized = simulator.simulate(stabilized, artifacts, archetype_a="tokens", archetype_b="artifacts")
+    assert burn_stabilized.wins_a_pct > burn_plain.wins_a_pct
+    assert artifacts_stabilized.average_score_a == artifacts_plain.average_score_a
