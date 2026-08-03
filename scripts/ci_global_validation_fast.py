@@ -1,11 +1,13 @@
 from __future__ import annotations
 
+import json
 import random
 from itertools import combinations as all_combinations
 
 import ci_global_validation as validation
 
 from thun_deckbuilder.matchup_simulator import MatchupSimulator
+from thun_deckbuilder.opening_hand_simulator import OpeningHandSimulator
 from thun_deckbuilder.tournament_simulator import (
     BestOfThreeReport,
     BestOfThreeSimulator,
@@ -16,11 +18,14 @@ from thun_deckbuilder.tournament_simulator import (
 FAST_MATCHUP_SAMPLES = 120
 FAST_BO3_SAMPLES = 40
 FAST_SIDEBOARD_SWAPS = 3
+OPENING_HAND_PLAN_SAMPLES = 100
+OPENING_HAND_PLAN_SEED = 1701
 FAST_MATCHUP_PAIRS = (
     ("tokens", "burn"),
     ("tokens", "artifacts"),
     ("tokens", "mill"),
 )
+_BASE_VALIDATE_ARCHETYPE = validation._validate_archetype
 
 
 def fast_combinations(archetypes, size: int):
@@ -126,10 +131,61 @@ class FastBestOfThreeSimulator(BestOfThreeSimulator):
         )
 
 
+def validate_archetype_with_plan_hands(
+    database,
+    archetype,
+    colors,
+    legal_cards,
+):
+    """Add exactly 100 reproducible plan-aware raw hands to fast artifacts."""
+
+    deck, metrics = _BASE_VALIDATE_ARCHETYPE(
+        database,
+        archetype,
+        colors,
+        legal_cards,
+    )
+    report = OpeningHandSimulator().simulate_plan(
+        deck,
+        archetype=archetype,
+        samples=OPENING_HAND_PLAN_SAMPLES,
+        seed=OPENING_HAND_PLAN_SEED,
+    )
+    payload = validation._jsonable(report)
+    summary = dict(payload)
+    summary.pop("hands", None)
+    metrics["opening_hand_plan"] = summary
+
+    prefix = validation.ARTIFACT_DIR / archetype
+    raw_path = prefix / f"{archetype}-opening-hands.json"
+    raw_path.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    (prefix / f"{archetype}-validation.json").write_text(
+        json.dumps(metrics, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    with (prefix / f"{archetype}-validation.txt").open(
+        "a",
+        encoding="utf-8",
+    ) as output:
+        output.write(
+            "opening_hand_plan="
+            f"seed:{report.seed} samples:{report.samples} "
+            f"keepability:{report.keepability_pct} "
+            f"plan_capable:{report.plan_capable_pct} "
+            f"early_t2:{report.early_play_turn_two_pct} "
+            f"early_t3:{report.early_play_turn_three_pct}\n"
+        )
+    return deck, metrics
+
+
 def main() -> None:
     validation.combinations = fast_combinations
     validation.MatchupSimulator = FastMatchupSimulator
     validation.BestOfThreeSimulator = FastBestOfThreeSimulator
+    validation._validate_archetype = validate_archetype_with_plan_hands
     validation.main()
 
 

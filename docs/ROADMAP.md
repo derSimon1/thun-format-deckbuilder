@@ -11,15 +11,17 @@ Die fünf verbindlichen Referenzarchetypen sind Burn, Tokens, Artifacts, Control
 ## Phase 1 – Stabilität und Messbarkeit
 
 - [x] globale Fast-Validierung
-- [x] fünf repräsentative Archetypen
+- [x] fünf repräsentative Archetypen im Legacy-Validator
 - [x] Datenbankcache
 - [x] Opening-Hand-, Goldfish-, Matchup- und BO3-Berichte
 - [x] grundlegende Regressionserkennung
 - [x] Token-Combat realistischer modellieren
-- [ ] letzte belastbare Known Good Baseline eindeutig bestimmen und dokumentieren
-- [ ] reproduzierbaren `OpeningHandPlanReport` mit genau 100 gespeicherten Händen je Referenzdeck implementieren
-- [ ] Keepability, Early Play und Planfähigkeit getrennt ausweisen
-- [ ] eindeutiges Zyklusprotokoll mit Stopgrund, KGB-Entscheidung und Run-ID
+- [x] v2-Bootstrap-Vergleichsstand mit Commit, Workflow und Einschränkungen dokumentieren
+- [x] reproduzierbaren `OpeningHandPlanReport` mit genau 100 gespeicherten Händen je im Fast-Lauf verwendeter Deckliste implementieren
+- [x] Keepability, Early Play und Planfähigkeit getrennt ausweisen
+- [ ] Fast-Report-Artefakte und Laufzeit im neuen PR-Workflow verifizieren
+- [ ] vollständigen Validator auf Burn, Tokens, Artifacts, Control und Mill umstellen
+- [ ] erste vollständig qualifizierte v2-KGB erzeugen
 
 ## Phase 2 – Strategy Commitment und Engines
 
@@ -38,7 +40,7 @@ Die fünf verbindlichen Referenzarchetypen sind Burn, Tokens, Artifacts, Control
 
 ## Phase 3 – Control und allgemeine Interaktion
 
-- [ ] Control als fünften allgemeinen Referenzarchetyp vollständig integrieren
+- [ ] Control als fünften allgemeinen Referenzarchetyp im Builder und Validator integrieren
 - [ ] matchupabhängige relevante Interaktion statt bloßer Antwortenzahl messen
 - [ ] Stabilisierung bis Zug 4 oder 5 bewerten
 - [ ] Kartenvorteil nach früher Interaktion messen
@@ -65,23 +67,24 @@ Die fünf verbindlichen Referenzarchetypen sind Burn, Tokens, Artifacts, Control
 
 ## Aktuelle Priorität
 
-1. letzte belastbare Known Good Baseline bestimmen und dokumentieren
-2. `OpeningHandPlanReport` mit genau 100 reproduzierbaren Händen je Referenzdeck implementieren
-3. Token-Subarchetypen Go Wide, Value Tokens und Aristocrats anhand planfähiger Hände vergleichen
-4. Control als Referenzarchetyp integrieren
-5. Strategy Commitment in den allgemeinen Qualitätsbericht integrieren
-6. Engine Density archetypenübergreifend abstrahieren
+1. neuen Workflow, 100-Hand-Rohdaten und Laufzeit des `OpeningHandPlanReport` verifizieren
+2. Control als fünften Builder- und Validator-Archetyp integrieren und Shrines aus der Pflichtvalidierung entfernen
+3. Burn, Tokens, Artifacts, Control und Mill mit denselben 100-Hand-Metriken vergleichen
+4. Go Wide, Value Tokens und Aristocrats anhand planfähiger Hände getrennt benchmarken
+5. erste vollständig qualifizierte v2-KGB dokumentieren
+6. Strategy Commitment und Engine Density archetypenübergreifend abstrahieren
 7. Finish Density und klare Wincondition-Erkennung
 8. Meta-Benchmark
 
 ## Definition of Done für den nächsten Zyklus
 
-- Ausgangs-KGB ist mit Commit-SHA und Evidenz dokumentiert.
-- Genau 100 reproduzierbare Hände je verwendeter Referenzdeckliste werden mit Seed gespeichert.
-- Burn, Tokens, Artifacts, Control und Mill werden verglichen.
-- Go Wide, Value Tokens und Aristocrats werden getrennt ausgewertet.
-- Keepability, Early Play und Planfähigkeit bleiben getrennt.
-- Vollständige Testsuite und Fast-Validierung sind erfolgreich.
-- Fast-Validierung bleibt unter zehn Minuten.
-- Keine unbegründete Regression gegenüber der KGB.
-- Logbook enthält Reflexion, Confidence, KGB-Entscheidung und genau einen nächsten Schritt.
+- aktueller PR-Workflow und dessen Rohdatenartefakte sind vollständig ausgewertet
+- Control kann als legaler 60/15-Referenzarchetyp erzeugt werden
+- Pflichtvalidierung verwendet Burn, Tokens, Artifacts, Control und Mill; Shrines ist daraus entfernt
+- Control-Hände unterscheiden relevante frühe Interaktion, Stabilisierung, Kartenvorteil und Wincondition-Zugang
+- Control wird gegen Aggro, Tokens und einen Nichtkreaturen-/Engine-Plan geprüft
+- genau 100 reproduzierbare Hände je verwendeter Referenzdeckliste werden mit Seed gespeichert
+- vollständige Testsuite und Fast-Validierung sind erfolgreich
+- Fast-Validierung bleibt unter zehn Minuten
+- keine unbegründete Regression gegenüber dem v2-Bootstrap-Vergleichsstand
+- Logbook enthält Reflexion, Confidence, KGB-Entscheidung und genau einen nächsten Schritt

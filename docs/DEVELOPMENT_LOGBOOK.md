@@ -31,13 +31,25 @@ Noch nicht vorhanden.
 
 Eine v2.0-KGB benötigt vollständige Tests, Fast-Validierung, erfolgreiche CI, Vergleich von Burn, Tokens, Artifacts, Control und Mill, die verbindliche 100-Starthände-Auswertung, dokumentierte Reflexion und keine unbegründeten Regressionen.
 
-### Legacy-KGB-Kandidat
+### v2-Bootstrap-Vergleichsstand
+
+- Commit: `31f6c1e053976435481c07ab2098430bc2a45471`
+- Workflow: Run `30792560878`, erfolgreich
+- Tests: 240 bestanden in 30,10 Sekunden
+- Fast-Validierung: erfolgreich; Gesamtzeit des Test-/Fast-Schritts ungefähr 3 Minuten 36 Sekunden
+- Benchmarks: Burn 83, Tokens 90, Artifacts 90, Shrines 78, Mill 78
+- bestehende Opening-Hand-Werte nach Mulligan: Burn 96 %, Tokens 94 %, Artifacts 96 %, Shrines 94 %, Mill 96 %
+- Einschränkungen: Validator enthält Shrines statt Control; Vergleich meldet `baseline: none`; keine gespeicherten planabhängigen 100 Rohhände
+- Status: technischer und quantitativer Bootstrap-Vergleichsstand, keine voll qualifizierte v2-KGB
+- Confidence: hoch für Reproduzierbarkeit des technischen Stands, niedrig bis mittel für globale spielerische Aussagekraft
+
+### Historischer Legacy-KGB-Kandidat
 
 - Commit: `3fa9b104d8e38a260ab1240df97bec206a17a1df`
 - Workflow: Run `30762470833`, erfolgreich
 - Evidenz: 225 Tests bestanden; Fast-Lauf ungefähr drei Minuten; Opening-Hand-, Goldfish-, Matchup- und BO3-Berichte vorhanden
 - Einschränkung: damalige Referenzgruppe enthielt Shrines statt Control; die v2.0-Starthand- und KGB-Regeln waren noch nicht vollständig umgesetzt
-- Status: nur Vergleichs- und Wiederanlaufpunkt, keine voll qualifizierte v2.0-KGB
+- Status: historischer Wiederanlaufpunkt, keine voll qualifizierte v2.0-KGB
 - Confidence: mittel
 
 ## Historische Lessons Learned
@@ -110,36 +122,111 @@ Eine konsistente, selbstbeschreibende Arbeitsgrundlage für mehrstündige Kalibr
 ### Validierung
 
 - Run `30791354202` bestätigt den unmittelbar vorherigen Dokumentationsstand als technisch grün
-- die nachfolgenden Konsistenz-Commits müssen durch ihren eigenen PR-Workflow verifiziert werden
-- grüne CI allein würde weiterhin keine v2.0-KGB begründen
+- Run `30792560878` bestätigt Head `31f6c1e053976435481c07ab2098430bc2a45471` mit 240 Tests und Fast-Validierung als technisch grün
+- grüne CI allein begründet weiterhin keine v2.0-KGB
 
 ### Ergebnis
 
-Die Repository-Dokumente verwenden nun dieselbe Referenzgruppe und dasselbe Mehrstunden-, Baseline- und Wiederanlaufmodell.
+Die Repository-Dokumente verwenden dieselbe Referenzgruppe und dasselbe Mehrstunden-, Baseline- und Wiederanlaufmodell. Die ausführbare Validierung ist jedoch noch nicht vollständig angepasst und verwendet weiterhin Shrines statt Control.
 
 ### KGB-Entscheidung
 
 Keine neue v2.0-KGB.
 
-Grund: Der dokumentierte grüne Stand enthält noch keinen vollständigen v2.0-Qualitätsvergleich mit Control und keine gespeicherten 100-Starthände je Referenzdeck.
-
 ### Confidence
 
-Hoch für die Prozesskonsistenz; mittel für den Legacy-KGB-Kandidaten; keine Aussage über eine neue spielerische Baseline.
-
-### Kritische Reflexion
-
-- Annahme, die falsch sein könnte: Der Legacy-KGB-Kandidat ist möglicherweise spielerisch schwächer als ein späterer Commit, obwohl er der letzte breit dokumentierte grüne Stand ist.
-- Alternative Erklärung: Fehlende v2.0-KGB bedeutet primär eine Messlücke und nicht zwingend fehlende Deckqualität.
-- Overfitting-Risiko: Die neuen Regeln könnten zunächst mehr Reporting als tatsächliche spielerische Verbesserung erzeugen.
-- Datenlücke: Control ist noch nicht vollständig als Builder- und Matchup-Referenz integriert.
-- Unentdeckte Regression: Bestehende Validierungsskripte können weiterhin Shrines voraussetzen oder Control noch nicht vollständig abdecken.
-
-### Mögliche Folgeschritte
-
-1. **KGB-Bootstrap und OpeningHandPlanReport** – höchster erwarteter globaler Qualitätsgewinn, hohe Evidenz, mittlerer Aufwand, mittleres Implementierungsrisiko.
-2. **Control sofort vollständig integrieren** – hoher globaler Qualitätsgewinn, mittlere Evidenz, hoher Aufwand, höheres Risiko wegen fehlender Starthand-Basis.
+Hoch für die Prozesskonsistenz; keine Aussage über eine neue spielerische Baseline.
 
 ### Priorisierter nächster ausführbarer Schritt
 
-Bestimme den letzten belastbaren Vergleichsstand als Legacy-KGB-Kandidaten und implementiere beziehungsweise vervollständige anschließend den reproduzierbaren `OpeningHandPlanReport` mit genau 100 gespeicherten Händen je verwendeter Referenzdeckliste, dokumentiertem Seed, getrennten Keepability-/Early-Play-/Planfähigkeitsmetriken und archetypenabhängigen Kriterien für Burn, Tokens, Artifacts, Control und Mill.
+Den reproduzierbaren `OpeningHandPlanReport` mit genau 100 gespeicherten Händen je verwendeter Deckliste, dokumentiertem Seed und getrennten Keepability-/Early-Play-/Planfähigkeitsmetriken implementieren und im Fast-Workflow als Rohdatenartefakt ausgeben.
+
+## 2026-08-03 – Drei-Stunden-Lauf, Zyklus 1: OpeningHandPlanReport und v2-Bootstrap
+
+### Ziel
+
+Die Messlücke zwischen formal spielbaren Händen und realistisch anlaufendem Hauptplan schließen, ohne die bestehende aggregierte London-Mulligan-Simulation zu brechen.
+
+### Ausgangs-Head
+
+`31f6c1e053976435481c07ab2098430bc2a45471`
+
+### Ausgangs-KGB oder Vergleichsstand
+
+- keine voll qualifizierte v2-KGB
+- v2-Bootstrap-Vergleichsstand: Head `31f6c1e053976435481c07ab2098430bc2a45471`, Run `30792560878`
+- Run 41: 240 Tests bestanden; Fast-Validierung erfolgreich; 0 gemeldete Regressionen, jedoch `baseline: none`
+- bestehender Pflichtvalidator: Burn, Tokens, Artifacts, Shrines, Mill
+
+### Hypothese
+
+Ein reproduzierbarer Einzelhandbericht mit archetypen- und planabhängiger Klassifikation trennt Keepability, Early Play und Planfähigkeit und macht halbe Engines beziehungsweise widersprüchliche Hände sichtbar. Der globale Qualitätsgewinn ist höher als eine weitere Schwellenwertanpassung, weil die neue Messung alle späteren Token-, Control-, Engine- und Finish-Entscheidungen absichert.
+
+### Änderungen
+
+1. `OpeningHandSimulator.simulate_plan` erzeugt exakt 100 reproduzierbare Sieben-Karten-Hände mit Seed, Deck-Hash, farbigen Manaquellen, Zug-1/2/3-Spielbarkeit, Sequenzvorschlag, Rollen-Zugängen, Klassifikation und Ausfallgründen. Die bestehende Methode `simulate` bleibt kompatibel.
+2. 15 gezielte Tests decken Reproduzierbarkeit, anderen Seed, exakt 100 Hände, Early-Play-/Planfähigkeits-Trennung, Go Wide, Value Tokens, Aristocrats, Artifacts, Mill, Control und Farbfehler ab.
+3. Der Fast-Validator schreibt pro erzeugtem Archetyp `<archetype>-opening-hands.json` mit vollständigen Rohdaten und ergänzt die kompakte Zusammenfassung in den Validierungsbericht.
+
+### Validierung vor Commit
+
+- Syntaxprüfung der geänderten Python-Dateien: bestanden
+- gezielte Tests in einer kontrollierten, API-kompatiblen Testumgebung: 15 bestanden in 0,77 Sekunden
+- identischer Seed erzeugte identische 100 Hände; anderer Seed veränderte die Stichprobe
+- bestehende aggregierte Simulator-Tests blieben in der kontrollierten Suite enthalten
+- vollständige Repository-Testsuite und Fast-Validierung müssen durch den neuen PR-Workflow verifiziert werden, da im lokalen Ausführungscontainer kein direkter GitHub-Checkout möglich war
+
+### Starthand-Seed und Rohdatenpfad
+
+- Seed: `1701`
+- Stichprobe: exakt 100 Hände je im Fast-Lauf erzeugter Deckliste
+- Rohdaten: `artifacts/global/<archetype>/<archetype>-opening-hands.json`
+
+### Qualitätsvergleich vor der Änderung
+
+- Burn: Benchmark 83; Early Play 100 %; Core bis Zug 3 0 %
+- Tokens: Benchmark 90; Early Play 98 %; Core bis Zug 3 0 %
+- Artifacts: Benchmark 90; Early Play 99 %; Core bis Zug 3 100 %
+- Mill: Benchmark 78; Early Play 99 %; Core bis Zug 3 31 %
+- Control: nicht im ausführbaren Validator vorhanden
+
+Diese Werte bestätigen die Messlücke: hohe Early-Play-Raten beweisen insbesondere bei Burn und Tokens keinen erkannten Hauptplan.
+
+### Ergebnis vor Push
+
+Die Messung ist implementiert und gezielt getestet. Eine spielerische Verbesserung wird noch nicht behauptet; der Zyklus verbessert zunächst Messbarkeit und Reproduzierbarkeit.
+
+### KGB-Entscheidung
+
+Keine neue v2-KGB in diesem Commit.
+
+Gründe:
+
+- Control fehlt weiterhin als erzeugter Pflichtarchetyp
+- die neue vollständige Testsuite, Fast-Laufzeit und Rohdatenartefakte müssen post-push verifiziert werden
+- der bisherige Regressionsvergleich besitzt keine wiederhergestellte Baseline
+
+### Confidence
+
+- hoch für deterministische Datenerzeugung und Rohdatenstruktur
+- mittel für die rollen-/gründe-basierte Planerkennung
+- niedrig bis mittel für globale spielerische Aussagekraft vor echten Builder-/Clubbenchmarks
+
+### Kritische Reflexion
+
+- Falsche Annahme: Rollen und Auswahlgründe könnten den tatsächlichen Kartentext nicht zuverlässig genug repräsentieren.
+- Alternative Erklärung: Schlechte Planfähigkeitsraten könnten von zu strengen Heuristiken statt von schlechten Decklisten stammen.
+- Overfitting-Risiko: Die kontrollierten Fixtures sind fachlich eindeutig, aber einfacher als reale Kartenpakete.
+- Messlücke: Matchupsensitivität von Control-Antworten ist noch nicht vollständig modelliert.
+- Grüne CI würde nur technische Stabilität zeigen, nicht automatisch bessere Decks.
+- Unentdeckte Regression: Die zusätzliche 100-Hand-Auswertung könnte die Fast-Laufzeit oder Artefaktgröße erhöhen; dies muss im Workflow geprüft werden.
+
+### Mögliche Folgeschritte
+
+1. **Control als fünften Builder-/Validator-Archetyp integrieren** – sehr hoher globaler Qualitätsgewinn, hohe Evidenz aus der v2-Inkonsistenz, mittlerer bis hoher Aufwand, mittleres Risiko.
+2. **Oracle-Text in `DeckEntry` beziehungsweise Handrollen durchreichen** – hoher Messqualitätsgewinn, mittlere Evidenz, mittlerer Aufwand, Risiko breiter Datenmodelländerungen.
+3. **Token-Grenzwerte anhand der neuen Rohhände kalibrieren** – hoher möglicher Spielgewinn, aber erst nach erfolgreicher Workflow- und Control-Basis sinnvoll; mittlerer Aufwand, höheres Overfitting-Risiko.
+
+### Priorisierter nächster ausführbarer Schritt
+
+Nach erfolgreicher Auswertung des neuen Workflows Control als fünften allgemeinen Builder- und Validator-Archetyp integrieren, Shrines aus der Pflichtvalidierung entfernen und Control-Starthände sowie Matchups gegen Aggro, Tokens und einen Nichtkreaturen-/Engine-Plan mit denselben 100-Hand-Rohdaten prüfen.
