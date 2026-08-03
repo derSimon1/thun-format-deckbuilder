@@ -6,6 +6,7 @@ from typing import Iterable, Protocol
 
 from thun_deckbuilder.card_analyzer import CardAnalysis
 from thun_deckbuilder.token_packages import analyze_token_package
+from thun_deckbuilder.token_production import analyze_token_production
 
 
 class TokenPlan(StrEnum):
@@ -28,6 +29,8 @@ class TokenPlan(StrEnum):
 class TokenCardSignals:
     creates_tokens: bool = False
     creates_multiple_tokens: bool = False
+    immediate_source: bool = False
+    guaranteed_multi_source: bool = False
     repeatable_source: bool = False
     anthem: bool = False
     evasion_payoff: bool = False
@@ -58,10 +61,11 @@ def token_card_signals(
     analysis: CardAnalysis,
     roles: Iterable[str] = (),
 ) -> TokenCardSignals:
-    """Extract plan-level signals from the shared Token package definition."""
+    """Extract plan signals from shared package and production definitions."""
 
     normalized_roles = {str(role) for role in roles}
     package = analyze_token_package(analysis)
+    production = analyze_token_production(analysis)
     text = analysis.oracle_text.lower()
     card_advantage = "card_draw" in normalized_roles or any(
         phrase in text
@@ -72,10 +76,15 @@ def token_card_signals(
             "return target card",
         )
     )
+    immediate_source = production.mode == "immediate"
     return TokenCardSignals(
         creates_tokens=package.creates_creature_tokens,
         creates_multiple_tokens=package.creates_multiple_creature_tokens,
-        repeatable_source=package.repeatable_creature_source,
+        immediate_source=immediate_source,
+        guaranteed_multi_source=(
+            immediate_source and production.minimum_output >= 2
+        ),
+        repeatable_source=production.mode == "repeatable",
         anthem=package.anthem,
         evasion_payoff=package.evasion_payoff,
         card_advantage=card_advantage,
@@ -86,18 +95,24 @@ def token_card_signals(
     )
 
 
-def detect_token_plan(cards: Iterable[TokenCardLike]) -> TokenPlanReport:
+def detect_token_plan(
+    cards: Iterable[TokenCardLike],
+    *,
+    max_copies: int = 3,
+    minimum_value_engine_copies: int = 6,
+) -> TokenPlanReport:
     """Select one coherent Token plan before composition starts.
 
-    Aristocrats is only a valid candidate when the legal pool contains all
-    three independent package components: creature material, a reusable outlet
-    and an other-creature death payoff. A single card with several related
-    phrases cannot fabricate that support by itself.
+    Value Tokens requires enough distinct automatic repeatable sources to reach
+    its configured minimum. Conditional and activated makers remain useful
+    cards, but cannot fabricate automatic engine capacity. Aristocrats requires
+    material, a reusable outlet and an other-creature death payoff.
     """
 
     scores = {plan: 0.0 for plan in TokenPlan}
     support = {plan: 0 for plan in TokenPlan}
     maker_count = 0
+    automatic_repeatable_cards = 0
     aristocrats_components: set[str] = set()
 
     for card in cards:
@@ -108,17 +123,21 @@ def detect_token_plan(cards: Iterable[TokenCardLike]) -> TokenPlanReport:
             for plan in TokenPlan:
                 scores[plan] += 1.0
 
-        scores[TokenPlan.GO_WIDE] += 3.0 * signals.creates_multiple_tokens
+        scores[TokenPlan.GO_WIDE] += 2.0 * signals.immediate_source
+        scores[TokenPlan.GO_WIDE] += 4.0 * signals.guaranteed_multi_source
         scores[TokenPlan.GO_WIDE] += 3.0 * signals.anthem
         scores[TokenPlan.GO_WIDE] += 2.0 * signals.evasion_payoff
         support[TokenPlan.GO_WIDE] += sum(
             (
-                signals.creates_multiple_tokens,
+                signals.immediate_source,
+                signals.guaranteed_multi_source,
                 signals.anthem,
                 signals.evasion_payoff,
             )
         )
 
+        if signals.repeatable_source:
+            automatic_repeatable_cards += 1
         scores[TokenPlan.VALUE] += 4.0 * signals.repeatable_source
         scores[TokenPlan.VALUE] += 2.5 * signals.card_advantage
         scores[TokenPlan.VALUE] += 3.0 * signals.token_value_payoff
@@ -141,7 +160,10 @@ def detect_token_plan(cards: Iterable[TokenCardLike]) -> TokenPlanReport:
     support[TokenPlan.ARISTOCRATS] = len(aristocrats_components)
     if maker_count == 0:
         scores = {plan: 0.0 for plan in TokenPlan}
-    if support[TokenPlan.VALUE] < 2:
+    automatic_engine_capacity = automatic_repeatable_cards * max_copies
+    if automatic_engine_capacity < minimum_value_engine_copies:
+        scores[TokenPlan.VALUE] *= 0.15
+    elif support[TokenPlan.VALUE] < 2:
         scores[TokenPlan.VALUE] *= 0.25
     if aristocrats_components != {"material", "outlet", "death_payoff"}:
         scores[TokenPlan.ARISTOCRATS] *= 0.15

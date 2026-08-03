@@ -61,12 +61,18 @@ def test_detects_go_wide_from_multiple_makers_and_anthem():
     assert report.score_for(TokenPlan.GO_WIDE) > report.score_for(TokenPlan.VALUE)
 
 
-def test_detects_value_tokens_from_repeatable_engine_and_card_advantage():
+def test_detects_value_tokens_only_with_reachable_automatic_engines():
     report = detect_token_plan(
         (
             candidate(
                 "End Step Engine",
                 "At the beginning of your end step, create a 1/1 white Soldier creature token.",
+                ("token_maker",),
+                mana_value=3,
+            ),
+            candidate(
+                "Upkeep Engine",
+                "At the beginning of your upkeep, create a 1/1 white Soldier creature token.",
                 ("token_maker",),
                 mana_value=3,
             ),
@@ -86,6 +92,48 @@ def test_detects_value_tokens_from_repeatable_engine_and_card_advantage():
 
     assert report.plan is TokenPlan.VALUE
     assert report.confidence > 0.5
+
+
+def test_activated_and_conditional_makers_do_not_fabricate_value_capacity():
+    report = detect_token_plan(
+        (
+            candidate(
+                "Whirlermaker",
+                "{4}, {T}: Create a 1/1 colorless Thopter artifact creature token with flying.",
+                ("token_maker",),
+                mana_value=3,
+                type_line="Artifact",
+            ),
+            candidate(
+                "Attack Trigger",
+                "Whenever you attack, create a 1/1 white Soldier creature token tapped and attacking.",
+                ("token_maker",),
+                mana_value=2,
+                type_line="Creature — Soldier",
+            ),
+            candidate(
+                "Raise the Team",
+                "Create three 1/1 white Soldier creature tokens.",
+                ("token_maker",),
+                type_line="Sorcery",
+            ),
+            candidate(
+                "Gather the Squad",
+                "Create two 1/1 white Soldier creature tokens.",
+                ("token_maker",),
+                type_line="Sorcery",
+            ),
+            candidate(
+                "Battle Anthem",
+                "Creature tokens you control get +1/+1.",
+                ("token_payoff", "anthem"),
+                mana_value=3,
+            ),
+        )
+    )
+
+    assert report.plan is TokenPlan.GO_WIDE
+    assert report.score_for(TokenPlan.GO_WIDE) > report.score_for(TokenPlan.VALUE)
 
 
 def test_detects_aristocrats_only_with_fodder_outlet_and_death_payoff():

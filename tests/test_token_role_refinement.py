@@ -41,7 +41,7 @@ def test_food_only_card_loses_broad_token_maker_role_and_is_not_eligible():
     assert not _is_reasonable_token_card(refined)
 
 
-def test_creature_token_card_gains_package_and_production_roles():
+def test_immediate_multi_token_card_gains_reliable_go_wide_roles():
     refined = _with_precise_token_roles(
         knowledge(
             "Soldiers",
@@ -53,10 +53,43 @@ def test_creature_token_card_gains_package_and_production_roles():
     assert {
         "token_maker",
         "token_creature_maker",
+        "token_immediate_maker",
+        "token_multi_maker",
         "token_output_2",
         "token_production_immediate",
     }.issubset(refined.roles)
     assert _is_reasonable_token_card(refined)
+
+
+def test_activated_maker_is_not_an_automatic_or_immediate_maker():
+    refined = _with_precise_token_roles(
+        knowledge(
+            "Whirlermaker",
+            "{4}, {T}: Create a 1/1 colorless Thopter artifact creature token with flying.",
+            ("token_maker",),
+            type_line="Artifact",
+            mana_value=3,
+        )
+    )
+    assert "token_creature_maker" in refined.roles
+    assert "token_production_activated" in refined.roles
+    assert "token_repeatable_maker" not in refined.roles
+    assert "token_immediate_maker" not in refined.roles
+    assert "token_multi_maker" not in refined.roles
+
+
+def test_automatic_end_step_engine_gets_repeatable_role_only():
+    refined = _with_precise_token_roles(
+        knowledge(
+            "Call",
+            "At the beginning of your end step, create a 1/1 white Soldier creature token.",
+            ("token_maker",),
+            type_line="Enchantment",
+            mana_value=3,
+        )
+    )
+    assert "token_repeatable_maker" in refined.roles
+    assert "token_immediate_maker" not in refined.roles
 
 
 def test_one_shot_sacrifice_loses_outlet_role():

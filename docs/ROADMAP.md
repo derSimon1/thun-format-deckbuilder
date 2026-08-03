@@ -14,93 +14,82 @@ Referenzarchetypen: Burn, Tokens, Artifacts, Control und Mill. Jeder Zyklus ende
 - [x] Phrase-first-Sideboardklassifikation und Diagnoseartefakte
 - [x] zentrale Mill-Quellendefinition und Poolkapazität
 
-## Token-Fokus – Builder und Messung
+## Token-Grundlagen
 
 - [x] Kreatur-Token von Nichtkreatur-Tokens getrennt
 - [x] echte Outlets und Death-Payoffs getrennt
 - [x] 43 Rollen-Fehlpositive entfernt
 - [x] präzise Planrollen und kapazitätsgeprüfte Mindestpakete
-- [x] automatische Planwahl auf Value Tokens
-- [x] Benchmark 91, Material 33, Fehlpositive 0
-- [x] Keepability/Planfähigkeit 77/76 %
-- [x] Immediate-, Repeatable-, Conditional- und Death-Produktion
-- [x] Goldfish neu kalibriert: 14,66 Schaden, 27 % Killrate, Board 5,30
+- [x] Immediate-, Conditional-, Death-, Activated- und Repeatable-Produktion getrennt
+- [x] Goldfish auf reale Produktionsmodi umgestellt
 - [x] Mono-White-Poolkapazität je Produktionsmodus gemessen
+- [x] Aktivierungsmetadaten aus Funktionsrollen ausgeschlossen
 
-## Run-61-Poolkapazität
+## Run-63-Evidenz
 
-| Modus | Karten | maximale Kopien |
+| Produktionsmodus | Karten | maximale Kopien |
 |---|---:|---:|
-| sofort | 102 | 306 |
-| bedingt | 51 | 153 |
+| sofort | 88 | 264 |
+| aktiviert | 16 | 48 |
+| bedingt | 50 | 150 |
 | Death | 14 | 42 |
-| bisher wiederholbar | 2 | 6 |
+| automatisch wiederholbar | 1 | 3 |
 
-Die zwei bisherigen Repeatable-Karten sind `Cathar's Call` und `Whirlermaker`. Aktivierte und automatische Produktion müssen vor einer Builderänderung getrennt werden.
+- [x] Run `30817765040` vollständig grün
+- [x] 297 Tests
+- [x] Fast ungefähr 4:14 Minuten
+- [x] Benchmarks 83/91/90/85/80
+- [x] Value-Mindestdichte von sechs automatischen Engines als unerreichbar widerlegt
 
-## Activated-versus-Repeatable-Zyklus
+## Aktueller Fokus – Token Go Wide
 
-- [x] aktivierte Tokenfähigkeit über Kosten-vor-Doppelpunkt erkennen
-- [x] generische und farbige Aktivierungsmana konservativ zählen
-- [x] Modus `activated` und Aktivierungskostenmarker implementieren
-- [x] Unit-Tests für Whirlermaker und Kapazitätsgruppen grün
-- [x] Run 62 gestartet und vollständig ausgewertet
-- [ ] Metadatenfilter-Hotfix vollständig grün bestätigen
-- [ ] Artifact-Kapazität für `activated` und `repeatable` auswerten
+### Builder
 
-## Run-62-Befund
+- [x] kanonische Rolle `token_immediate_maker` vorbereiten
+- [x] kanonische Rolle `token_multi_maker` vorbereiten
+- [x] `token_repeatable_maker` nur automatischen Triggern zuweisen
+- [x] Value-Planwahl an mindestens sechs erreichbare automatische Enginekopien binden
+- [x] Go-Wide-Planwahl auf garantierte Sofort-/Multi-Maker und Team-Payoffs ausrichten
+- [x] Go-Wide-Profil mit kapazitätsgeprüften Pflichtdichten vorbereiten
+- [ ] vollständige Testsuite und Fast-Validierung auswerten
+- [ ] finale Go-Wide-Deckliste und Arena-Import prüfen
 
-- 297 Unit-/Integrationstests bestanden
-- Fast brach nur bei Tokens ab
-- Ursache: `token_activation_mana_*` wurde als Funktionsrolle normalisiert
-- Burn 83, Artifacts 90, Control 85 und Mill 80 unverändert
-- keine Builder- oder Go-Wide-Aussage aus diesem roten Run ableiten
+### Pflichtdichten des ersten Go-Wide-Zyklus
 
-## Erfolgskriterien Hotfix
+- mindestens 15 Kreatur-Token-Maker
+- mindestens 9 sofortige Maker
+- mindestens 6 garantierte Multi-Maker
+- mindestens 3 Anthems
+- Ziele: 20 / 12 / 9 / 6
 
-- [ ] vollständige Testsuite grün
+### Erfolgskriterien
+
+- [ ] Profilname enthält `Go Wide`
+- [ ] Legalität 60/15 und Kopienlimit
+- [ ] genau 100 Hände mit Seed 1701
+- [ ] Keepability, Early Play und Planfähigkeit vollständig ausgewertet
+- [ ] Goldfish mit korrigierter Produktionsmessung
+- [ ] Token gegen Burn, Artifacts und Mill sowie BO3 ausgewertet
 - [ ] Fast unter zehn Minuten
-- [ ] Tokens Benchmark 91 und Deck-Hash unverändert
-- [ ] Hände weiterhin 77/76 %
-- [ ] Goldfish weiterhin 14,66 Schaden und 27 % Killrate
-- [ ] `Whirlermaker` als aktiviert mit Mana 4 ausgewiesen
-- [ ] automatische Repeatable-Kapazität separat dokumentiert
-- [ ] andere vier Benchmarks unverändert
+- [ ] Burn 83, Artifacts 90, Control 85 und Mill 80 ohne unbegründete Regression
+- [ ] keine Token-Rollen-Fehlpositive
 
-## Entscheidung nach grünem Hotfix
+## Nach erfolgreichem Go-Wide-Builderzyklus
 
-### Automatische Repeatable-Kapazität unter sechs Kopien
+1. Strategy Commitment auf sofortige Maker, Multi-Maker und Team-Payoffs ausrichten.
+2. Opening-Hand-Klassifikation auf dieselben präzisen Go-Wide-Rollen umstellen.
+3. Anthem-Wirkung und Boardaufbau im Goldfish/Combatmodell prüfen.
+4. Go Wide, Value Tokens und Aristocrats als getrennte Referenzdecks erzeugen.
+5. Mill-Kompositionsschritt mit 18 Quellen und 6 echten Engines abschließen.
+6. relevante Control-Antworten aus konkreten Gegnerdecks ableiten.
+7. belastbare Regression-Baseline statt `baseline: none`.
+8. erste v2-KGB und Club-/Meta-Benchmark.
 
-- [ ] `token_repeatable_maker` nur automatischen Triggern zuweisen
-- [ ] Value-Mindestziel nicht künstlich auf bedingte oder aktivierte Karten ausweiten
-- [ ] automatische Planwahl anhand garantierter Produktionskapazität neu bewerten
-- [ ] Go Wide über garantierte Sofort-/Multi-Maker und Anthem-/Evasion-Payoffs definieren
-- [ ] Go-Wide-Deck gegen den Run-61-Value-Stand vergleichen
+## Definition of Done für den aktuellen Zyklus
 
-### Automatische Repeatable-Kapazität mindestens sechs Kopien
-
-- [ ] Value-Profil auf echte automatische Engines verpflichten
-- [ ] aktivierte Quellen nur als sekundäre Value-Unterstützung bewerten
-- [ ] explizites Go-Wide-Referenzdeck unabhängig erzeugen und vergleichen
-
-## Danach
-
-1. Go Wide, Value Tokens und Aristocrats als separate Referenzdecks erzeugen.
-2. Matchupmodell erst auf belastbaren Produktionsdaten weiterentwickeln.
-3. Mill-Kompositionsschritt mit 18 Quellen und 6 echten Engines abschließen.
-4. relevante Control-Antworten aus konkreten Gegnerdecks ableiten.
-5. belastbare Regression-Baseline statt `baseline: none`.
-6. erste v2-KGB und Club-/Meta-Benchmark.
-
-## Definition of Done für den aktuellen Go-Wide-Lauf
-
-- Activated-/Repeatable-Messung technisch grün
-- automatische Planwahl verwendet dieselbe Produktionsdefinition
-- Go Wide besitzt frühe garantierte Maker, Multi-Maker und Anthem-/Evasion-Payoffs
-- Full- und Sparse-Pool funktionieren
-- vollständige Testsuite und Fast-Validierung grün
-- fünf Referenzarchetypen und sechs Matchups
-- genau 100 Hände je Deck mit Seed 1701
-- andere vier Benchmarks ohne unbegründete Regression
-- Arena-Import des besten bestätigten Go-Wide-Decks verfügbar
-- KGB-Entscheidung, Reflexion und genau ein nächster Schritt dokumentiert
+- Code, Tests, Logbook und Roadmap in einem Commit
+- vollständige CI und Artefaktauswertung
+- Go-Wide-Pflichtrollen erfüllt
+- andere vier Referenzbenchmarks stabil
+- KGB-Entscheidung und kritische Reflexion dokumentiert
+- genau ein nächster ausführbarer Schritt

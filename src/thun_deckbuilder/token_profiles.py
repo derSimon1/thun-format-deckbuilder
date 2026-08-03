@@ -14,10 +14,12 @@ class RoleCard(Protocol):
 
 _PLAN_ROLE_TARGETS: dict[TokenPlan, tuple[RoleTarget, ...]] = {
     TokenPlan.GO_WIDE: (
-        RoleTarget("token_creature_maker", minimum=12, target=18),
-        RoleTarget("anthem", minimum=3, target=7),
-        RoleTarget("removal", minimum=0, target=5),
-        RoleTarget("card_draw", minimum=0, target=3),
+        RoleTarget("token_creature_maker", minimum=15, target=20),
+        RoleTarget("token_immediate_maker", minimum=9, target=12),
+        RoleTarget("token_multi_maker", minimum=6, target=9),
+        RoleTarget("anthem", minimum=3, target=6),
+        RoleTarget("removal", minimum=0, target=4),
+        RoleTarget("card_draw", minimum=0, target=2),
     ),
     TokenPlan.VALUE: (
         RoleTarget("token_creature_maker", minimum=10, target=15),

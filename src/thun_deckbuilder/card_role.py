@@ -8,8 +8,8 @@ class CardRole(StrEnum):
 
     ``StrEnum`` keeps the existing string-based API compatible while preventing
     spelling drift in new code. Broad roles remain available for general deck
-    reports; precise Token roles prevent Food or one-shot sacrifice text from
-    satisfying creature-token package requirements.
+    reports; precise Token roles prevent conditional or noncreature-token text
+    from satisfying reliable Go-Wide package requirements.
     """
 
     AGGRO_CREATURE = "aggro_creature"
@@ -28,7 +28,9 @@ class CardRole(StrEnum):
     SACRIFICE = "sacrifice"
     SACRIFICE_OUTLET = "sacrifice_outlet"
     TOKEN_CREATURE_MAKER = "token_creature_maker"
+    TOKEN_IMMEDIATE_MAKER = "token_immediate_maker"
     TOKEN_MAKER = "token_maker"
+    TOKEN_MULTI_MAKER = "token_multi_maker"
     TOKEN_PAYOFF = "token_payoff"
     TOKEN_REPEATABLE_MAKER = "token_repeatable_maker"
     TOKEN_VALUE_PAYOFF = "token_value_payoff"

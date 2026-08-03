@@ -9,7 +9,10 @@ from thun_deckbuilder.knowledge_base import CardKnowledge, KnowledgeBase
 from thun_deckbuilder.strategy_commitment import evaluate_token_commitment
 from thun_deckbuilder.token_packages import analyze_token_package
 from thun_deckbuilder.token_plan import TokenPlan, detect_token_plan
-from thun_deckbuilder.token_production import token_production_roles
+from thun_deckbuilder.token_production import (
+    analyze_token_production,
+    token_production_roles,
+)
 from thun_deckbuilder.token_profiles import (
     capacity_checked_token_profile,
     token_profile_for_plan,
@@ -25,6 +28,7 @@ def _with_precise_token_roles(knowledge: CardKnowledge) -> CardKnowledge:
     """Return a Token-specific view with precise package and production roles."""
 
     signals = analyze_token_package(knowledge.analysis)
+    production = analyze_token_production(knowledge.analysis)
     roles = {str(role) for role in knowledge.roles}
 
     if not signals.creates_creature_tokens:
@@ -42,6 +46,10 @@ def _with_precise_token_roles(knowledge: CardKnowledge) -> CardKnowledge:
     ):
         roles.discard(CardRole.TOKEN_PAYOFF.value)
 
+    roles.discard(CardRole.TOKEN_IMMEDIATE_MAKER.value)
+    roles.discard(CardRole.TOKEN_MULTI_MAKER.value)
+    roles.discard(CardRole.TOKEN_REPEATABLE_MAKER.value)
+
     if signals.creates_creature_tokens:
         roles.update(
             {
@@ -50,7 +58,11 @@ def _with_precise_token_roles(knowledge: CardKnowledge) -> CardKnowledge:
                 *token_production_roles(knowledge.analysis),
             }
         )
-    if signals.repeatable_creature_source:
+    if production.mode == "immediate":
+        roles.add(CardRole.TOKEN_IMMEDIATE_MAKER.value)
+        if production.minimum_output >= 2:
+            roles.add(CardRole.TOKEN_MULTI_MAKER.value)
+    if production.mode == "repeatable":
         roles.add(CardRole.TOKEN_REPEATABLE_MAKER.value)
     if signals.sacrifice_outlet:
         roles.update(
@@ -170,15 +182,17 @@ def _score_for_composition(
     }
     plan_bonuses = {
         TokenPlan.GO_WIDE: {
-            "token_creature_maker": (2.0, "Go Wide: Kreatur-Token-Erzeuger"),
+            "token_creature_maker": (1.0, "Go Wide: Kreatur-Token-Erzeuger"),
+            "token_immediate_maker": (2.5, "Go Wide: garantierte Sofortproduktion"),
+            "token_multi_maker": (3.5, "Go Wide: mehrere garantierte Körper"),
             "anthem": (3.0, "Go Wide: Board-Payoff"),
-            "token_repeatable_maker": (1.0, "Go Wide: wiederholbare Quelle"),
-            "card_draw": (1.0, "Kartennachschub"),
+            "token_repeatable_maker": (0.5, "Go Wide: sekundäre Engine"),
+            "card_draw": (0.5, "Kartennachschub"),
             "sacrifice_outlet": (-1.5, "Go Wide: planfremdes Opferpaket"),
         },
         TokenPlan.VALUE: {
             "token_creature_maker": (1.5, "Value Tokens: Kreaturmaterial"),
-            "token_repeatable_maker": (3.5, "Value Tokens: wiederholbare Engine"),
+            "token_repeatable_maker": (3.5, "Value Tokens: automatische Engine"),
             "token_value_payoff": (3.0, "Value Tokens: direkter Payoff"),
             "card_draw": (2.5, "Value Tokens: Kartenvorteil"),
             "sacrifice_outlet": (-1.0, "Value Tokens: planfremdes Opferpaket"),
@@ -216,7 +230,7 @@ def generate_token_deck(
 
     token_cards = tuple(_with_precise_token_roles(card) for card in knowledge_base.cards)
     plan_cards = tuple(card for card in token_cards if _is_token_plan_card(card))
-    plan_report = detect_token_plan(plan_cards)
+    plan_report = detect_token_plan(plan_cards, max_copies=max_copies)
     configured_profile = token_profile_for_plan(plan_report.plan, lands=lands)
     composition_cards = _composition_candidates(
         token_cards,

@@ -11,10 +11,12 @@ def targets(profile):
     return {str(item.role): (item.minimum, item.target) for item in profile.role_targets}
 
 
-def test_go_wide_profile_requires_creature_material_and_real_payoffs():
+def test_go_wide_profile_requires_reliable_production_and_real_payoffs():
     role_targets = targets(token_profile_for_plan(TokenPlan.GO_WIDE))
-    assert role_targets["token_creature_maker"] == (12, 18)
-    assert role_targets["anthem"] == (3, 7)
+    assert role_targets["token_creature_maker"] == (15, 20)
+    assert role_targets["token_immediate_maker"] == (9, 12)
+    assert role_targets["token_multi_maker"] == (6, 9)
+    assert role_targets["anthem"] == (3, 6)
     assert "sacrifice_outlet" not in role_targets
 
 
@@ -34,9 +36,9 @@ def test_aristocrats_profile_requires_all_three_package_components():
 
 
 def test_custom_land_count_preserves_plan_targets():
-    profile = token_profile_for_plan(TokenPlan.VALUE, lands=22)
+    profile = token_profile_for_plan(TokenPlan.GO_WIDE, lands=22)
     assert profile.lands == 22
-    assert targets(profile)["token_repeatable_maker"] == (6, 8)
+    assert targets(profile)["token_immediate_maker"] == (9, 12)
 
 
 def test_hard_requirements_are_plan_specific_and_capacity_checked():
@@ -55,7 +57,12 @@ def test_hard_requirements_are_plan_specific_and_capacity_checked():
         for item in token_profile_for_plan(TokenPlan.ARISTOCRATS).role_targets
         if item.minimum > 0
     }
-    assert go_wide == {"token_creature_maker", "anthem"}
+    assert go_wide == {
+        "token_creature_maker",
+        "token_immediate_maker",
+        "token_multi_maker",
+        "anthem",
+    }
     assert value == {"token_creature_maker", "token_repeatable_maker"}
     assert aristocrats == {
         "token_creature_maker",
@@ -89,11 +96,18 @@ def test_capacity_check_only_caps_unreachable_sparse_pool_targets():
     assert warnings
 
 
-def test_capacity_check_preserves_reachable_hard_plan_targets():
+def test_capacity_check_preserves_reachable_hard_go_wide_targets():
     profile = token_profile_for_plan(TokenPlan.GO_WIDE)
     cards = tuple(
-        FixtureCard(("token_creature_maker", "anthem"))
-        for _ in range(6)
+        FixtureCard(
+            (
+                "token_creature_maker",
+                "token_immediate_maker",
+                "token_multi_maker",
+                "anthem",
+            )
+        )
+        for _ in range(7)
     )
     adjusted, warnings = capacity_checked_token_profile(
         profile,
@@ -102,10 +116,19 @@ def test_capacity_check_preserves_reachable_hard_plan_targets():
         deck_size=60,
     )
 
-    assert targets(adjusted)["token_creature_maker"] == (12, 18)
-    assert targets(adjusted)["anthem"] == (3, 7)
+    adjusted_targets = targets(adjusted)
+    assert adjusted_targets["token_creature_maker"] == (15, 20)
+    assert adjusted_targets["token_immediate_maker"] == (9, 12)
+    assert adjusted_targets["token_multi_maker"] == (6, 9)
+    assert adjusted_targets["anthem"] == (3, 6)
     assert not any(
-        "token_creature_maker" in warning or "anthem" in warning
+        role in warning
         for warning in warnings
+        for role in (
+            "token_creature_maker",
+            "token_immediate_maker",
+            "token_multi_maker",
+            "anthem",
+        )
     )
     assert any("removal" in warning for warning in warnings)
