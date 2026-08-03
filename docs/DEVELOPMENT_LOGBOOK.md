@@ -37,18 +37,28 @@ Eine vollständig qualifizierte v2-KGB existiert noch nicht. `baseline: none` be
 - Benchmarks: Burn 83, Tokens 98, Artifacts 90, Control 85, Mill 80; keine Regression.
 - Produktionsmodi: sofortige Maker 24→30, bedingte 3→0, aktivierte 3→0, Death 6→3.
 - Token-Material 36→33; zwei Kopien `Witch's Oven` wurden als reine Opfer-Outlets gewählt.
-- Interpretation: Kernhypothese klar bestätigt, aber ein neuer planfremder Auswahlfehler wurde sichtbar.
-- KGB: keine neue KGB, da `baseline: none` fortbesteht und der Outlet-Fehler zuerst korrigiert wird.
+- KGB: keine neue KGB.
 
-## Aktueller Zyklus – Remove Sacrifice Outlets
+### Remove Sacrifice Outlets – Run 74
 
-- **Ursache:** Reine Opfer-Outlets wie `Witch's Oven` erfüllen keinen Go-Wide-Hauptplan und verdrängen Kreatur-Token-Maker.
-- **Hypothese:** Planabhängige Kandidatenfilterung entfernt reine Opfer-Outlets aus Go Wide, erhält sie aber für Aristocrats. Dadurch steigt das echte Token-Material ohne Verlust der Run-73-Verbesserungen.
-- **Änderungen:** reine Opfer-Outlets nach Planerkennung für Go Wide ausschließen; Regressionstest gegen ein Food-Outlet; Workflow-Run-Name `Token Go Wide – Remove Sacrifice Outlets`.
-- **Erfolg:** vollständige Testsuite, Fast und Diagnose grün; Outlet-Kopien 0; Material mindestens 33, sofortige Maker mindestens 30, Token-Benchmark mindestens 98 und andere Benchmarks stabil.
-- **Rollback:** bei Benchmark-, Opening-Hand- oder Goldfish-Gesamtregression ohne kompensierenden fachlichen Gewinn.
-- **KGB-Entscheidung vor Push:** keine neue KGB; Entscheidung nach Artefaktauswertung.
+- Commit `9b4cdb57e92f3753d434fef8c522ed0885aaacd0`.
+- Workflow `Token Go Wide – Remove Sacrifice Outlets`, ID `30831547747`, erfolgreich; Artefakt `8863249096`.
+- 306 Tests, Fast und Diagnose grün.
+- Benchmarks stabil bei 83/98/90/85/80; reine Opfer-Outlets 2→0.
+- echtes Token-Material 33→35, sofortige Maker 30, Multi-Maker 22, Anthems 7.
+- Opening Hands 77 % Keepability und Planfähigkeit; Goldfish 24,94 Schaden, 66 % Killrate, Board 9,10.
+- Matchups Tokens gegen Burn/Artifacts/Mill: 0/76/100 %.
+- KGB: keine neue KGB; `baseline: none` besteht fort.
+
+## Aktueller Zyklus – Lethal Race Calibration
+
+- **Ursache:** Der Matchup-Simulator bewertet durchschnittlichen Schaden linear. Burns 45,99 Schaden entsprechen dadurch 230 % Fortschritt, obwohl 20 Schaden bereits lethal sind. Überkill dominiert das Matchup stärker als Konsistenz und Interaktion.
+- **Hypothese:** Kappen des Schadensfortschritts bei 20 und Ergänzen der tatsächlichen Killrate ergibt ein differenzierteres Rennmodell. Das Deck selbst und alle Benchmark-, Opening-Hand- und Goldfish-Metriken müssen unverändert bleiben.
+- **Änderungen:** gemeinsame Lethal-Race-Funktion für Burn und Tokens; Regressionstests gegen Überkill-Doppelzählung und für Killraten-Konsistenz; Workflow-Run-Name `Token Go Wide – Lethal Race Calibration`.
+- **Erfolg:** vollständige Testsuite, Fast und Diagnose grün; Deck-Hash und Deckmetriken unverändert; Burn-Matchup nicht mehr allein durch irrelevanten Überkill determiniert; andere Matchups plausibel und ohne Regressionssignal.
+- **Rollback:** wenn das Modell langsamere Decks trotz klar schlechter Killrate bevorzugt oder Deck-/Benchmarkwerte unerwartet verändert.
+- **KGB-Entscheidung vor Push:** keine neue KGB, da nur das Diagnosemodell kalibriert wird und `baseline: none` fortbesteht.
 
 ## Nächster ausführbarer Schritt
 
-Den Outlet-Filter veröffentlichen und anhand des sprechend benannten Workflows, der Deckliste sowie Produktions-, Opening-Hand-, Goldfish- und Matchup-Metriken vollständig bewerten.
+Die Lethal-Race-Kalibrierung veröffentlichen und Workflow, vollständige Tests, Deck-Hash, Matchups sowie alle Artefakte auswerten. Danach evidenzbasiert behalten oder zurückrollen.

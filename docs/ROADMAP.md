@@ -21,7 +21,8 @@ Referenzarchetypen: Burn, Tokens, Artifacts, Control und Mill.
 - [x] explizite `{C}`-Kosten ohne farblose Quellen aus der Komposition ausgeschlossen
 - [x] 23-Land-Variante gemessen und wegen schlechterer Stabilität verworfen
 - [x] bedingte und aktivierte Maker durch modusspezifisches Scoring entfernt
-- [ ] reine Opfer-Outlets aus Go Wide entfernen
+- [x] reine Opfer-Outlets aus Go Wide entfernt
+- [ ] Lethal-Race-Modell ohne Überkill-Doppelzählung kalibrieren
 - [ ] Arena-Import und 100 Hände final bewerten
 
 ## Aktuelle Pflichtdichten
@@ -31,21 +32,23 @@ Referenzarchetypen: Burn, Tokens, Artifacts, Control und Mill.
 - mindestens 6 garantierte Multi-Maker
 - mindestens 3 Anthems
 
-## Run-73-Evidenz
+## Run-74-Evidenz
 
-- Benchmark Tokens 96→98; andere Benchmarks stabil bei 83/90/85/80
-- sofortige Maker 24→30
-- bedingte Maker 3→0, aktivierte Maker 3→0, Death-Maker 6→3
-- Material 36→33, weil zwei `Witch's Oven` als reine Opfer-Outlets ausgewählt wurden
-- nächster Fokus ist daher planabhängige Kandidatenkompatibilität statt weitere Score-Gewichte
+- Benchmarks Burn/Tokens/Artifacts/Control/Mill: 83/98/90/85/80
+- 35 Kreatur-Token-Maker, 30 sofortige Maker, 22 Multi-Maker und 7 Anthems
+- reine Opfer-Outlets: 0
+- Keepability/Planfähigkeit 77/77 %, Early Play T2/T3 94/96 %
+- Goldfish 24,94 Schaden, 66 % Killrate, Board 9,10
+- Matchups Burn/Artifacts/Mill: 0/76/100 %
+- Burn erreicht im Goldfish 45,99 Durchschnittsschaden und 98 % Killrate; das bisherige Matchupmodell zählt den Überkill linear als 230 % Fortschritt
 
 ## Aktueller Zyklus
 
-1. Reine Opfer-Outlets für Go Wide nach Planerkennung aus dem Kandidatenpool entfernen.
-2. Hybridkarten mit echter Kreatur-Token-Produktion, Anthem, Evasion oder nützlicher Interaktion weiterhin zulassen.
-3. Aristocrats-Verfügbarkeit unverändert erhalten.
-4. Workflow sichtbar `Token Go Wide – Remove Sacrifice Outlets` benennen.
-5. Nur bei grünem Gate und stabilem oder verbessertem Gesamtbild beibehalten.
+1. Schadensfortschritt für Burn und Tokens bei lethal 20 deckeln.
+2. Killrate als Konsistenzkomponente in den Rennfortschritt aufnehmen.
+3. Überkill- und Killraten-Regressionsfälle testen.
+4. Workflow sichtbar `Token Go Wide – Lethal Race Calibration` benennen.
+5. Deck-Hash, Benchmarks und Deckmetriken müssen unverändert bleiben; nur das Diagnosemodell darf sich ändern.
 
 ## Prioritäten danach
 
@@ -57,4 +60,4 @@ Referenzarchetypen: Burn, Tokens, Artifacts, Control und Mill.
 
 ## Genau ein nächster ausführbarer Schritt
 
-Outlet-Filter veröffentlichen, Workflow und Artefakt vollständig auswerten und danach die Änderung behalten oder evidenzbasiert zurückrollen.
+Lethal-Race-Kalibrierung veröffentlichen, den sprechend benannten Workflow samt Artefakt vollständig auswerten und danach behalten oder evidenzbasiert zurückrollen.

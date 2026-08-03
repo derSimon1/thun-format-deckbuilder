@@ -18,7 +18,15 @@ def entry(name, quantity, mv, type_line, *, roles=(), reasons=()):
     )
 
 
-def report(archetype, *, damage=0.0, milled=0.0, artifacts=0.0, shrines=0.0):
+def report(
+    archetype,
+    *,
+    damage=0.0,
+    milled=0.0,
+    artifacts=0.0,
+    shrines=0.0,
+    kill_rate=0,
+):
     return GoldfishReport(
         archetype=archetype,
         samples=2000,
@@ -27,6 +35,7 @@ def report(archetype, *, damage=0.0, milled=0.0, artifacts=0.0, shrines=0.0):
         average_unused_mana=1.0,
         average_spells_cast=6.0,
         average_damage=damage,
+        kill_by_final_turn_pct=kill_rate,
         average_cards_milled=milled,
         average_artifacts_in_play=artifacts,
         average_shrines_in_play=shrines,
@@ -83,4 +92,40 @@ def test_faster_goldfish_plan_is_favored_when_interaction_is_equal():
     fast = deck((entry("Bolt", 12, 1, "Instant", roles=("burn",)),), report("burn", damage=18.0))
     slow = deck((entry("Bolt", 12, 1, "Instant", roles=("burn",)),), report("burn", damage=11.0))
     result = MatchupSimulator().simulate(fast, slow, archetype_a="burn", archetype_b="burn")
+    assert result.wins_a_pct > result.wins_b_pct
+
+
+def test_excess_damage_beyond_lethal_does_not_count_as_extra_race_progress():
+    lethal = deck(
+        (entry("Threat", 12, 1, "Creature"),),
+        report("burn", damage=20.0, kill_rate=100),
+    )
+    overkill = deck(
+        (entry("Threat", 12, 1, "Creature"),),
+        report("burn", damage=45.0, kill_rate=100),
+    )
+    result = MatchupSimulator().simulate(
+        lethal,
+        overkill,
+        archetype_a="burn",
+        archetype_b="burn",
+    )
+    assert result.average_score_a == result.average_score_b
+
+
+def test_kill_consistency_breaks_equal_average_damage_tie():
+    consistent = deck(
+        (entry("Threat", 12, 1, "Creature"),),
+        report("tokens", damage=20.0, kill_rate=85),
+    )
+    volatile = deck(
+        (entry("Threat", 12, 1, "Creature"),),
+        report("tokens", damage=20.0, kill_rate=35),
+    )
+    result = MatchupSimulator().simulate(
+        consistent,
+        volatile,
+        archetype_a="tokens",
+        archetype_b="tokens",
+    )
     assert result.wins_a_pct > result.wins_b_pct

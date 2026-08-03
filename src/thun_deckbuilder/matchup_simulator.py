@@ -54,9 +54,22 @@ def _threat_density(deck: GeneratedDeck) -> float:
     return count / max(1, sum(item.quantity for item in deck.mainboard))
 
 
+def _lethal_race_progress(report: GoldfishReport) -> float:
+    """Measure a damage plan without rewarding irrelevant overkill.
+
+    Average damage captures how close non-lethal games get, while the kill rate
+    captures consistency. Damage above 20 life is capped because it cannot make
+    an already lethal five-turn goldfish win the race twice.
+    """
+
+    damage_progress = min(1.0, max(0.0, report.average_damage / 20.0))
+    kill_consistency = min(1.0, max(0.0, report.kill_by_final_turn_pct / 100.0))
+    return damage_progress * 0.65 + kill_consistency * 0.35
+
+
 def _base_progress(report: GoldfishReport, archetype: str) -> float:
     if archetype in {"burn", "tokens"}:
-        return report.average_damage / 20.0
+        return _lethal_race_progress(report)
     if archetype == "mill":
         return report.average_cards_milled / 53.0
     if archetype == "artifacts":
