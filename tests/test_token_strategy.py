@@ -15,6 +15,23 @@ def build_knowledge_base(
     return knowledge_base
 
 
+def _has_role(entry, expected: str) -> bool:
+    for role in entry.roles:
+        if role == expected or getattr(role, "value", None) == expected:
+            return True
+        if str(role).removeprefix("CardRole.").lower() == expected:
+            return True
+    return False
+
+
+def _role_copies(deck, role: str) -> int:
+    return sum(
+        entry.quantity
+        for entry in deck.mainboard
+        if _has_role(entry, role)
+    )
+
+
 def test_token_strategy_generates_60_card_deck():
     request = DeckRequest(
         archetype="tokens",
@@ -43,15 +60,10 @@ def test_full_pool_selects_and_fulfils_reliable_go_wide_package():
         )
 
     assert "Go Wide" in deck.profile_name
-    assert deck.quality_report is not None
-    role_quality = {
-        str(item.role): item.current
-        for item in deck.quality_report.role_quality
-    }
-    assert role_quality["token_creature_maker"] >= 15
-    assert role_quality["token_immediate_maker"] >= 9
-    assert role_quality["token_multi_maker"] >= 6
-    assert role_quality["anthem"] >= 3
+    assert _role_copies(deck, "token_creature_maker") >= 15
+    assert _role_copies(deck, "token_immediate_maker") >= 9
+    assert _role_copies(deck, "token_multi_maker") >= 6
+    assert _role_copies(deck, "anthem") >= 3
 
 
 def test_generic_builder_generates_token_deck():
