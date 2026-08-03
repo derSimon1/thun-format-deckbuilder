@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import re
-from dataclasses import dataclass
+from collections import Counter
+from dataclasses import asdict, dataclass
+from typing import Iterable, Mapping
 
-from thun_deckbuilder.card_analyzer import CardAnalysis
+from thun_deckbuilder.card_analyzer import CardAnalysis, analyze_card
 from thun_deckbuilder.token_packages import analyze_token_package
 
 
@@ -154,3 +156,58 @@ def token_production_roles(analysis: CardAnalysis) -> tuple[str, ...]:
     if profile.variable_output:
         roles.add("token_output_variable")
     return tuple(sorted(roles))
+
+
+def build_token_production_capacity(
+    raw_cards: Iterable[Mapping[str, object]],
+    *,
+    allowed_colors: frozenset[str] = frozenset({"W"}),
+    max_copies: int = 3,
+    max_mana_value: float = 6,
+) -> dict[str, object]:
+    """Measure legal production capacity before imposing production targets."""
+
+    cards: list[dict[str, object]] = []
+    distinct_by_mode: Counter[str] = Counter()
+    minimum_output_by_mode: Counter[str] = Counter()
+    seen: set[str] = set()
+
+    for raw in raw_cards:
+        analysis = analyze_card(dict(raw))
+        key = analysis.name.casefold()
+        if key in seen:
+            continue
+        seen.add(key)
+        if analysis.is_land or analysis.mana_value > max_mana_value:
+            continue
+        if not set(analysis.color_identity).issubset(allowed_colors):
+            continue
+        profile = analyze_token_production(analysis)
+        if not profile.creates_creature_tokens:
+            continue
+        distinct_by_mode[profile.mode] += 1
+        minimum_output_by_mode[profile.mode] += profile.minimum_output
+        cards.append(
+            {
+                "name": analysis.name,
+                "mana_value": analysis.mana_value,
+                "mode": profile.mode,
+                "profile": asdict(profile),
+            }
+        )
+
+    cards.sort(key=lambda item: (str(item["mode"]), float(item["mana_value"]), str(item["name"])))
+    return {
+        "distinct_cards": len(cards),
+        "max_copies": max_copies,
+        "distinct_by_mode": dict(sorted(distinct_by_mode.items())),
+        "maximum_copies_by_mode": {
+            mode: count * max_copies
+            for mode, count in sorted(distinct_by_mode.items())
+        },
+        "minimum_output_capacity_by_mode": {
+            mode: output * max_copies
+            for mode, output in sorted(minimum_output_by_mode.items())
+        },
+        "cards": cards,
+    }

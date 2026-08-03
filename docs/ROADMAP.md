@@ -14,85 +14,75 @@ Referenzarchetypen: Burn, Tokens, Artifacts, Control und Mill. Jeder Zyklus ende
 - [x] Phrase-first-Sideboardklassifikation und Diagnoseartefakte
 - [x] zentrale Mill-Quellendefinition und Poolkapazität
 
-## Token-Fokus – Buildermeilenstein erreicht
+## Token-Fokus – Buildermeilenstein
 
 - [x] Kreatur-Token von Food/Clue/Blood/Treasure getrennt
 - [x] echte Outlets von One-Shot-Sacrifice getrennt
 - [x] Other-Creature-Death-Payoffs von Self-Death getrennt
-- [x] 43 breite Rollen-Fehlpositive diagnostiziert und entfernt
+- [x] 43 breite Rollen-Fehlpositive entfernt
 - [x] präzise Planrollen und planabhängige Mindestpakete
-- [x] Full-Pool wechselt von Aristocrats zu Value Tokens
+- [x] Full-Pool wechselt zu Value Tokens
 - [x] Sparse-Pool-Ziele kapazitätsgeprüft
 - [x] neutrale Füller nur bei echter Kopienlücke
-- [x] Run 58: 283 Tests grün, Benchmark 91, Material 33, Fehlpositive 0
-- [x] Run 58: Keepability/Planfähigkeit 77/76 %
+- [x] Benchmark 91, Material 33, Fehlpositive 0
+- [x] Keepability/Planfähigkeit 77/76 %
 
-## Produktionsmessung – Run 59
+## Produktionsmessung – Run 60 grün
 
-- [x] Immediate-, Repeatable-, Conditional- und Death-Modi definiert
-- [x] konservative Mindestmenge je Creature-Token-Ereignis erkannt
-- [x] Produktionsmarker und Diagnoseartefakt implementiert
+- [x] Immediate-, Repeatable-, Conditional- und Death-Modi
+- [x] konservative Mindestmenge je Produktionseffekt
+- [x] Produktionsmarker von Funktionsrollen getrennt
 - [x] Goldfish trennt Kartenkörper, Sofortproduktion und unbedingte Engines
 - [x] Conditional-/Death-Ausgabe wird nicht kostenlos erzeugt
-- [x] Messkorrektur belegt: Schaden 18,97→10,47; Killrate 66→7 %
-- [x] finales Deck enthält 26 bedingte und 7 Death-Maker-Kopien
-- [x] aktive unbedingte Engines im Goldfish: 0,00
-- [ ] technisches Gate wieder grün herstellen
+- [x] 295 Tests und Fast-Validierung grün
+- [x] Buildermetriken gegenüber Run 58 unverändert
+- [x] Produktionsartefakt: 4 Immediate, 0 Repeatable, 21 Conditional, 8 Death
+- [x] Goldfish neu kalibriert: 14,66 Schaden, 27 % Killrate, Boardgröße 5,30
 
-## Aktueller Hotfix
+## Aktueller Zyklus – Mono-White-Produktionskapazität
 
-- [x] Produktionsmetadaten von funktionalen `CardContribution`-Rollen trennen
-- [x] Metadaten auf finalen `DeckEntry`-Rollen erhalten
-- [x] Regressionstest für Metadata-Filter vorbereiten
-- [x] Repeatable-Test auf langfristiges Wachstum statt Fünf-Züge-Vergleich umstellen
-- [ ] vollständige Testsuite und Fast-Validierung grün
-- [ ] Produktionsdiagnose und konservative Goldfishwerte bestätigen
-- [ ] Buildermetriken gegen Run 58 unverändert bestätigen
+- [x] deduplizierte Produktionskapazitätsfunktion vorbereiten
+- [x] Off-Color-, Land- und zu teure Karten filtern
+- [x] unterschiedliche Karten je Modus zählen
+- [x] maximale Kopien je Modus berechnen
+- [x] konservative Mindestoutput-Kapazität je Modus berechnen
+- [x] Diagnoseartefakt erweitern
+- [x] Regressionstest vorbereiten
+- [ ] vollständige CI und Artefakte auswerten
 
-## Erfolgskriterien des Hotfixes
+## Erfolgskriterien Kapazitätszyklus
 
 - [ ] alle Tests grün
 - [ ] Fast unter zehn Minuten
-- [ ] Builderprofil Value Tokens und Benchmark 91 unverändert
-- [ ] Material 33, Fehlpositive 0, Keepability/Planfähigkeit 77/76 %
-- [ ] Produktionsmarker im finalen Deck vorhanden
-- [ ] Produktionsmodi im Diagnoseartefakt sichtbar
-- [ ] Goldfish-Schaden/Killrate bleiben als korrigierte Messwerte dokumentiert
+- [ ] Builderprofil, Benchmark 91 und Deck-Hash unverändert
+- [ ] 100 Hände weiterhin 77/76 %
+- [ ] Goldfish weiterhin 14,66 Schaden und 27 % Killrate im aktuellen Modell
+- [ ] Poolkapazität für Immediate, Repeatable, Conditional und Death dokumentiert
 - [ ] andere vier Benchmarks unverändert
 
-## Nächste Token-Hypothese nach grünem Hotfix
+## Entscheidung nach der Kapazitätsmessung
 
-### Garantierte Produktionskapazität messen
+### Bei mindestens sechs verfügbaren unbedingten Repeatable-Kopien
 
-- [ ] Mono-White-Pool nach garantierter sofortiger, unbedingter wiederholbarer, bedingter und Death-Produktion auswerten
-- [ ] unterschiedliche Karten und maximale Kopien je Modus dokumentieren
-- [ ] prüfen, ob Value Tokens überhaupt mindestens sechs unbedingte Engines tragen kann
-- [ ] erst nach Kapazitätsmessung `token_repeatable_maker` enger definieren
-- [ ] automatische Planwahl und Profile auf dieselbe Produktionsdefinition ausrichten
+- [ ] `token_repeatable_maker` ausschließlich dem Produktionsmodus `repeatable` zuweisen
+- [ ] Value-Profil weiterhin mindestens 6/8 echte Engines verlangen
+- [ ] Planerkennung dieselbe Definition verwenden lassen
+- [ ] Builder, Diagnose, 100 Hände und Goldfish erneut vergleichen
 
-### Danach mögliche Pfade
+### Bei weniger als sechs verfügbaren unbedingten Repeatable-Kopien
 
-1. Bei ausreichender garantierter Kapazität Kartenauswahl auf diese Produktion verpflichten.
-2. Bei fehlender Value-Kapazität automatische Planwahl auf Go Wide oder Aristocrats zurückführen.
-3. Danach Go Wide, Value Tokens und Aristocrats als separate Referenzdecks erzeugen.
-4. Matchupmodell erst auf Basis belastbarer Produktionsdaten weiterentwickeln.
+- [ ] Value Tokens nicht künstlich erzwingen
+- [ ] Go Wide und Aristocrats nach garantierter Produktions- und Paketkapazität vergleichen
+- [ ] automatische Planwahl auf den bestversorgten belastbaren Plan umstellen
 
-## Pausierter Mill-Rückkehrpunkt
+## Danach
 
-- [ ] mindestens 18 Mill-Quellen, Ziel 20
-- [ ] mindestens 6 echte Engines, Ziel 8
-- [ ] Komposition und Optimierer erhalten diese Dichte
-- [ ] 100 Hände und Benchmark erneut vergleichen
-
-## Spätere Schritte
-
-1. relevante Control-Antworten aus konkreten Gegnerdecks ableiten
-2. Mill-Kompositionsschritt abschließen
-3. Strategy Commitment und Engine Density archetypenübergreifend abstrahieren
-4. Finish Density allgemein modellieren
-5. belastbare Regression-Baseline statt `baseline: none`
-6. erste v2-KGB
-7. Meta- und Club-Benchmark
+1. Go Wide, Value Tokens und Aristocrats als separate Referenzdecks erzeugen.
+2. Matchupmodell erst auf belastbaren Produktionsdaten weiterentwickeln.
+3. Mill-Kompositionsschritt mit 18 Quellen und 6 echten Engines abschließen.
+4. relevante Control-Antworten aus konkreten Gegnerdecks ableiten.
+5. belastbare Regression-Baseline statt `baseline: none`.
+6. erste v2-KGB und Club-/Meta-Benchmark.
 
 ## Definition of Done für den aktuellen Token-Meilenstein
 
@@ -101,7 +91,7 @@ Referenzarchetypen: Burn, Tokens, Artifacts, Control und Mill. Jeder Zyklus ende
 - vollständige Testsuite und Fast-Validierung grün
 - fünf Referenzarchetypen und sechs Matchups
 - genau 100 Hände je Deck mit Seed 1701
-- Buildermetriken gegen Run 58 unverändert
-- Goldfish-Metriken transparent neu kalibriert
+- Buildermetriken unverändert
+- Produktionskapazität evidenzbasiert dokumentiert
 - keine unbegründete Regression anderer Referenzarchetypen
 - KGB-Entscheidung, Reflexion und genau ein nächster Schritt dokumentiert

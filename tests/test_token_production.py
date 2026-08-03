@@ -1,21 +1,31 @@
 from thun_deckbuilder.card_analyzer import analyze_card
 from thun_deckbuilder.token_production import (
     analyze_token_production,
+    build_token_production_capacity,
     token_production_roles,
 )
 
 
+def raw_card(
+    name: str,
+    text: str,
+    *,
+    type_line="Enchantment",
+    colors=("W",),
+    mana_value=2,
+):
+    return {
+        "name": name,
+        "mana_value": mana_value,
+        "colors": list(colors),
+        "color_identity": list(colors),
+        "type_line": type_line,
+        "oracle_text": text,
+    }
+
+
 def card(name: str, text: str, *, type_line="Enchantment"):
-    return analyze_card(
-        {
-            "name": name,
-            "mana_value": 2,
-            "colors": ["W"],
-            "color_identity": ["W"],
-            "type_line": type_line,
-            "oracle_text": text,
-        }
-    )
+    return analyze_card(raw_card(name, text, type_line=type_line))
 
 
 def test_immediate_two_token_spell_has_exact_minimum_output():
@@ -29,11 +39,15 @@ def test_immediate_two_token_spell_has_exact_minimum_output():
     assert profile.mode == "immediate"
     assert profile.minimum_output == 2
     assert not profile.variable_output
-    assert set(token_production_roles(card(
-        "Raise",
-        "Create two 1/1 white Soldier creature tokens.",
-        type_line="Sorcery",
-    ))) == {"token_output_2", "token_production_immediate"}
+    assert set(
+        token_production_roles(
+            card(
+                "Raise",
+                "Create two 1/1 white Soldier creature tokens.",
+                type_line="Sorcery",
+            )
+        )
+    ) == {"token_output_2", "token_production_immediate"}
 
 
 def test_named_self_death_trigger_is_not_immediate_output():
@@ -94,3 +108,53 @@ def test_whenever_trigger_is_not_assumed_to_fire_in_solitaire():
     )
     assert profile.repeatable
     assert profile.mode == "conditional"
+
+
+def test_capacity_groups_modes_and_filters_duplicates_off_color_and_lands():
+    cards = (
+        raw_card(
+            "Raise",
+            "Create two 1/1 white Soldier creature tokens.",
+            type_line="Sorcery",
+        ),
+        raw_card(
+            "Raise",
+            "Create two 1/1 white Soldier creature tokens.",
+            type_line="Sorcery",
+        ),
+        raw_card(
+            "Engine",
+            "At the beginning of your end step, create a 1/1 white Soldier creature token.",
+        ),
+        raw_card(
+            "Death Cat",
+            "When Death Cat dies, create a 1/1 white Soldier creature token.",
+            type_line="Creature — Cat",
+        ),
+        raw_card(
+            "Blue Maker",
+            "Create a 1/1 blue Bird creature token.",
+            colors=("U",),
+        ),
+        raw_card(
+            "Token Land",
+            "Create a 1/1 white Soldier creature token.",
+            type_line="Land",
+            mana_value=0,
+        ),
+    )
+
+    capacity = build_token_production_capacity(cards)
+
+    assert capacity["distinct_cards"] == 3
+    assert capacity["distinct_by_mode"] == {
+        "death": 1,
+        "immediate": 1,
+        "repeatable": 1,
+    }
+    assert capacity["maximum_copies_by_mode"] == {
+        "death": 3,
+        "immediate": 3,
+        "repeatable": 3,
+    }
+    assert capacity["minimum_output_capacity_by_mode"]["immediate"] == 6

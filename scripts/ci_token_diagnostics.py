@@ -9,7 +9,10 @@ from thun_deckbuilder.card_analyzer import analyze_card
 from thun_deckbuilder.card_database import CardDatabase
 from thun_deckbuilder.deck_builder import generate_deck
 from thun_deckbuilder.token_packages import build_token_package_diagnostics
-from thun_deckbuilder.token_production import analyze_token_production
+from thun_deckbuilder.token_production import (
+    analyze_token_production,
+    build_token_production_capacity,
+)
 
 
 OUTPUT = Path("artifacts/global/tokens/token-packages.json")
@@ -70,6 +73,7 @@ def main() -> None:
 
     payload = build_token_package_diagnostics(deck, legal_by_name)
     payload["production"] = _production_diagnostics(deck, legal_by_name)
+    payload["production"]["pool_capacity"] = build_token_production_capacity(legal)
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)
     OUTPUT.write_text(
         json.dumps(payload, indent=2, sort_keys=True) + "\n",
@@ -78,6 +82,7 @@ def main() -> None:
     aristocrats = payload["aristocrats"]
     false_positives = payload["broad_role_false_positive_copies"]
     production = payload["production"]
+    capacity = production["pool_capacity"]
     print(
         "Token package diagnostics: "
         f"material={aristocrats['material_copies']} "
@@ -85,7 +90,8 @@ def main() -> None:
         f"death_payoffs={aristocrats['death_payoff_copies']} "
         f"drain_payoffs={aristocrats['drain_payoff_copies']} "
         f"false_positive_copies={sum(false_positives.values())} "
-        f"production_modes={production['mode_copies']}"
+        f"production_modes={production['mode_copies']} "
+        f"pool_modes={capacity['distinct_by_mode']}"
     )
 
 
