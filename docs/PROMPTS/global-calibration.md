@@ -1,6 +1,6 @@
 # Global Calibration Prompt
 
-**Version:** 1.0  
+**Version:** 1.1  
 **Verbindliche Grundlage:** `docs/SPECIFICATION.md`
 
 ## Verwendung
@@ -9,174 +9,379 @@ Der externe Auftrag soll nur Repository, Branch/PR und Laufzeit nennen. Diese Da
 
 ## Auftrag
 
-Arbeite im Repository `derSimon1/thun-format-deckbuilder` gemäß der aktuellen Version von:
+Führe genau einen produktiven Kalibrierungszyklus im Repository `derSimon1/thun-format-deckbuilder` auf Branch `codex/global-deckbuilder-calibration` und PR #14 aus. PR #13 bleibt unangetastet.
+
+Lies zu Beginn vollständig die aktuelle Version von:
 
 - `docs/SPECIFICATION.md`
+- `docs/PROMPTS/global-calibration.md`
 - `docs/DEVELOPMENT_LOGBOOK.md`
 - `docs/ROADMAP.md`
 - `docs/DECISIONS.md`
 - `docs/KNOWN_ISSUES.md`
 - `docs/META.md`
 
-Arbeite auf dem im externen Auftrag genannten Branch und Pull Request. Falls nichts anderes genannt ist, verwende `codex/global-deckbuilder-calibration` und PR #14. PR #13 und Izzet-Prowess-spezifische Arbeiten bleiben unangetastet.
+Diese Repository-Dokumente sind verbindlich und haben Vorrang vor älteren Aufgabenformulierungen.
 
 ## 1. Startprüfung
 
-Zu Beginn jedes Zyklus:
+Prüfe vor jeder Änderung:
 
-1. Verifiziere GitHub-Zugriff.
-2. Lies Spezifikation, Logbuch, Roadmap, Entscheidungen und bekannte Probleme.
-3. Prüfe Branch-Head, PR-Status, Mergeability und aktive CI.
-4. Prüfe den letzten erfolgreichen Workflow, Jobs, Logs und Artefakte.
-5. Prüfe, ob seit dem letzten dokumentierten Zyklus neue Commits oder Erkenntnisse entstanden sind.
-6. Halte den Ausgangs-Head fest.
+- aktuellen PR-Head
+- Mergeability
+- aktive CI-Runs
+- letzten erfolgreichen Workflow
+- enthaltene Jobs
+- relevante Logs
+- verfügbare Artefakte
 
-Stoppe ohne Commit, wenn aktive CI, ein veränderter Head, Parallelität oder eine unklare Ursache vorliegt. Dokumentiere dann den exakten Stopgrund und den nächsten ausführbaren Schritt.
+Halte den Ausgangs-Head fest. Stoppe ohne Commit, wenn aktive CI, ein veränderter Head, Parallelität oder eine unklare Ursache vorliegt. Dokumentiere dann den exakten Stopgrund und den nächsten ausführbaren Schritt.
 
 ## 2. Priorisierung
 
-Arbeite in dieser Reihenfolge, solange die Dokumentation nichts Neueres vorgibt:
+Wähle anhand der aktuellen Roadmap genau eine testbare Hypothese mit hohem erwartetem globalem Qualitätsgewinn.
 
-1. Token-Subarchetyp-Erkennung
-2. Strategy Commitment
-3. Engine Density
-4. Finish Density
-5. belastbare Baseline und Regressionserkennung
-6. Meta-Benchmark
+Aktuelle Priorität:
 
-Wähle pro Zyklus die Hypothese mit dem höchsten erwarteten globalen Qualitätsgewinn pro Entwicklungsaufwand. Tokens haben Priorität; Shrines dienen nur als Regressionstest.
+1. belastbare Token-Subarchetyp-Erkennung für Go Wide, Value Tokens und Aristocrats
+2. planabhängige Starthand- und Sequenzbewertung
+3. Strategy Commitment
+4. Engine Density
+5. Finish Density
+6. Baseline
 
-## 3. Token-Regeln
+Wiederhole nicht lediglich Statusprüfungen. Nach zwei dokumentierten No-Change-Zyklen derselben Ursache musst du zum nächsten Roadmap-Punkt wechseln.
 
-Bestimme vor der Kartenauswahl einen Hauptplan:
+Setze höchstens drei eng gekoppelte Code-, Test- oder Berichtsänderungen um, die dieselbe Ursache behandeln. Keine Dummy-Commits, keine unbegründeten Grenzwertverschiebungen und keine Änderungen an PR #13.
 
-- Go Wide
-- Value Tokens
-- Aristocrats
+## 3. Verbindliche Hypothese für den nächsten Zyklus
 
-Bewerte anschließend planabhängig:
+Implementiere einen reproduzierbaren `OpeningHandPlanReport`, der für jedes geprüfte Referenzdeck genau 100 Sieben-Karten-Starthände mit einem dokumentierten festen Zufallsseed erzeugt und die einzelnen Hände beziehungsweise ihre maschinenlesbaren Ergebnisse speichert.
 
-- frühe Maker
-- passende Payoffs
-- wiederholbare Engines
-- Finisher
-- Card Advantage
-- Interaktion
-- Manakurve
-- realistische Combat-Performance
+Die Analyse darf nicht nur Landzahl oder irgendeinen frühen spielbaren Spell bewerten. Sie muss prüfen, ob der deklarierte Hauptplan des Decks realistisch anlaufen kann.
 
-Ein hoher Token-Maker-, Payoff- oder Rollenwert allein genügt nicht. Rollen-Mischmasch ohne Hauptplan ist negativ zu bewerten. Standard- und Pioneer-Konzepte dürfen als Referenz für allgemeine Regeln genutzt werden, aber nicht blind kopiert werden.
+Für jede Hand sind mindestens zu erfassen:
 
-## 4. Änderungspaket
+- gezogene sieben Karten
+- verfügbare Manaquellen
+- farblich passende Manaquellen
+- mögliche Spielzüge in Zug 1, Zug 2 und Zug 3
+- frühe Bedrohung oder Enabler
+- Engine-Zugang
+- Payoff-Zugang
+- Finisher-Zugang
+- notwendige frühe Interaktion
+- tote Karten
+- widersprüchliche Karten oder Kartenpakete
+- deklarierter Hauptplan
+- Klassifikation `planfähig`, `marginal` oder `nicht planfähig`
+- konkrete Klassifikationsgründe
+- konkrete Ausfallgründe
 
-Pro Zyklus darfst du höchstens drei eng gekoppelte Änderungen oder Tests derselben Ursache umsetzen. Beispiele für zulässige Pakete:
+Die Bewertung muss archetypen- und planabhängig erfolgen.
 
-- Erkennung + Scoring + Regressionstests eines Token-Subarchetyps
-- Engine-Density-Metrik + Bericht + Tests
-- belegter CI-Fix + zugehöriger Test
+### Burn
 
-Nicht zulässig:
+Eine Hand ist nur dann planfähig, wenn sie ausreichend frühe Pressure- oder Burn-Dichte besitzt und ihre relevanten Karten mit den vorhandenen Farben rechtzeitig wirken kann.
 
-- mehrere unabhängige Themen in einem Commit
-- Grenzwerte nur zum Bestehen verändern
-- Dummy-Commits
-- unbelegte archetypspezifische Sonderfälle
-- Änderungen an PR #13
+Prüfe insbesondere:
 
-## 5. Validierung
+- Zug-1- oder Zug-2-Pressure
+- mehrere frühe Schadensquellen
+- Verhältnis aus Kreaturen, Burn und Mana
+- Hände mit nur teuren oder reaktiven Karten
+- Hände, die zwar einen frühen Spell, aber keinen realistischen Schadensplan besitzen
 
-Vor Commit:
+### Tokens – Go Wide
 
-1. vollständige Testsuite ausführen
-2. Fast-Validierung ausführen
-3. alle fünf Archetypen vergleichen
-4. drei Token-priorisierte Matchups und schnelle BO3-Berichte prüfen
-5. Laufzeit unter zehn Minuten halten
-6. unbegründete Regressionen ausschließen
-7. Branch-Head und aktive CI erneut prüfen
+Eine Hand ist nur dann planfähig, wenn sie frühe Token Maker oder gleichwertige Board-Entwicklung besitzt und ein realistisches Fenster für Anthem, Pump, Evasion oder einen anderen Go-Wide-Payoff erreicht.
 
-Fast bleibt kurz und entwicklungsnah. Full bleibt unverändert und wird manuell oder am Abschluss ausgeführt.
+Prüfe insbesondere:
 
-## 6. Commit und Workflow
+- früher Token Maker
+- zweiter Maker oder Board-Verbreiterung
+- passender Go-Wide-Payoff
+- Mana für Maker und Payoff
+- Hände mit ausschließlich Payoffs ohne Board
+- Hände mit ausschließlich kleinen Bodies ohne Scaling
+
+### Tokens – Value Tokens
+
+Eine Hand ist nur dann planfähig, wenn sie frühe Token-Erzeugung mit einer wiederholbaren Value-Engine oder einem belastbaren Ressourcenvorteil verbinden kann.
+
+Prüfe insbesondere:
+
+- früher Token Maker
+- wiederholbare Engine
+- Kartenfluss, Mana-, Lebens- oder Board-Vorteil
+- realistisches Engine-Fenster
+- Hände mit vielen Token-Karten, aber ohne Value-Konversion
+- Hände mit Engine, aber ohne verwertbares Material
+
+### Tokens – Aristocrats
+
+Eine Hand ist nur dann planfähig, wenn sie in einem realistischen Zeitfenster mehrere notwendige Funktionsgruppen zusammenbringt:
+
+- Opfermaterial oder wiederholbare Token-Erzeugung
+- Sacrifice Outlet oder gleichwertiger Opfer-Enabler
+- Drain-, Death- oder Sacrifice-Payoff
+- ausreichendes Mana und passende Farben
+
+Ein einzelnes formal passendes Element reicht nicht aus.
+
+Unterscheide mindestens:
+
+- nur Material
+- nur Outlet
+- nur Payoff
+- Material plus Outlet ohne Payoff
+- Material plus Payoff ohne Outlet
+- Outlet plus Payoff ohne Material
+- vollständiger oder realistisch vervollständigbarer Aristocrats-Core
+
+### Artifacts
+
+Eine Hand ist nur dann planfähig, wenn sie einen frühen Artifact-Enabler und mindestens ein nutzbares Synergy-Piece oder Payoff besitzt.
+
+Prüfe insbesondere:
+
+- frühes Artefakt oder Artifact-Enabler
+- Synergie-Piece
+- Payoff oder Engine
+- Mana und Farbzugang
+- Hände mit generischen Artefakten ohne Synergie
+- Hände mit Payoffs ohne ausreichende Artefaktbasis
+
+### Mill
+
+Eine Hand ist nur dann planfähig, wenn sie eine frühe Mill-Engine oder belastbare wiederholbare Mill-Quelle besitzt und ausreichenden Schutz, Interaktion oder Tempozugang hat.
+
+Prüfe insbesondere:
+
+- frühe Mill-Engine
+- wiederholbare Mill-Quelle
+- Schutz oder Interaktion
+- Mana und Farben
+- Hände mit einmaligem Mill ohne Folgedruck
+- Hände mit Interaktion, aber ohne realistische Mill-Clock
+
+### Shrines
+
+Eine Hand ist nur dann planfähig, wenn sie belastbare Farben, frühen Aufbau und einen realistischen Zugang zu mindestens einem Schrein oder einer Schrein-Engine besitzt.
+
+Prüfe insbesondere:
+
+- verfügbare Farben
+- Farbsequenz für Zug 1 bis 3
+- früher Schrein oder Setup
+- Zugang zu zusätzlicher Engine oder Value
+- Hände mit passenden Karten, aber unbrauchbarer Farbreihenfolge
+- Hände mit Manafixing ohne Aufbau
+- Hände mit Schreinen, die absehbar nicht ausgespielt werden können
+
+## 4. Reproduzierbarkeit und Rohdaten
+
+Verwende einen explizit dokumentierten Zufallsseed.
+
+Der Seed muss:
+
+- im Bericht stehen
+- in den maschinenlesbaren Rohdaten enthalten sein
+- bei gleichem Deck und gleichem Code dieselben 100 Hände erzeugen
+- in automatisierten Tests reproduzierbar geprüft werden
+
+Speichere die Ergebnisse unter `artifacts/global` oder `docs/reports`.
+
+Bevorzugtes Format:
+
+- JSON oder JSONL für vollständige Rohdaten
+- Markdown für die kompakte menschlich lesbare Zusammenfassung
+
+Die Rohdaten müssen mindestens enthalten:
+
+- Deck-ID oder Archetyp
+- Decklisten-Hash oder eindeutige Deckreferenz
+- Seed
+- Simulationsversion
+- Handnummer
+- Karten der Starthand
+- relevante Sequenz bis Zug 3
+- Klassifikation
+- Klassifikationsgründe
+- Ausfallgründe
+
+Erfinde keine Einzelhände aus bereits aggregierten Workflow-Daten. Falls bestehende Artefakte nur Zusammenfassungen enthalten, muss die Simulation aus der tatsächlichen Deckliste und den verfügbaren Kartenmetadaten neu ausgeführt werden. Ist das nicht möglich, dokumentiere den exakten technischen Stopgrund und behaupte nicht, die 100-Hand-Prüfung durchgeführt zu haben.
+
+## 5. Pflichtmetriken je Deckliste
+
+Berichte mindestens:
+
+- Keepability-Rate
+- planfähige Rate
+- marginale Rate
+- nicht-planfähige Rate
+- frühe-Play-Rate bis Zug 2
+- frühe-Play-Rate bis Zug 3
+- Manafehlerquote
+- Farbfehlerquote
+- fehlende-Enabler-Quote
+- fehlende-Engine-Quote
+- fehlende-Payoff-Quote
+- fehlende-Finisher-Quote, sofern archetypenrelevant
+- Quote widersprüchlicher oder toter Karten
+- drei häufigste Problemtypen
+
+Keepability und Planfähigkeit müssen getrennte Metriken bleiben. Eine Hand kann formal keepbar sein und trotzdem den Hauptplan nicht zuverlässig unterstützen.
+
+Eine allgemeine Early-Play-Rate darf nicht als Beweis für einen funktionierenden Matchplan verwendet werden.
+
+Falls sinnvoll, simuliere zusätzlich Ziehschritte bis Zug 4 oder 5. Trenne diese Ergebnisse klar von der reinen Sieben-Karten-Starthandbewertung.
+
+## 6. Tests
+
+Ergänze gezielte Tests für mindestens:
+
+- deterministische Wiederholbarkeit mit identischem Seed
+- unterschiedliche Ergebnisse mit anderem Seed
+- exakt 100 Hände pro Deck
+- korrekte Klassifikation klar planfähiger Hände
+- korrekte Klassifikation klar nicht planfähiger Hände
+- Tokens Go Wide
+- Tokens Value Tokens
+- Tokens Aristocrats
+- mindestens einen Nicht-Token-Archetyp
+- Trennung von Early Play und Planfähigkeit
+- Trennung von Keepability und Planfähigkeit
+- vollständige maschinenlesbare Ausgabe
+
+Vermeide Tests, die ausschließlich die aktuelle Implementierung spiegeln. Verwende kleine, kontrollierte Deck- oder Hand-Fixtures mit fachlich eindeutigem erwartetem Ergebnis.
+
+## 7. Gesamtvalidierung
+
+Führe nach der Implementierung aus:
+
+- vollständige Testsuite
+- Fast-Validierung
+- Vergleich von fünf Archetypen
+- Vergleich der drei Token-Subarchetypen
+- drei relevante Token-Matchups
+- BO3-Berichte
+- Laufzeitprüfung unter zehn Minuten
+- Prüfung auf unbegründete Regressionen
+
+Vergleiche mindestens:
+
+- Burn
+- Tokens
+- Artifacts
+- Mill
+- Shrines
+
+Innerhalb Tokens müssen Go Wide, Value Tokens und Aristocrats getrennt ausgewertet werden.
+
+Prüfe, ob sich bestehende Kennzahlen wie Strategy Commitment oder Engine Density scheinbar verbessern, während die planfähige Starthandrate unverändert schlecht bleibt. Dokumentiere solche Widersprüche ausdrücklich.
+
+## 8. Vor dem Commit
+
+Prüfe unmittelbar vor dem Commit erneut:
+
+- Branch-Head
+- PR-Head
+- aktive CI
+- zwischenzeitliche Änderungen
+- Mergeability
+- ob der lokale Stand noch auf dem aktuellen PR-Head basiert
 
 Bei erfolgreicher Validierung:
 
-1. Erstelle genau einen klar benannten Commit.
-2. Verifiziere innerhalb von zehn Minuten eine neue Workflow-Run-ID.
-3. Prüfe Status, Jobs, Logs und Artefakte.
-4. Bei roter CI behebe in einem späteren Zyklus höchstens eine eindeutig belegte Ursache.
-5. Fehlt ein erwarteter Lauf, prüfe Workflow-Aktivierung, Trigger, Branch-/Pfadfilter, Workflowdatei auf `main`, `concurrency` und Trigger-Commit.
-6. Erzeuge keinen Dummy-Commit zum Triggern.
+- erstelle genau einen sinnvollen Commit
+- aktualisiere `docs/DEVELOPMENT_LOGBOOK.md`
+- aktualisiere `docs/ROADMAP.md`
+- nimm beide Dokumentationsänderungen in denselben Commit auf
 
-GitHub Actions ist Validator. Ein Zeitplanlauf ohne neuen Code gilt nicht als Entwicklungsfortschritt.
+Ändere `docs/DECISIONS.md`, `docs/KNOWN_ISSUES.md`, `docs/META.md` oder `docs/SPECIFICATION.md` nur gemäß den dort definierten Regeln.
 
-## 7. No-Change-Regel
+## 9. Nach dem Push
 
-Wenn keine sichere Änderung möglich ist, liefere zwingend:
+Verifiziere innerhalb von zehn Minuten die neue Workflow-Run-ID der PR.
+
+Prüfe:
+
+- Run-ID
+- Commit-SHA
+- Status
+- Conclusion
+- alle Jobs
+- fehlgeschlagene oder übersprungene Schritte
+- relevante Logs
+- erzeugte Artefakte
+- Inhalt und Verwendbarkeit der Artefakte
+
+Grüne CI darf nicht automatisch als Beweis für bessere spielerische Qualität gewertet werden.
+
+## 10. Verbindliche Reflexion
+
+Stelle das Ergebnis am Ende ausdrücklich in Frage.
+
+Beantworte mindestens:
+
+- Welche zentrale Annahme könnte falsch sein?
+- Welche alternative Erklärung passt ebenfalls zu den Messwerten?
+- Wurde auf Fixtures, Tests oder Simulationen überangepasst?
+- Welche Mess- oder Datenlücke bleibt?
+- Bedeutet grüne CI tatsächlich bessere spielerische Qualität?
+- Welche unbeabsichtigte Regression könnte unentdeckt sein?
+- Sind die Klassifikationsregeln möglicherweise zu streng oder zu locker?
+- Bilden die Referenzdecks echte Deckbuilder-Ausgaben oder nur kuratierte Beispiele ab?
+- Werden Kartentexte, Rollen und Synergien zuverlässig genug erkannt?
+- Ist eine gute Starthandrate möglicherweise nur Folge einer schwachen oder zu allgemeinen Planbeschreibung?
+
+Bewerte danach die Erkenntnis neu mit einer expliziten Confidence-Angabe.
+
+Leite mindestens zwei mögliche Folgeschritte ab und bewerte sie nach:
+
+- erwartetem globalem Qualitätsgewinn
+- Evidenz
+- Aufwand
+- Risiko
+
+Wähle genau einen logisch stärksten nächsten Schritt für den folgenden Zyklus. Schreibe ihn konkret und ausführbar in:
+
+- `docs/DEVELOPMENT_LOGBOOK.md`
+- `docs/ROADMAP.md`
+
+Der nächste Zyklus beginnt mit diesem Schritt, außer neue belegte Evidenz rechtfertigt eine andere Priorität.
+
+## 11. Dauerhafte Verankerung
+
+Sobald CI inaktiv und der Branch-Head stabil ist, verankere dauerhaft in:
+
+- `docs/SPECIFICATION.md`
+- `docs/PROMPTS/global-calibration.md`
+
+folgende Regeln:
+
+1. Für jede erzeugte oder als Referenz verwendete Deckliste sind 100 reproduzierbare Sieben-Karten-Starthände mit dokumentiertem Seed zu analysieren.
+2. Die Bewertung muss archetypen- und planabhängig sein.
+3. Keepability, Early Play und Planfähigkeit müssen getrennt ausgewiesen werden.
+4. Aggregierte Daten dürfen nicht nachträglich als simulierte Einzelhände dargestellt werden.
+5. Jeder Kalibrierungszyklus endet mit einer kritischen Reflexion und einem eindeutig priorisierten nächsten Schritt.
+
+Dokumentiere diese Spezifikationsänderung in `docs/CHANGELOG_SPECIFICATION.md`.
+
+## 12. No-Change- und Abbruchfall
+
+Falls kein sinnvoller Commit möglich ist, dokumentiere im Repository oder im Abschlussprotokoll:
 
 - geprüfte Hypothese
+- verwendete Daten
+- verwendeten Seed, falls eine Simulation möglich war
 - exakten Stopgrund
 - gewonnene Erkenntnis
 - Confidence
-- nächsten ausführbaren Schritt
+- mindestens zwei mögliche Folgeschritte
+- genau einen priorisierten nächsten ausführbaren Schritt
 
 Nach zwei aufeinanderfolgenden No-Change-Zyklen mit derselben Ursache wechsle zum nächsten priorisierten Roadmap-Punkt. Wiederhole nicht endlos dieselben Statusprüfungen.
 
-Ein No-Change-Zyklus darf stattdessen produktiv nutzen:
-
-- gezielte Tests vorbereiten
-- technische Schulden dokumentieren
-- Referenzkonzepte analysieren
-- offene Hypothesen präzisieren
-- Baseline- oder Berichtslücken untersuchen
-
-Ohne belegte Änderung wird nicht committed.
-
-## 8. Dokumentation
-
-Nach jedem Zyklus aktualisiere bei Bedarf:
-
-- `docs/DEVELOPMENT_LOGBOOK.md`
-- `docs/DECISIONS.md`
-- `docs/KNOWN_ISSUES.md`
-- `docs/ROADMAP.md`
-- `docs/META.md`
-
-Ändere `docs/SPECIFICATION.md` nur bei belegten neuen Erkenntnissen und dokumentiere jede Änderung in `docs/CHANGELOG_SPECIFICATION.md`.
-
-Jeder Logbucheintrag beantwortet:
-
-1. Was wurde verbessert?
-2. Was wurde gelernt?
-3. Was ist der nächste Schritt?
-
-Zusätzlich festhalten:
-
-- Ausgangs- und Ziel-Head
-- Commit-SHA
-- Workflow-Run-ID
-- Tests und Laufzeit
-- Regressionen
-- Confidence
-- Stopgrund, falls kein Commit entstand
-
-## 9. Laufzeitsteuerung
-
-Der externe Auftrag gibt `X` Stunden vor. Beginne sofort mit dem ersten Zyklus. Verwende die verfügbare Zeit für mehrere aufeinanderfolgende, abgeschlossene Entwicklungszyklen. Starte keinen neuen Änderungsschritt, wenn er vor Ablauf der Laufzeit nicht mehr sauber validiert und dokumentiert werden kann.
-
-Empfohlener unbeaufsichtigter Rahmen im aktuellen Reifegrad: 8 bis 12 Stunden. Längere Läufe erst nach stabiler Baseline, Meta-Benchmark und nachgewiesener produktiver Zyklussteuerung.
-
-## 10. Abschlussbericht
-
-Am Ende der Laufzeit:
-
-- vollständigen Testsatz und Full-Validierung ausführen, sofern zeitlich möglich
-- alle Commits und Run-IDs auflisten
-- Qualitätsentwicklung je Archetyp zusammenfassen
-- bestätigte und widerlegte Hypothesen nennen
-- Regressionen und offene Risiken nennen
-- Roadmap aktualisieren
-- Spezifikationslücken als Vorschläge dokumentieren
-- einen kurzen Folgeauftrag für die nächste Runde formulieren
-
-Erfinde keine Ergebnisse. Trenne Fakten, Schlussfolgerungen und offene Hypothesen klar.
+Erfinde keine Ergebnisse, keine Workflow-Runs, keine Artefakte und keine simulierten Hände.
