@@ -8,8 +8,11 @@ from pathlib import Path
 from thun_deckbuilder.card_analyzer import analyze_card
 from thun_deckbuilder.card_database import CardDatabase
 from thun_deckbuilder.deck_builder import generate_deck
+from thun_deckbuilder.finish_density import evaluate_token_finish_density
+from thun_deckbuilder.knowledge_base import CardKnowledge
 from thun_deckbuilder.opening_hand_simulator import OpeningHandSimulator
 from thun_deckbuilder.token_packages import build_token_package_diagnostics
+from thun_deckbuilder.token_plan import TokenPlan
 from thun_deckbuilder.token_production import (
     analyze_token_production,
     build_token_production_capacity,
@@ -103,6 +106,22 @@ def _opening_hand_diagnostics(deck) -> dict[str, object]:
     return asdict(report)
 
 
+def _card_knowledge(legal) -> tuple[CardKnowledge, ...]:
+    by_name: dict[str, CardKnowledge] = {}
+    for raw in legal:
+        card = dict(raw)
+        analysis = analyze_card(card)
+        if not analysis.name:
+            continue
+        by_name[analysis.name.casefold()] = CardKnowledge(
+            card=card,
+            analysis=analysis,
+            roles=frozenset(),
+            synergies=frozenset(),
+        )
+    return tuple(by_name.values())
+
+
 def main() -> None:
     with CardDatabase() as database:
         legal = database.get_all_legal_cards()
@@ -120,6 +139,12 @@ def main() -> None:
     payload = build_token_package_diagnostics(deck, legal_by_name)
     payload["production"] = _production_diagnostics(deck, legal_by_name)
     payload["production"]["pool_capacity"] = build_token_production_capacity(legal)
+    finish = evaluate_token_finish_density(
+        deck.mainboard,
+        _card_knowledge(legal),
+        TokenPlan.GO_WIDE,
+    )
+    payload["finish_density"] = asdict(finish)
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)
     OUTPUT.write_text(
         json.dumps(payload, indent=2, sort_keys=True) + "\n",
@@ -145,6 +170,9 @@ def main() -> None:
         f"false_positive_copies={sum(false_positives.values())} "
         f"production_modes={production['mode_copies']} "
         f"pool_modes={capacity['distinct_by_mode']} "
+        f"finish_copies={finish.finish_copies} "
+        f"finish_density={finish.finish_density:.3f} "
+        f"finish_modes={finish.finish_modes} "
         f"opening_hands={opening_hands['samples']} "
         f"opening_seed={opening_hands['seed']} "
         f"plan_capable={opening_hands['plan_capable_pct']}% "
