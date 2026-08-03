@@ -72,8 +72,8 @@ def test_shrine_benchmark_counts_shrines_and_fixing():
 def test_mill_benchmark_counts_real_mill_sources():
     deck = GeneratedDeck(
         mainboard=(
-            entry("Mill Spell", 18, 2, "Sorcery", reasons=("Millt 8 Karten",)),
-            entry("Mill Engine", 6, 2, "Creature", reasons=("Wiederholbares Mill",)),
+            entry("Mill Spell", 18, 2, "Sorcery", ("mill_source",)),
+            entry("Mill Engine", 6, 2, "Creature", ("mill_source", "mill_engine")),
             entry("Draw", 6, 2, "Instant", ("card_draw",)),
             entry("Removal", 6, 2, "Instant", ("removal",)),
         ),
