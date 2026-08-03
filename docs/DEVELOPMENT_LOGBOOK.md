@@ -230,3 +230,79 @@ Gründe:
 ### Priorisierter nächster ausführbarer Schritt
 
 Nach erfolgreicher Auswertung des neuen Workflows Control als fünften allgemeinen Builder- und Validator-Archetyp integrieren, Shrines aus der Pflichtvalidierung entfernen und Control-Starthände sowie Matchups gegen Aggro, Tokens und einen Nichtkreaturen-/Engine-Plan mit denselben 100-Hand-Rohdaten prüfen.
+
+## 2026-08-03 – Drei-Stunden-Lauf, Zyklus 2: Manafehler dürfen keine planfähigen Hände sein
+
+### Ziel
+
+Eine durch die neuen Rohdaten belegte Fehlklassifikation korrigieren, bevor die Metrik für Control oder Schwellenwertkalibrierung verwendet wird.
+
+### Ausgangs-Head
+
+`43fa53d1766b05327eae5880bacb05905923f21c`
+
+### Ausgangs-KGB oder Vergleichsstand
+
+- keine voll qualifizierte v2-KGB
+- v2-Bootstrap-Vergleichsstand: `31f6c1e053976435481c07ab2098430bc2a45471`
+- neuer Workflow: Run `30794553679`, erfolgreich
+
+### Evidenz aus Run 42
+
+- vollständige Testsuite: 250 bestanden in 23,49 Sekunden
+- Fast-Validierung: erfolgreich; Test-/Fast-Schritt von 07:41:32 bis 07:44:22, ungefähr 2 Minuten 51 Sekunden
+- Artefakt: `global-calibration-pr-42`, ID `8848391256`, 38 Dateien, 46.181 Byte komprimiert
+- pro erzeugtem Deck genau 100 Hände mit Seed `1701` und Deck-Hash gespeichert
+- Burn: Keepability 78 %, Planfähigkeit 94 %, Manafehler 22 %
+- Tokens/Aristocrats: Keepability 73 %, Planfähigkeit 92 %, Manafehler 22 %
+- Artifacts: Keepability 71 %, Planfähigkeit 88 %, Manafehler 22 %
+- Mill: Keepability 77 %, Planfähigkeit 0 %, marginal 100 %
+- Shrines: Keepability 69 %, Planfähigkeit 51 %, Manafehler 18 %
+
+### Hypothese
+
+Eine Hand mit höchstens einem oder mindestens fünf Ländern kann zwar relevante Planstücke enthalten, ist als reine Sieben-Karten-Starthand aber nicht belastbar planfähig. Solche Hände müssen höchstens marginal sein. Diese Invariante ist globaler und fachlich belastbarer als archetypspezifische Schwellenwertkorrekturen.
+
+### Änderungen
+
+1. Jede zunächst planfähige Hand mit Mana Screw oder Flood wird auf `marginal` herabgestuft und erhält den Grund `plan_pieces_with_unstable_mana`.
+2. Ein Regressionstest erzwingt archetypenunabhängig, dass keine Hand mit `mana_error=True` als `planfaehig` klassifiziert wird.
+
+### Validierung vor Commit
+
+- Syntaxprüfung: bestanden
+- gezielte kontrollierte Suite: 16 Tests bestanden in 0,69 Sekunden
+- vollständige Testsuite und Fast-Validierung durch neuen PR-Workflow zu verifizieren
+
+### Ergebnis vor Push
+
+Die Metrik unterscheidet nun zwischen vorhandenen Planstücken und einer tatsächlich belastbaren Starthand. Dies ist eine Messkorrektur, keine behauptete Deckverbesserung.
+
+### KGB-Entscheidung
+
+Keine neue v2-KGB.
+
+Control fehlt weiterhin im Pflichtvalidator und die korrigierten globalen Rohdaten müssen post-push ausgewertet werden.
+
+### Confidence
+
+Hoch für die Mana-Invariante; mittel für die übrigen archetypenabhängigen Klassifikationsregeln.
+
+### Kritische Reflexion
+
+- Mögliche falsche Annahme: Einzelne aggressive Ein-Land-Hände könnten mit mehreren Ein-Mana-Spells praktisch keepbar sein; die globale Herabstufung auf marginal ist daher bewusst konservativ, nicht zwingend ein Mulligan-Urteil.
+- Alternative Erklärung für hohe Planraten: Nicht nur Manafehler, sondern zu breite Enabler-/Payoff-Signale können die Werte aufblasen.
+- Overfitting: Die neue Regel ist eine globale Invariante und nicht auf einzelne Artefaktwerte angepasst; dennoch bleibt die Landzahl nur ein vereinfachter Sequenzindikator.
+- Datenlücke: Draws bis Zug 3 werden in diesem reinen Starthandbericht nicht als Rettung eingerechnet.
+- Grüne CI beweist weiterhin nur technische Konsistenz.
+- Mögliche unentdeckte Regression: Planfähigkeitsraten können stark sinken; dies ist fachlich erwartet, muss aber je Archetyp geprüft werden.
+
+### Mögliche Folgeschritte
+
+1. **Control als Referenzarchetyp integrieren** – höchster globaler Gewinn, hohe Evidenz, mittlerer bis hoher Aufwand, mittleres Risiko.
+2. **Mill-Klassifikation untersuchen** – Run 42 zeigt 0 % planfähig und 100 % marginal; hohe Messrelevanz, geringer bis mittlerer Aufwand, Risiko einer archetypspezifischen Überanpassung.
+3. **Oracle-Text in die Handanalyse aufnehmen** – hoher langfristiger Gewinn, mittlerer Aufwand, breiteres Datenmodellrisiko.
+
+### Priorisierter nächster ausführbarer Schritt
+
+Nach erfolgreicher Workflow-Auswertung Control als fünften Builder- und Validator-Archetyp integrieren. Mill bleibt als belegte Messauffälligkeit dokumentiert, wird aber nicht vorgezogen, solange keine weitere Evidenz zeigt, dass die globale Rollen-/Textbasis statt nur die Mill-Heuristik fehlerhaft ist.

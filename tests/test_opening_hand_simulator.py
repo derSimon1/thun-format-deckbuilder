@@ -484,3 +484,49 @@ def test_color_mismatch_is_reported_separately_from_land_count():
     assert any(
         "color_mismatch" in hand.failure_reasons for hand in report.hands
     )
+
+
+def test_mana_error_hands_are_never_classified_as_plan_capable():
+    deck = deck_with_sources(
+        entry(
+            "Sacrifice Material",
+            12,
+            1,
+            roles=("token_maker",),
+            reasons=("Aristocrats: Opfermaterial",),
+            mana_cost="{W}",
+            colored="W",
+        ),
+        entry(
+            "Sacrifice Outlet",
+            12,
+            2,
+            roles=("sacrifice",),
+            reasons=("Aristocrats: Opfermöglichkeit",),
+            mana_cost="{1}{W}",
+            colored="W",
+        ),
+        entry(
+            "Death Payoff",
+            12,
+            2,
+            roles=("token_payoff",),
+            reasons=("Aristocrats: Death-Payoff drain",),
+            mana_cost="{1}{W}",
+            colored="W",
+        ),
+        lands=12,
+    )
+    report = OpeningHandSimulator().simulate_plan(
+        deck,
+        archetype="tokens",
+        plan="aristocrats",
+        seed=1701,
+    )
+
+    assert any(hand.mana_error for hand in report.hands)
+    assert all(
+        hand.classification != HandPlanClassification.PLAN_CAPABLE
+        for hand in report.hands
+        if hand.mana_error
+    )

@@ -700,6 +700,13 @@ def _classify_plan(
         else:
             failures.append("missing_core_piece")
 
+    if (
+        classification == HandPlanClassification.PLAN_CAPABLE
+        and (land_count <= 1 or land_count >= 5)
+    ):
+        classification = HandPlanClassification.MARGINAL
+        reasons.append("plan_pieces_with_unstable_mana")
+
     if not castable_turn_two:
         failures.append("no_turn_two_play")
     if not castable_turn_three:

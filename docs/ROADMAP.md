@@ -19,7 +19,7 @@ Die fünf verbindlichen Referenzarchetypen sind Burn, Tokens, Artifacts, Control
 - [x] v2-Bootstrap-Vergleichsstand mit Commit, Workflow und Einschränkungen dokumentieren
 - [x] reproduzierbaren `OpeningHandPlanReport` mit genau 100 gespeicherten Händen je im Fast-Lauf verwendeter Deckliste implementieren
 - [x] Keepability, Early Play und Planfähigkeit getrennt ausweisen
-- [ ] Fast-Report-Artefakte und Laufzeit im neuen PR-Workflow verifizieren
+- [x] Fast-Report-Artefakte und Laufzeit in Run `30794553679` verifiziert
 - [ ] vollständigen Validator auf Burn, Tokens, Artifacts, Control und Mill umstellen
 - [ ] erste vollständig qualifizierte v2-KGB erzeugen
 
@@ -67,14 +67,15 @@ Die fünf verbindlichen Referenzarchetypen sind Burn, Tokens, Artifacts, Control
 
 ## Aktuelle Priorität
 
-1. neuen Workflow, 100-Hand-Rohdaten und Laufzeit des `OpeningHandPlanReport` verifizieren
+1. Manafehler-Invariante im neuen Workflow und in den Rohdaten verifizieren
 2. Control als fünften Builder- und Validator-Archetyp integrieren und Shrines aus der Pflichtvalidierung entfernen
 3. Burn, Tokens, Artifacts, Control und Mill mit denselben 100-Hand-Metriken vergleichen
-4. Go Wide, Value Tokens und Aristocrats anhand planfähiger Hände getrennt benchmarken
-5. erste vollständig qualifizierte v2-KGB dokumentieren
-6. Strategy Commitment und Engine Density archetypenübergreifend abstrahieren
-7. Finish Density und klare Wincondition-Erkennung
-8. Meta-Benchmark
+4. Mill-Befund 0 % planfähig / 100 % marginal gegen Rollen- und Kartentextdaten prüfen
+5. Go Wide, Value Tokens und Aristocrats anhand planfähiger Hände getrennt benchmarken
+6. erste vollständig qualifizierte v2-KGB dokumentieren
+7. Strategy Commitment und Engine Density archetypenübergreifend abstrahieren
+8. Finish Density und klare Wincondition-Erkennung
+9. Meta-Benchmark
 
 ## Definition of Done für den nächsten Zyklus
 
