@@ -7,7 +7,9 @@ class CardRole(StrEnum):
     """Canonical functional roles used across profiles and deck composition.
 
     ``StrEnum`` keeps the existing string-based API compatible while preventing
-    spelling drift in new code. For example, ``CardRole.BURN == "burn"``.
+    spelling drift in new code. Broad roles remain available for general deck
+    reports; precise Token roles prevent Food or one-shot sacrifice text from
+    satisfying creature-token package requirements.
     """
 
     AGGRO_CREATURE = "aggro_creature"
@@ -15,6 +17,8 @@ class CardRole(StrEnum):
     BOARD_WIPE = "board_wipe"
     BURN = "burn"
     CARD_DRAW = "card_draw"
+    DEATH_PAYOFF = "death_payoff"
+    DRAIN_PAYOFF = "drain_payoff"
     FINISHER = "finisher"
     MILL_ENGINE = "mill_engine"
     MILL_SOURCE = "mill_source"
@@ -22,8 +26,12 @@ class CardRole(StrEnum):
     RAMP = "ramp"
     REMOVAL = "removal"
     SACRIFICE = "sacrifice"
+    SACRIFICE_OUTLET = "sacrifice_outlet"
+    TOKEN_CREATURE_MAKER = "token_creature_maker"
     TOKEN_MAKER = "token_maker"
     TOKEN_PAYOFF = "token_payoff"
+    TOKEN_REPEATABLE_MAKER = "token_repeatable_maker"
+    TOKEN_VALUE_PAYOFF = "token_value_payoff"
 
 
 def normalize_role(role: CardRole | str) -> CardRole:

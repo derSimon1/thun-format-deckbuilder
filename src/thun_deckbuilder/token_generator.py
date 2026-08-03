@@ -1,9 +1,13 @@
 from __future__ import annotations
 
+from dataclasses import replace
+
+from thun_deckbuilder.card_role import CardRole
 from thun_deckbuilder.deck_generator import GeneratedDeck
 from thun_deckbuilder.engine_density import evaluate_token_engine_density
 from thun_deckbuilder.knowledge_base import CardKnowledge, KnowledgeBase
 from thun_deckbuilder.strategy_commitment import evaluate_token_commitment
+from thun_deckbuilder.token_packages import analyze_token_package
 from thun_deckbuilder.token_plan import TokenPlan, detect_token_plan
 from thun_deckbuilder.token_profiles import token_profile_for_plan
 from thun_deckbuilder.token_scoring import score_token_card
@@ -13,20 +17,73 @@ def _is_mono_white(knowledge: CardKnowledge) -> bool:
     return set(knowledge.analysis.color_identity).issubset({"W"})
 
 
+def _with_precise_token_roles(knowledge: CardKnowledge) -> CardKnowledge:
+    """Return a Token-specific view with broad false positives removed."""
+
+    signals = analyze_token_package(knowledge.analysis)
+    roles = {str(role) for role in knowledge.roles}
+
+    if not signals.creates_creature_tokens:
+        roles.discard(CardRole.TOKEN_MAKER.value)
+    if not signals.sacrifice_outlet:
+        roles.discard(CardRole.SACRIFICE.value)
+    if not any(
+        (
+            signals.anthem,
+            signals.evasion_payoff,
+            signals.token_value_payoff,
+            signals.death_payoff,
+            signals.drain_payoff,
+        )
+    ):
+        roles.discard(CardRole.TOKEN_PAYOFF.value)
+
+    if signals.creates_creature_tokens:
+        roles.update(
+            {
+                CardRole.TOKEN_MAKER.value,
+                CardRole.TOKEN_CREATURE_MAKER.value,
+            }
+        )
+    if signals.repeatable_creature_source:
+        roles.add(CardRole.TOKEN_REPEATABLE_MAKER.value)
+    if signals.sacrifice_outlet:
+        roles.update(
+            {
+                CardRole.SACRIFICE.value,
+                CardRole.SACRIFICE_OUTLET.value,
+            }
+        )
+    if signals.death_payoff:
+        roles.update(
+            {
+                CardRole.DEATH_PAYOFF.value,
+                CardRole.TOKEN_PAYOFF.value,
+            }
+        )
+    if signals.drain_payoff:
+        roles.update(
+            {
+                CardRole.DRAIN_PAYOFF.value,
+                CardRole.TOKEN_PAYOFF.value,
+            }
+        )
+    if signals.token_value_payoff:
+        roles.update(
+            {
+                CardRole.TOKEN_VALUE_PAYOFF.value,
+                CardRole.TOKEN_PAYOFF.value,
+            }
+        )
+    if signals.anthem or signals.evasion_payoff:
+        roles.add(CardRole.TOKEN_PAYOFF.value)
+
+    return replace(knowledge, roles=frozenset(roles))
+
+
 def _is_reasonable_token_card(knowledge: CardKnowledge) -> bool:
     analysis = knowledge.analysis
     if analysis.is_land or not _is_mono_white(knowledge) or analysis.mana_value > 6:
-        return False
-    if not knowledge.roles.intersection(
-        {
-            "token_maker",
-            "token_payoff",
-            "sacrifice",
-            "removal",
-            "card_draw",
-            "protection",
-        }
-    ):
         return False
     text = analysis.oracle_text.lower()
     excluded_phrases = (
@@ -39,13 +96,22 @@ def _is_reasonable_token_card(knowledge: CardKnowledge) -> bool:
     if any(phrase in text for phrase in excluded_phrases):
         return False
 
-    creates_tokens = "create" in text and "token" in text
-    token_payoff = "token_payoff" in knowledge.roles
+    signals = analyze_token_package(analysis)
+    plan_piece = any(
+        (
+            signals.creates_creature_tokens,
+            signals.anthem,
+            signals.evasion_payoff,
+            signals.token_value_payoff,
+            signals.sacrifice_outlet,
+            signals.death_payoff,
+            signals.drain_payoff,
+        )
+    )
     utility = bool(
         knowledge.roles.intersection({"removal", "card_draw", "protection"})
-    )
-    sacrifice_piece = "sacrifice" in knowledge.roles
-    return creates_tokens or token_payoff or utility or sacrifice_piece
+    ) and not signals.creates_noncreature_tokens
+    return plan_piece or utility
 
 
 def _score_for_composition(
@@ -62,22 +128,26 @@ def _score_for_composition(
     }
     plan_bonuses = {
         TokenPlan.GO_WIDE: {
-            "token_maker": (2.0, "Go Wide: Token-Erzeuger"),
-            "token_payoff": (3.0, "Go Wide: Board-Payoff"),
-            "card_draw": (1.5, "Kartennachschub"),
-            "sacrifice": (-1.5, "Go Wide: planfremde Opferrolle"),
+            "token_creature_maker": (2.0, "Go Wide: Kreatur-Token-Erzeuger"),
+            "anthem": (3.0, "Go Wide: Board-Payoff"),
+            "token_repeatable_maker": (1.0, "Go Wide: wiederholbare Quelle"),
+            "card_draw": (1.0, "Kartennachschub"),
+            "sacrifice_outlet": (-1.5, "Go Wide: planfremdes Opferpaket"),
         },
         TokenPlan.VALUE: {
-            "token_maker": (1.5, "Value Tokens: Material"),
-            "token_payoff": (2.5, "Value Tokens: Payoff"),
-            "card_draw": (3.0, "Value Tokens: Kartenvorteil"),
-            "sacrifice": (-0.5, "Value Tokens: schwache Planbindung"),
+            "token_creature_maker": (1.5, "Value Tokens: Kreaturmaterial"),
+            "token_repeatable_maker": (3.5, "Value Tokens: wiederholbare Engine"),
+            "token_value_payoff": (3.0, "Value Tokens: direkter Payoff"),
+            "card_draw": (2.5, "Value Tokens: Kartenvorteil"),
+            "sacrifice_outlet": (-1.0, "Value Tokens: planfremdes Opferpaket"),
         },
         TokenPlan.ARISTOCRATS: {
-            "token_maker": (1.5, "Aristocrats: Opfermaterial"),
-            "token_payoff": (2.5, "Aristocrats: Death-Payoff"),
+            "token_creature_maker": (1.5, "Aristocrats: Kreatur-Opfermaterial"),
+            "sacrifice_outlet": (4.0, "Aristocrats: wiederholbares Outlet"),
+            "death_payoff": (4.0, "Aristocrats: Death-Payoff"),
+            "drain_payoff": (2.0, "Aristocrats: Drain-Finisher"),
             "card_draw": (1.5, "Kartennachschub"),
-            "sacrifice": (4.0, "Aristocrats: Opfermöglichkeit"),
+            "anthem": (-1.5, "Aristocrats: planfremder Anthem-Payoff"),
         },
     }
     for role, (bonus, reason) in {
@@ -99,13 +169,17 @@ def generate_token_deck(
 ) -> GeneratedDeck:
     from thun_deckbuilder.composition_engine import build_composition
 
+    token_cards = tuple(
+        _with_precise_token_roles(card)
+        for card in knowledge_base.cards
+    )
     eligible_cards = tuple(
-        card for card in knowledge_base.cards if _is_reasonable_token_card(card)
+        card for card in token_cards if _is_reasonable_token_card(card)
     )
     plan_report = detect_token_plan(eligible_cards)
     profile = token_profile_for_plan(plan_report.plan, lands=lands)
     result = build_composition(
-        knowledge_base.cards,
+        eligible_cards,
         profile=profile,
         deck_size=deck_size,
         max_copies=max_copies,
@@ -127,6 +201,13 @@ def generate_token_deck(
         total_lands=profile.lands,
         deck_size=deck_size,
     )
+    plan_summary = (
+        f"Token Plan {plan_report.plan.label}: confidence={plan_report.confidence:.0%}; "
+        + ", ".join(
+            f"{plan.value}={score:.1f}"
+            for plan, score in plan_report.scores
+        )
+    )
     commitment_summary = (
         f"Strategy Commitment {plan_report.plan.label}: "
         f"{commitment.commitment_score:.0%}; "
@@ -147,6 +228,7 @@ def generate_token_deck(
         requested_roles=result.requested_roles,
         fulfilled_roles=result.fulfilled_roles,
         warnings=(
+            plan_summary,
             commitment_summary,
             engine_summary,
             *result.warnings,

@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-import re
 from dataclasses import dataclass
 from enum import StrEnum
 from typing import Iterable, Protocol
 
 from thun_deckbuilder.card_analyzer import CardAnalysis
+from thun_deckbuilder.token_packages import analyze_token_package
 
 
 class TokenPlan(StrEnum):
@@ -54,61 +54,15 @@ class TokenCardLike(Protocol):
     roles: Iterable[str]
 
 
-_MULTI_TOKEN_PATTERN = re.compile(
-    r"create (?:up to )?(?:two|three|four|five|six|[2-9]|\d{2,}) "
-    r"[^.\n]*?tokens?"
-)
-
-
 def token_card_signals(
     analysis: CardAnalysis,
     roles: Iterable[str] = (),
 ) -> TokenCardSignals:
-    """Extract plan-level signals without depending on individual card names."""
+    """Extract plan-level signals from the shared Token package definition."""
 
-    text = analysis.oracle_text.lower()
     normalized_roles = {str(role) for role in roles}
-    creates_tokens = "create" in text and "token" in text
-    creates_multiple = bool(_MULTI_TOKEN_PATTERN.search(text)) or any(
-        phrase in text
-        for phrase in (
-            "create x ",
-            "for each",
-            "that many tokens",
-        )
-    )
-    repeatable_source = creates_tokens and any(
-        phrase in text
-        for phrase in (
-            "at the beginning of",
-            "whenever one or more",
-            "whenever another",
-            "whenever a creature",
-            "whenever you attack",
-            "whenever this creature attacks",
-            "{t}: create",
-        )
-    )
-    anthem = "anthem" in normalized_roles or any(
-        phrase in text
-        for phrase in (
-            "creatures you control get +",
-            "other creatures you control get +",
-            "tokens you control get +",
-            "creature tokens you control get +",
-            "put a +1/+1 counter on each",
-        )
-    )
-    evasion_payoff = any(
-        phrase in text
-        for phrase in (
-            "creatures you control have flying",
-            "creature tokens you control have flying",
-            "creatures you control can't be blocked",
-            "creature tokens you control can't be blocked",
-            "creatures you control have menace",
-        )
-    )
+    package = analyze_token_package(analysis)
+    text = analysis.oracle_text.lower()
     card_advantage = "card_draw" in normalized_roles or any(
         phrase in text
         for phrase in (
@@ -118,65 +72,39 @@ def token_card_signals(
             "return target card",
         )
     )
-    token_value_payoff = card_advantage and any(
-        phrase in text
-        for phrase in (
-            "whenever a token enters",
-            "whenever one or more tokens",
-            "when one or more tokens",
-            "for each token you control",
-        )
-    )
-    sacrifice = "sacrifice" in normalized_roles or "sacrifice" in text
-    death_payoff = any(
-        phrase in text
-        for phrase in (
-            "whenever another creature dies",
-            "whenever a creature you control dies",
-            "whenever one or more creatures you control die",
-            "when another creature dies",
-            "when this creature dies",
-        )
-    )
-    drain_payoff = (death_payoff or sacrifice) and any(
-        phrase in text
-        for phrase in (
-            "each opponent loses",
-            "target opponent loses",
-            "opponent loses 1 life",
-            "you gain 1 life",
-        )
-    )
     return TokenCardSignals(
-        creates_tokens=creates_tokens,
-        creates_multiple_tokens=creates_multiple,
-        repeatable_source=repeatable_source,
-        anthem=anthem,
-        evasion_payoff=evasion_payoff,
+        creates_tokens=package.creates_creature_tokens,
+        creates_multiple_tokens=package.creates_multiple_creature_tokens,
+        repeatable_source=package.repeatable_creature_source,
+        anthem=package.anthem,
+        evasion_payoff=package.evasion_payoff,
         card_advantage=card_advantage,
-        token_value_payoff=token_value_payoff,
-        sacrifice=sacrifice,
-        death_payoff=death_payoff,
-        drain_payoff=drain_payoff,
+        token_value_payoff=package.token_value_payoff,
+        sacrifice=package.sacrifice_outlet,
+        death_payoff=package.death_payoff,
+        drain_payoff=package.drain_payoff,
     )
 
 
 def detect_token_plan(cards: Iterable[TokenCardLike]) -> TokenPlanReport:
-    """Select one coherent token plan before composition starts.
+    """Select one coherent Token plan before composition starts.
 
-    The detector uses broad rules and distinct support signals. A plan without
-    token material or enough supporting pieces is discounted so one incidental
-    wording cannot redirect the complete deck.
+    Aristocrats is only a valid candidate when the legal pool contains all
+    three independent package components: creature material, a reusable outlet
+    and an other-creature death payoff. A single card with several related
+    phrases cannot fabricate that support by itself.
     """
 
     scores = {plan: 0.0 for plan in TokenPlan}
     support = {plan: 0 for plan in TokenPlan}
     maker_count = 0
+    aristocrats_components: set[str] = set()
 
     for card in cards:
         signals = token_card_signals(card.analysis, card.roles)
         if signals.creates_tokens:
             maker_count += 1
+            aristocrats_components.add("material")
             for plan in TokenPlan:
                 scores[plan] += 1.0
 
@@ -202,22 +130,21 @@ def detect_token_plan(cards: Iterable[TokenCardLike]) -> TokenPlanReport:
             )
         )
 
+        if signals.sacrifice:
+            aristocrats_components.add("outlet")
+        if signals.death_payoff:
+            aristocrats_components.add("death_payoff")
         scores[TokenPlan.ARISTOCRATS] += 3.5 * signals.sacrifice
         scores[TokenPlan.ARISTOCRATS] += 4.0 * signals.death_payoff
-        scores[TokenPlan.ARISTOCRATS] += 4.0 * signals.drain_payoff
-        support[TokenPlan.ARISTOCRATS] += sum(
-            (
-                signals.sacrifice,
-                signals.death_payoff,
-                signals.drain_payoff,
-            )
-        )
+        scores[TokenPlan.ARISTOCRATS] += 2.0 * signals.drain_payoff
 
+    support[TokenPlan.ARISTOCRATS] = len(aristocrats_components)
     if maker_count == 0:
         scores = {plan: 0.0 for plan in TokenPlan}
-    for plan in (TokenPlan.VALUE, TokenPlan.ARISTOCRATS):
-        if support[plan] < 2:
-            scores[plan] *= 0.25
+    if support[TokenPlan.VALUE] < 2:
+        scores[TokenPlan.VALUE] *= 0.25
+    if aristocrats_components != {"material", "outlet", "death_payoff"}:
+        scores[TokenPlan.ARISTOCRATS] *= 0.15
     if support[TokenPlan.GO_WIDE] == 0:
         scores[TokenPlan.GO_WIDE] *= 0.5
 

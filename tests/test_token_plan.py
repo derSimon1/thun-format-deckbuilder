@@ -114,7 +114,48 @@ def test_detects_aristocrats_only_with_fodder_outlet_and_death_payoff():
     )
 
     assert report.plan is TokenPlan.ARISTOCRATS
+    assert dict(report.support)[TokenPlan.ARISTOCRATS] == 3
     assert report.score_for(TokenPlan.ARISTOCRATS) > report.score_for(TokenPlan.GO_WIDE)
+
+
+def test_food_and_one_shot_sacrifice_do_not_fabricate_aristocrats():
+    report = detect_token_plan(
+        (
+            candidate(
+                "Food Maker",
+                "Create a Food token.",
+                ("token_maker",),
+                type_line="Artifact",
+            ),
+            candidate(
+                "Additional Cost",
+                "As an additional cost to cast this spell, sacrifice a creature. Draw two cards.",
+                ("sacrifice", "card_draw"),
+                type_line="Sorcery",
+            ),
+            candidate(
+                "Self Death",
+                "When this creature dies, create a Food token.",
+                ("token_maker", "sacrifice"),
+                type_line="Creature — Ox",
+            ),
+            candidate(
+                "Real Maker",
+                "Create two 1/1 white Soldier creature tokens.",
+                ("token_maker",),
+                type_line="Sorcery",
+            ),
+            candidate(
+                "Anthem",
+                "Creature tokens you control get +1/+1.",
+                ("anthem", "token_payoff"),
+            ),
+        )
+    )
+
+    assert report.plan is TokenPlan.GO_WIDE
+    assert dict(report.support)[TokenPlan.ARISTOCRATS] == 1
+    assert report.score_for(TokenPlan.ARISTOCRATS) < report.score_for(TokenPlan.GO_WIDE)
 
 
 def test_plan_specific_scoring_rewards_commitment_and_penalizes_mismatch():

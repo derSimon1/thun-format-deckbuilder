@@ -6,122 +6,108 @@ Detaillierte frühere Fassungen bleiben über die Git-Historie erhalten. Jeder Z
 
 Eine vollständig qualifizierte Development-System-v2-KGB existiert noch nicht.
 
-- v2-Bootstrap-Vergleichsstand: Commit `31f6c1e053976435481c07ab2098430bc2a45471`, Run `30792560878`
-- letzter vollständig dokumentierter technischer Sicherungspunkt: Commit `937f10f699814e271dd7f8b11b874b0a8f64270c`, Run `30801497068`
-- aktueller grüner Messstand: Commit `397d989bb19b2c78e4d2f17dcef00b6b572b5aa4`, Run `30803643342`
-- keiner dieser Stände ist eine v2-KGB, weil der Vergleich weiterhin `baseline: none` meldet und externe Club-/Meta-Evidenz fehlt
+- v2-Bootstrap: `31f6c1e053976435481c07ab2098430bc2a45471`, Run `30792560878`
+- letzter Sideboard-Sicherungspunkt: `937f10f699814e271dd7f8b11b874b0a8f64270c`, Run `30801497068`
+- letzter grüner Mill-Messstand: `397d989bb19b2c78e4d2f17dcef00b6b572b5aa4`, Run `30803643342`
+- aktueller grüner Token-Diagnosestand: `6aa952f2e4d34a39fb32cb1910d3a13d2bcce5f1`, Run `30808101416`
+- keine v2-KGB, da der Vergleich weiterhin `baseline: none` meldet und externe Club-/Meta-Evidenz fehlt
 
-## Laufübersicht 2026-08-03
+## Bisherige Meilensteine
 
-| Zyklus | Commit | Workflow | Kernergebnis |
-|---|---|---|---|
-| OpeningHandPlanReport | `43fa53d1766b05327eae5880bacb05905923f21c` | `30794553679` | 100 reproduzierbare Hände je Deck |
-| Manafehler-Invariante | `5a040f9db39b740d1f1cb72bfcfdb221fcd061d1` | `30795368803` | Manafehler-Hände nicht mehr planfähig |
-| Control-Integration | `380eba398fd27c30579f92da9c1d9d20372e626e` | `30796392816` | Control integriert; alter Test rot |
-| Control-Basis | `9c4426e8bcdd8177d5cce3722484b2d9ceec3b07` | `30796896850` | grüner Control-Basislauf |
-| Control-Finisher | `2ef72a092db8de4717ec1d474a380c0b2c0d63dc` | `30797591719` | Benchmark 72→85, Finisher 0→6 |
-| Sideboard-Relevanz v1 | `f3ea0f48e5cdeac422a5bb29f6864fb203745c3d` | `30798351806` | technisch grün, fachlich widerlegt |
-| Sideboard-Marker v2 | `84c82fc4a795b5d14ef30ecc7debd24f0cef4478` | `30799228495` | technisch grün, falsche BO3-Pläne |
-| Phrase-first + Diagnose | `3e6b23067d5811f12b0f6dae2325fb777776d5df` | `30800668838` | Produktion fachlich korrekt, Testannahme rot |
-| Test-Invariante | `937f10f699814e271dd7f8b11b874b0a8f64270c` | `30801497068` | vollständiger grüner Sideboard-Abschluss |
-| Mill-Definition | `70f538ce52593e4ab7485f59bf801081cc069601` | `30803091071` | zentrale Mill-Messung; ausgeschriebene Zahlen fehlten |
-| Mill-Messkompatibilität | `397d989bb19b2c78e4d2f17dcef00b6b572b5aa4` | `30803643342` | 40 legale Quellen; Benchmark 80; 55 % planfähige Hände |
+| Bereich | Commit / Run | Ergebnis |
+|---|---|---|
+| 100 Starthände | `43fa53d…` / `30794553679` | reproduzierbare Einzelhände, Seed 1701 |
+| Mana-Invariante | `5a040f9…` / `30795368803` | Manafehler nicht mehr planfähig |
+| Control | `2ef72a0…` / `30797591719` | Benchmark 85, sechs Finisher |
+| Sideboard | `937f10f…` / `30801497068` | Phrase-first, kein Graveyard-Hate gegen Aggro/Artifacts |
+| Mill-Messung | `397d989…` / `30803643342` | 40 legale Quellen, Benchmark 80, 55 % planfähig |
+| Token-Paketdiagnose | `6aa952f…` / `30808101416` | echte Paketbestandteile und 43 Rollen-Fehlpositive sichtbar |
 
-## Abgeschlossener Sideboard-Zyklus – Run 50
-
-### Technische Validierung
-
-- Workflow: `30801497068`, erfolgreich
-- Tests: 262 bestanden in 31,82 Sekunden
-- Test-/Fast-Schritt: ungefähr 3 Minuten 44 Sekunden
-- Artefakt: `global-calibration-pr-50`, ID `8851073096`, 43 Dateien, 50.063 Byte
-- fünf Referenzarchetypen
-- sechs priorisierte Matchups
-- Benchmarks: Burn 83, Tokens 90, Artifacts 90, Control 85, Mill 78
-- Seed `1701`, je Deck exakt 100 Hände
-
-### Fachliche Artefaktprüfung
-
-- Control gegen Burn: 3 Disfigure hinein
-- Control gegen Tokens: 3 Disfigure hinein
-- Control gegen Artifacts: keine ungeeignete Karte hinein
-- kein `Tormod's Crypt` gegen Burn, Tokens oder Artifacts
-- `control-sideboard.json` enthält finale Mengen, Scores, Gründe und Rollenmarker
-- Sideboard-Diagnoseartefakte liegen für alle fünf Referenzarchetypen vor
-
-### Ergebnis und KGB-Entscheidung
-
-Phrase-first-Klassifikation ist als globale Regel bestätigt. Keine neue v2-KGB: `baseline: none` besteht fort und die Sideboard-Relevanz wird noch über Archetyp-Matrizen statt konkrete Gegnerdecks bestimmt.
-
-## Mill-Messzyklus – Runs 53/54
-
-### Ursache und Hypothese
-
-Vier voneinander abweichende Mill-Erkennungen führten zu 0 erkannten Quellen im Benchmark und 0 % planfähigen Händen. Eine zentrale Oracle-Text-Definition sollte Builder, Rollen, Benchmark und Handanalyse ausrichten.
-
-### Ergebnis
-
-- Commit `70f538ce52593e4ab7485f59bf801081cc069601`, Run 53: rot; ausgeschriebene Mengen wie `two` und `three` wurden unterschätzt
-- Commit `397d989bb19b2c78e4d2f17dcef00b6b572b5aa4`, Run 54: erfolgreich
-- 267 Tests bestanden
-- Artefakt `global-calibration-pr-54`, ID `8851950460`, 45 Dateien
-- 40 unterschiedliche legale Dimir-Millquellen, maximal 120 Kopien bei drei Kopien je Karte
-- aktuelles Milldeck: 15 Quellenkopien
-- Mill-Benchmark: 78 → 80
-- Planfähigkeit: 0 % → 55 %
-- marginale Hände: 100 % → 45 %
-- Keepability: 74 %
-- fehlender Mill-Zugang: 13 %
-
-### KGB-Entscheidung
-
-Keine neue v2-KGB. Die Messdefinition ist verbessert, aber die geplante kapazitätsgeprüfte Mill-Komposition mit mindestens 18 Quellen und sechs echten Engines ist noch nicht veröffentlicht.
-
-### Prioritätsentscheidung für den aktuellen Lauf
-
-Der veröffentlichte Mill-Messzyklus ist vollständig abgeschlossen und grün. Der verbleibende Kompositionsschritt wird nicht als erledigt dargestellt, aber aufgrund des ausdrücklich vorgegebenen Token-Fokus für diesen Vier-Stunden-Lauf pausiert. Der Rückkehrpunkt bleibt dokumentiert.
-
-## 2026-08-03 – Vier-Stunden-Lauf, Token-Zyklus 1: Paketdiagnose
+## Vier-Stunden-Lauf – Token-Fokus
 
 ### Session-Snapshot
 
 - Ausgangs-Head: `397d989bb19b2c78e4d2f17dcef00b6b572b5aa4`
 - PR #14: offen, Draft, mergeable
-- letzter Run: `30803643342`, erfolgreich
+- Ausgangsrun: `30803643342`, erfolgreich
 - Ausgangsartefakt: `global-calibration-pr-54`, ID `8851950460`
-- Token-Benchmark: 90
 - Token-Plan: Aristocrats
-- Keepability/Planfähigkeit: 73/73 %
-- Goldfish bis Zug 5: 66 % Killrate, 18,69 durchschnittlicher Schaden
-- Matchups: 0 % gegen Burn, 2 % gegen Artifacts, 100 % gegen Mill
-- Strategy Commitment: 100 %
-- Engine Density: 64 %
+- Benchmark 90
+- Keepability/Planfähigkeit 73/73 %
+- Strategy Commitment 100 %
+- Engine Density 64 %
+- Goldfish bis Zug 5: 66 % Killrate, 18,69 Schaden
+- Matchups: 0 % Burn, 2 % Artifacts, 100 % Mill
+- Mill-Kompositionsschritt bleibt als dokumentierter Rückkehrpunkt offen
 
-### Belegte Auffälligkeit
+## Token-Zyklus 1 – Paketdiagnose
 
-Das finale Deck enthält viele Food-, Artefakt- und allgemeine Sacrifice-Karten. Die aktuelle Rollenlogik zählt jedes erzeugte Token als Material, jedes Vorkommen von `sacrifice` als Outlet-Nähe und auch Self-Death-Effekte als Aristocrats-Payoff. Damit können Commitment und Handklassifikation einen vollständigen Material/Outlet/Death-Payoff-Kern vortäuschen.
+### Ursache und Hypothese
+
+Die globale Rollenlogik zählte jedes erzeugte Token als Material, jedes Vorkommen von `sacrifice` als Outlet-Nähe und Self-Death-Effekte als Aristocrats-Payoff. Eine zentrale Oracle-Text-Diagnose sollte echte Kreatur-Token, wiederholbare Creature-Sacrifice-Outlets und Other-Creature-Death-/Drain-Payoffs getrennt ausweisen.
+
+### Commit und Workflow
+
+- Commit: `6aa952f2e4d34a39fb32cb1910d3a13d2bcce5f1`
+- Workflow: `30808101416`, erfolgreich
+- Tests: 274 bestanden in 31,27 Sekunden
+- Test-/Fast-/Diagnoseschritt: ungefähr 3 Minuten 58 Sekunden
+- Artefakt: `global-calibration-pr-55`, ID `8853712704`, 47 Dateien, 62.043 Byte
+- Benchmarks unverändert: Burn 83, Tokens 90, Artifacts 90, Control 85, Mill 80
+- fünf Referenzarchetypen, sechs Matchups, 0 gemeldete Regressionen
+
+### Fachliche Artefaktauswertung
+
+| Metrik | Run 54 | Run 55 | Delta | Interpretation | Confidence |
+|---|---:|---:|---:|---|---|
+| echtes Kreatur-Token-Material | unbekannt | 14 | neu | nur ein Teil der 33 breiten Maker ist echtes Boardmaterial | hoch |
+| echte wiederholbare Outlets | unbekannt | 9 | neu | drei Outlet-Kartennamen zu je drei Kopien | hoch |
+| echte Death-/Drain-Payoffs | unbekannt | 3 | neu | Paket hängt vollständig von Relic Vial ab | hoch |
+| Nichtkreatur-Token als Maker | unbekannt | 19 | neu | Food/Blood und ähnliche Tokens blähen Material auf | hoch |
+| One-Shot-Sacrifice als Outlet | unbekannt | 23 | neu | zusätzliche Kosten und Self-Sacrifice blähen Outletdichte auf | hoch |
+| breite Fehlpositive gesamt | unbekannt | 43 | neu | Commitment und Handklassifikation sind stark überzählt | hoch |
+
+Das reale Deck besitzt zwar alle drei Aristocrats-Komponenten, aber nur drei Death-/Drain-Payoff-Kopien. Der legale Mono-White-Pool ist nicht der Engpass: 169 Kreatur-Token-Karten, 41 Multi-Maker, 20 wiederholbare Maker, 34 Outlets und 13 Death-Payoffs sind vorhanden.
+
+### KGB-Entscheidung
+
+Keine neue v2-KGB. Der Zyklus verbessert Messbarkeit, ändert aber noch keine Deckauswahl. Die bisherigen 100-%-Commitment- und 73-%-Planfähigkeitswerte sind fachlich nicht mehr belastbar.
+
+### Reflexion
+
+- Die Annahme „jedes Token ist Kampfmaterial“ ist widerlegt.
+- Die Annahme „jedes sacrifice ist ein Outlet“ ist widerlegt.
+- Alternative Erklärung für extreme Matchups bleibt ein vereinfachtes Combat-/Matchupmodell.
+- Die Diagnose erkennt Copy-Token ohne das Wort `creature` möglicherweise zu konservativ; reale Deck- und Pooldaten müssen nach dem Rollenumbau erneut geprüft werden.
+- Grüne CI bestätigt nur die Diagnose, nicht bessere Token-Decks.
+
+## Token-Zyklus 2 – Präzise Planrollen und Komposition
+
+### Ausgangs-Head
+
+`6aa952f2e4d34a39fb32cb1910d3a13d2bcce5f1`
 
 ### Zyklusvertrag
 
-- **Ursache:** breite Token-/Sacrifice-Rollen unterscheiden keine Kreatur-Tokens, echten wiederholbaren Creature-Sacrifice-Outlets und Other-Creature-Death-Payoffs
-- **Hypothese:** eine zentrale paketbezogene Oracle-Text-Diagnose zeigt, welche der hohen Aristocrats-Metriken echte Paketbestandteile und welche breite Rollen-Fehlpositive sind
-- **Änderungen:** zentrale Token-Paketsignale; maschinenlesbares Deck-/Pool-Artefakt; Regressionstests
-- **Erwartete Metriken:** reale Material-, Outlet-, Death-/Drain-Payoff- und False-Positive-Kopien
-- **Invarianten:** keine Kartenauswahl- oder Schwellenwertänderung; fünf Referenzarchetypen, Seed 1701 und bestehende Benchmarks bleiben unverändert
-- **Erfolg:** `tokens/token-packages.json` enthält Namen, Mengen, Kategorien, Poolkapazität und breite Rollen-Fehlpositive
-- **Abbruch:** zeigt die Diagnose bereits einen belastbaren Aristocrats-Kern, wird nicht künstlich umgebaut; dann ist Matchup-/Combatmodell die nächste Ursache
-- **geschätzte Zeit:** 45–60 Minuten inklusive Workflow und Artefaktauswertung
+- **Ursache:** 43 breite Rollen-Fehlpositive steuern Planwahl, Komposition, Commitment, Handklassifikation und Goldfish.
+- **Hypothese:** Token-spezifisch bereinigte Rollen und kapazitätsgeprüfte Planminimums erzeugen ein Deck, dessen deklarierter Plan tatsächlich erfüllt ist.
+- **Änderungen:** präzise Tokenrollen; zentrale Planerkennung/Eligibility/Scoring; profilespezifische Mindestpakete.
+- **Erwartung:** Nichtkreatur-Token und One-Shot-Sacrifices verlieren ihre planprägenden Rollen; der gewählte Plan erfüllt seine echten Paketminimums.
+- **Invarianten:** legal 60/15, Seed 1701, Fast unter zehn Minuten, andere vier Benchmarks ohne unbegründete Regression.
+- **Erfolg:** finales Diagnoseartefakt zeigt keine breiten Paket-Fehlpositive; Commitment und Hände verwenden die bereinigten Rollen; Token-Kohärenz steigt.
+- **Rollback:** roter Lauf, nicht erfüllbare Mindestpakete oder schlechtere Planfähigkeit ohne belegten Kohärenzgewinn.
+- **geschätzte Zeit:** 60–80 Minuten inklusive Workflow und Artefaktauswertung.
 
 ### Änderung vor Push
 
-1. `token_packages.py` trennt Kreatur-Token von Food/Clue/Blood/Treasure, echte aktivierte Creature-Sacrifice-Outlets von One-Shot-Sacrifice sowie Other-Creature-Death-Payoffs von Self-Death-Value.
-2. Der PR-Workflow erzeugt nach erfolgreicher Globalvalidierung `tokens/token-packages.json` und behandelt einen Diagnosefehler als roten Lauf.
-3. Gezielte Tests sichern die zentralen Abgrenzungen und eine vollständige Fixture-Diagnose.
+1. Neue Rollen `token_creature_maker`, `token_repeatable_maker`, `sacrifice_outlet`, `death_payoff`, `drain_payoff` und `token_value_payoff`.
+2. Token-Planerkennung und Kandidatenpool verwenden die zentrale Paketdefinition; breite Fehlrollen werden in der Token-spezifischen Knowledge-Ansicht entfernt.
+3. Go Wide, Value Tokens und Aristocrats erhalten anhand der gemessenen Poolkapazität eigene harte Planminimums.
 
 ### KGB-Entscheidung vor Push
 
-Keine neue v2-KGB. Dieser Zyklus verbessert zunächst Messbarkeit; eine Deckverbesserung darf erst nach CI- und Artefaktauswertung behauptet werden.
+Keine neue v2-KGB. Der Commit bleibt bis vollständiger CI- und Artefaktauswertung vorläufig.
 
 ### Priorisierter nächster ausführbarer Schritt
 
-Den neuen Workflow vollständig auswerten. Bei bestätigter Rollenüberzählung Planerkennung, Komposition, Commitment und Handklassifikation in einem zweiten Zyklus auf dieselbe zentrale Paketdefinition umstellen. Bei vollständigem echtem Paket stattdessen Token-Combat und Matchupmodell untersuchen.
+Den neuen Workflow und insbesondere Deckliste, `token-packages.json`, 100 Hände, Commitment, Goldfish sowie die Matchups gegen Burn, Artifacts und Mill auswerten. Danach nur die durch Artefakte belegte nächste Ursache bearbeiten.
