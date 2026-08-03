@@ -96,6 +96,25 @@ def test_unconditional_end_step_engine_is_repeatable():
     )
     assert profile.mode == "repeatable"
     assert profile.repeatable
+    assert not profile.activated
+
+
+def test_activated_token_maker_is_not_an_automatic_repeatable_trigger():
+    analysis = card(
+        "Whirlermaker",
+        "{4}, {T}: Create a 1/1 colorless Thopter artifact creature token with flying.",
+        type_line="Artifact",
+    )
+    profile = analyze_token_production(analysis)
+    assert profile.mode == "activated"
+    assert profile.activated
+    assert profile.activation_mana == 4
+    assert not profile.repeatable
+    assert set(token_production_roles(analysis)) == {
+        "token_activation_mana_4",
+        "token_output_1",
+        "token_production_activated",
+    }
 
 
 def test_whenever_trigger_is_not_assumed_to_fire_in_solitaire():
@@ -127,6 +146,11 @@ def test_capacity_groups_modes_and_filters_duplicates_off_color_and_lands():
             "At the beginning of your end step, create a 1/1 white Soldier creature token.",
         ),
         raw_card(
+            "Whirlermaker",
+            "{4}, {T}: Create a 1/1 colorless Thopter artifact creature token with flying.",
+            type_line="Artifact",
+        ),
+        raw_card(
             "Death Cat",
             "When Death Cat dies, create a 1/1 white Soldier creature token.",
             type_line="Creature — Cat",
@@ -146,13 +170,15 @@ def test_capacity_groups_modes_and_filters_duplicates_off_color_and_lands():
 
     capacity = build_token_production_capacity(cards)
 
-    assert capacity["distinct_cards"] == 3
+    assert capacity["distinct_cards"] == 4
     assert capacity["distinct_by_mode"] == {
+        "activated": 1,
         "death": 1,
         "immediate": 1,
         "repeatable": 1,
     }
     assert capacity["maximum_copies_by_mode"] == {
+        "activated": 3,
         "death": 3,
         "immediate": 3,
         "repeatable": 3,

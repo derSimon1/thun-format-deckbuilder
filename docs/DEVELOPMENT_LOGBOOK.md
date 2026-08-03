@@ -12,6 +12,7 @@ Aktuelle Sicherungspunkte:
 - Mill-Messung: `397d989bb19b2c78e4d2f17dcef00b6b572b5aa4`, Run `30803643342`
 - Token-Builder: `1a4618ed3eaed910632eba526b550d8abf9ed905`, Run `30810553137`
 - Token-Produktion: `e246e8d86b0872aec05232d43b9ea87c57f77ae6`, Run `30812706366`
+- Token-Poolkapazität: `a610843c19a57034428f80f5c99eb497a16b3ebf`, Run `30813247233`
 
 ## Vier-Stunden-Lauf – Token-Fokus
 
@@ -20,108 +21,106 @@ Aktuelle Sicherungspunkte:
 - Plan Aristocrats
 - Benchmark 90
 - Keepability/Planfähigkeit 73/73 %
-- Commitment 100 %, Engine Density 64 %
-- Goldfish 18,69 Schaden, 66 % Killrate bis Zug 5
+- bisheriger Goldfish 18,69 Schaden und 66 % Killrate
 - Matchups: 0 % Burn, 2 % Artifacts, 100 % Mill
 
 ## Token-Zyklus 1 – Paketdiagnose
 
-- Commit `6aa952f2e4d34a39fb32cb1910d3a13d2bcce5f1`
-- Run `30808101416`, erfolgreich
-- Artefakt `8853712704`
+- Commit `6aa952f2e4d34a39fb32cb1910d3a13d2bcce5f1`, Run `30808101416`, erfolgreich
 - echtes Material 14, Outlets 9, Death-/Drain-Payoffs 3
 - 43 breite Rollen-Fehlpositive
-- Full-Pool-Kapazität für alle drei Token-Pakete ausreichend
-- Hypothese bestätigt; keine neue KGB
+- Mono-White-Pool besitzt genügend Material-, Outlet- und Death-Payoff-Karten
+- keine neue KGB
 
 ## Token-Zyklus 2 – Präzise Planrollen und Komposition
 
-- Commit `676da07f56abc55651c2d1e1cb25b423ba1a6088`, Run 56 rot wegen Sparse-Pool-Tests; Full-Pool fachlich erfolgreich
-- Runs 57/58 beheben Sparse-Pool-Ziele und begrenzen Füller auf echte Kopienlücken
-- finaler grüner Builder-Stand Run `30810553137`, Artefakt `8854683264`
-
-| Metrik | Run 55 | Run 58 | Delta |
-|---|---:|---:|---:|
-| Plan | Aristocrats | Value Tokens | geändert |
-| Benchmark | 90 | 91 | +1 |
-| echtes Material | 14 | 33 | +19 |
-| nominell wiederholbare Maker | 0 | 12 | +12 |
-| Rollen-Fehlpositive | 43 | 0 | -43 |
-| Keepability | 73 % | 77 % | +4 pp |
-| Planfähigkeit | 73 % | 76 % | +3 pp |
-| bisheriger Goldfish-Schaden | 18,69 | 18,97 | +0,28 |
-| bisherige Killrate | 66 % | 66 % | 0 |
+- Commits `676da07…`, `dfa5bf4…` und `1a4618e…`
+- finaler grüner Run 58 `30810553137`, Artefakt `8854683264`
+- automatische Planwahl: Aristocrats → Value Tokens
+- Benchmark 90→91
+- echtes Material 14→33
+- breite Fehlpositive 43→0
+- Keepability/Planfähigkeit 73/73→77/76 %
+- Sparse-Pools bleiben generierbar; neutrale Füller nur bei echter Kopienlücke
 
 ## Token-Zyklus 3 – Produktionsmodi und Goldfish
 
-### Run 59 – rotes Integrationsgate
-
-- Commit `3863d851efbf5704f84ce29b6897d638bb5d0bb9`
-- Run `30811810037`, rot
-- 292 Tests bestanden, 1 Test fehlgeschlagen; Fast selbst PASS
-- Produktionsmetadaten wurden fälschlich als Funktionsrollen normalisiert
-- ein Test erwartete einen ungeeigneten Fünf-Züge-Vergleich für wiederholbare Engines
-- Messhypothese bestätigt, technisches Gate rot
-
-### Run 60 – erfolgreicher Produktionsmeilenstein
+### Run 60
 
 - Commit `e246e8d86b0872aec05232d43b9ea87c57f77ae6`
 - Workflow `30812706366`, erfolgreich
-- 295 Tests bestanden in 49,55 Sekunden
-- Test-/Fast-/Diagnoseschritt ungefähr 4 Minuten 10 Sekunden
-- Artefakt `global-calibration-pr-60`, ID `8855522460`, 47 Dateien, 63.190 Byte
+- 295 Tests in 49,55 Sekunden
+- Test-/Fast-/Diagnoseschritt ungefähr 4:10 Minuten
+- Artefakt `8855522460`, 47 Dateien
 - Benchmarks unverändert: Burn 83, Tokens 91, Artifacts 90, Control 85, Mill 80
-- fünf Archetypen, sechs Matchups, 0 gemeldete Regressionen
-- Builderprofil, Deck-Hash und 100 Hände gegenüber Run 58 unverändert
+- Builderprofil, Deck-Hash und 100 Hände unverändert
 
-### Produktionsartefakt Run 60
+Produktionsmessung des finalen Decks:
 
-| Produktionsmodus | Kopien im Mainboard |
+| Modus | Kopien |
 |---|---:|
 | garantiert sofort | 4 |
-| unbedingte wiederholbare Engine | 0 |
+| unbedingte wiederholbare Trigger | 0 |
 | bedingt | 21 |
 | Death-Trigger | 8 |
 
-- garantierte sofortige Mindestproduktion über alle Deckkopien: 8 Tokens
-- Goldfish-Schaden: 14,66 statt zuvor pauschal 18,97
-- Killrate bis Zug 5: 27 % statt 66 %
-- durchschnittliche Tokenboardgröße: 5,30
+- garantierte Sofortproduktion: 8 Tokens über alle Deckkopien
+- Goldfish: 14,66 Schaden, 27 % Killrate, Boardgröße 5,30
 - aktive unbedingte Engines: 0,00
-- durchschnittlich 4,50 gewirkte Spells und 4,58 ungenutztes Mana
 - Keepability/Planfähigkeit weiterhin 77/76 %
 
-Die niedrigeren Werte sind eine Messkorrektur, keine Builderregression. Die aktuelle Rolle `token_repeatable_maker` ist dennoch fachlich zu breit: zwölf nominelle Maker entsprechen im konservativen Produktionsmodell keiner einzigen unbedingten Engine.
+Die bisherige 66-%-Killrate war durch pauschal zwei sofortige Tokens je Maker aufgebläht. Keine neue KGB.
+
+## Token-Zyklus 4 – Mono-White-Produktionskapazität
+
+### Commit und Run 61
+
+- Commit `a610843c19a57034428f80f5c99eb497a16b3ebf`
+- Workflow `30813247233`, erfolgreich
+- 296 Tests in 49,31 Sekunden
+- Test-/Fast-/Diagnoseschritt ungefähr 4:06 Minuten
+- Artefakt `global-calibration-pr-61`, ID `8855717927`, 47 Dateien, 66.069 Byte
+- Buildermetriken, Benchmarks, Hände und Goldfish gegenüber Run 60 unverändert
+
+Poolkapazität bei drei Kopien je Karte:
+
+| bisheriger Modus | unterschiedliche Karten | maximale Kopien | Mindestoutput-Kapazität |
+|---|---:|---:|---:|
+| sofort | 102 | 306 | 426 |
+| bedingt | 51 | 153 | 168 |
+| Death | 14 | 42 | 45 |
+| wiederholbar | 2 | 6 | 6 |
+
+Die zwei als wiederholbar erkannten Karten sind `Cathar's Call` und `Whirlermaker`. Die Value-Mindestdichte von sechs Kopien wäre damit exakt auf zwei Drei-Karten-Pakete konzentriert und ohne Reserve.
 
 ### KGB-Entscheidung
 
-Keine neue v2-KGB. Run 60 ist ein grüner technischer Token-Sicherungspunkt, aber die automatische Value-Planwahl beruht noch auf einer zu breiten Repeatable-Definition.
+Keine neue v2-KGB. Die Kapazitätsmessung ist grün, aber der Modus `repeatable` vermischt noch automatische Trigger mit aktivierten Fähigkeiten und Aktivierungskosten.
 
 ### Reflexion
 
-- Produktionsmetadaten müssen auf finalen DeckEntries sichtbar bleiben, dürfen aber keine funktionalen Kompositionsrollen sein.
-- Bedingte Trigger können im echten Spiel wertvoll sein, sind aber keine garantierten Goldfish-Engines.
-- Die korrigierte Killrate darf nicht durch ein lockeres Simulationsmodell angehoben werden.
-- Vor einer Rollen- oder Planänderung fehlt die Poolkapazität je Produktionsmodus.
-- Grüne CI bestätigt Messkonsistenz, nicht automatisch die optimale Token-Kartenauswahl.
+- Reine Kopienkapazität beweist noch keine belastbare Enginequalität.
+- Eine aktivierte Tokenquelle ist wiederholbar, aber nicht automatisch und nicht kostenlos.
+- `Whirlermaker` darf im Goldfish nicht wie ein kostenloser End-Step-Trigger behandelt werden.
+- Vor einer Builderänderung muss diese Unterklasse maschinenlesbar getrennt werden.
 
-## Token-Zyklus 4 – Produktionskapazität des Mono-White-Pools
+## Token-Zyklus 5 – Aktivierte versus automatische Produktion
 
 ### Zyklusvertrag
 
-- **Ursache:** Das Deck besitzt 0 unbedingte Engines, aber der Builder meldet 12 `token_repeatable_maker`; die verfügbare echte Produktionskapazität ist unbekannt.
-- **Hypothese:** Eine deduplizierte Poolmessung zeigt, ob Mono-White genügend garantierte Sofort- oder unbedingte wiederholbare Quellen für Value Tokens besitzt.
-- **Änderungen:** zentrale Kapazitätsfunktion; Diagnoseartefakt; Regressionstest.
-- **Erwartete Metriken:** unterschiedliche Karten, maximale Kopien und konservative Mindestoutput-Kapazität je Immediate/Repeatable/Conditional/Death-Modus.
-- **Invarianten:** keine Kartenauswahl; Benchmark 91, Material 33, Starthände 77/76 %, Goldfishwerte und andere Archetypen unverändert.
-- **Erfolg:** `token-packages.json` enthält vollständige Mono-White-Poolkapazität je Modus.
-- **Abbruch:** Builderausgabe oder andere Benchmarks ändern sich.
+- **Ursache:** `repeatable` enthält sowohl automatische Trigger als auch aktivierte Tokenfähigkeiten.
+- **Hypothese:** Aktivierte Produktion und ihre Manaaktivierung werden separat ausgewiesen; dadurch zeigt der Pool die tatsächliche automatische Value-Engine-Kapazität.
+- **Änderungen:** Aktivierungsparser und Modus `activated`; Kapazitätsdiagnose; Regressionstests.
+- **Erwartung:** `Whirlermaker` wechselt von `repeatable` zu `activated`; `Cathar's Call` bleibt automatische wiederholbare Quelle.
+- **Invarianten:** keine Kartenauswahl; Benchmark 91, Hände 77/76 %, Goldfish 14,66/27 %, andere Archetypen unverändert.
+- **Erfolg:** Poolartefakt trennt aktivierte und automatische Kopien samt Aktivierungskosten.
+- **Abbruch:** Builderdeck oder andere Benchmarks ändern sich.
 - **geschätzte Zeit:** 35–50 Minuten inklusive Workflow und Artefaktauswertung.
 
 ### KGB-Entscheidung vor Push
 
-Keine neue KGB. Dieser Zyklus misst nur die Voraussetzung für eine spätere Rollenänderung.
+Keine neue KGB. Der Zyklus verfeinert ausschließlich die Messdefinition.
 
 ### Priorisierter nächster ausführbarer Schritt
 
-Den Kapazitätsworkflow auswerten. Bei mindestens sechs unbedingten Engine-Kopien `token_repeatable_maker` auf den Repeatable-Modus begrenzen und Value Tokens kapazitätsgeprüft neu bauen. Andernfalls die automatische Planwahl auf den bestversorgten garantierten Plan umstellen.
+Den Workflow auswerten. Falls weniger als sechs automatische Repeatable-Kopien verbleiben, Value Tokens nicht weiter über die breite Repeatable-Rolle erzwingen; stattdessen Planerkennung und Go-Wide-Profil auf garantierte Sofortproduktion ausrichten.

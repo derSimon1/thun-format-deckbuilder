@@ -14,66 +14,64 @@ Referenzarchetypen: Burn, Tokens, Artifacts, Control und Mill. Jeder Zyklus ende
 - [x] Phrase-first-Sideboardklassifikation und Diagnoseartefakte
 - [x] zentrale Mill-Quellendefinition und Poolkapazität
 
-## Token-Fokus – Buildermeilenstein
+## Token-Fokus – Builder und Messung
 
-- [x] Kreatur-Token von Food/Clue/Blood/Treasure getrennt
-- [x] echte Outlets von One-Shot-Sacrifice getrennt
-- [x] Other-Creature-Death-Payoffs von Self-Death getrennt
-- [x] 43 breite Rollen-Fehlpositive entfernt
-- [x] präzise Planrollen und planabhängige Mindestpakete
-- [x] Full-Pool wechselt zu Value Tokens
-- [x] Sparse-Pool-Ziele kapazitätsgeprüft
-- [x] neutrale Füller nur bei echter Kopienlücke
+- [x] Kreatur-Token von Nichtkreatur-Tokens getrennt
+- [x] echte Outlets und Death-Payoffs getrennt
+- [x] 43 Rollen-Fehlpositive entfernt
+- [x] präzise Planrollen und kapazitätsgeprüfte Mindestpakete
+- [x] automatische Planwahl auf Value Tokens
 - [x] Benchmark 91, Material 33, Fehlpositive 0
 - [x] Keepability/Planfähigkeit 77/76 %
+- [x] Immediate-, Repeatable-, Conditional- und Death-Produktion
+- [x] Goldfish neu kalibriert: 14,66 Schaden, 27 % Killrate, Board 5,30
+- [x] Mono-White-Poolkapazität je Produktionsmodus gemessen
 
-## Produktionsmessung – Run 60 grün
+## Run-61-Poolkapazität
 
-- [x] Immediate-, Repeatable-, Conditional- und Death-Modi
-- [x] konservative Mindestmenge je Produktionseffekt
-- [x] Produktionsmarker von Funktionsrollen getrennt
-- [x] Goldfish trennt Kartenkörper, Sofortproduktion und unbedingte Engines
-- [x] Conditional-/Death-Ausgabe wird nicht kostenlos erzeugt
-- [x] 295 Tests und Fast-Validierung grün
-- [x] Buildermetriken gegenüber Run 58 unverändert
-- [x] Produktionsartefakt: 4 Immediate, 0 Repeatable, 21 Conditional, 8 Death
-- [x] Goldfish neu kalibriert: 14,66 Schaden, 27 % Killrate, Boardgröße 5,30
+| Modus | Karten | maximale Kopien |
+|---|---:|---:|
+| sofort | 102 | 306 |
+| bedingt | 51 | 153 |
+| Death | 14 | 42 |
+| bisher wiederholbar | 2 | 6 |
 
-## Aktueller Zyklus – Mono-White-Produktionskapazität
+Die zwei bisherigen Repeatable-Karten sind `Cathar's Call` und `Whirlermaker`. Aktivierte und automatische Produktion müssen vor einer Builderänderung getrennt werden.
 
-- [x] deduplizierte Produktionskapazitätsfunktion vorbereiten
-- [x] Off-Color-, Land- und zu teure Karten filtern
-- [x] unterschiedliche Karten je Modus zählen
-- [x] maximale Kopien je Modus berechnen
-- [x] konservative Mindestoutput-Kapazität je Modus berechnen
-- [x] Diagnoseartefakt erweitern
-- [x] Regressionstest vorbereiten
+## Aktueller Zyklus – Activated versus Repeatable
+
+- [x] aktivierte Tokenfähigkeit über Kosten-vor-Doppelpunkt erkennen
+- [x] generische und farbige Aktivierungsmana konservativ zählen
+- [x] Modus `activated` vorbereiten
+- [x] Aktivierungskosten als Diagnosemarker vorbereiten
+- [x] Kapazitätstests um Activated erweitern
 - [ ] vollständige CI und Artefakte auswerten
 
-## Erfolgskriterien Kapazitätszyklus
+## Erfolgskriterien
 
 - [ ] alle Tests grün
 - [ ] Fast unter zehn Minuten
 - [ ] Builderprofil, Benchmark 91 und Deck-Hash unverändert
-- [ ] 100 Hände weiterhin 77/76 %
-- [ ] Goldfish weiterhin 14,66 Schaden und 27 % Killrate im aktuellen Modell
-- [ ] Poolkapazität für Immediate, Repeatable, Conditional und Death dokumentiert
+- [ ] Hände weiterhin 77/76 %
+- [ ] Goldfish weiterhin 14,66 Schaden und 27 % Killrate
+- [ ] `Whirlermaker` wird als aktiviert mit Mana 4 ausgewiesen
+- [ ] automatische Repeatable-Kapazität separat dokumentiert
 - [ ] andere vier Benchmarks unverändert
 
-## Entscheidung nach der Kapazitätsmessung
+## Entscheidung nach dem Zyklus
 
-### Bei mindestens sechs verfügbaren unbedingten Repeatable-Kopien
+### Automatische Repeatable-Kapazität unter sechs Kopien
 
-- [ ] `token_repeatable_maker` ausschließlich dem Produktionsmodus `repeatable` zuweisen
-- [ ] Value-Profil weiterhin mindestens 6/8 echte Engines verlangen
-- [ ] Planerkennung dieselbe Definition verwenden lassen
-- [ ] Builder, Diagnose, 100 Hände und Goldfish erneut vergleichen
+- [ ] `token_repeatable_maker` nur automatischen Triggern zuweisen
+- [ ] Value-Mindestziel nicht künstlich auf bedingte oder aktivierte Karten ausweiten
+- [ ] automatische Planwahl anhand garantierter Produktionskapazität neu bewerten
+- [ ] Go Wide mindestens über garantierte Sofort-Maker und Anthem-Payoffs definieren
 
-### Bei weniger als sechs verfügbaren unbedingten Repeatable-Kopien
+### Automatische Repeatable-Kapazität mindestens sechs Kopien
 
-- [ ] Value Tokens nicht künstlich erzwingen
-- [ ] Go Wide und Aristocrats nach garantierter Produktions- und Paketkapazität vergleichen
-- [ ] automatische Planwahl auf den bestversorgten belastbaren Plan umstellen
+- [ ] Value-Profil auf echte automatische Engines verpflichten
+- [ ] aktivierte Quellen nur als sekundäre Value-Unterstützung bewerten
+- [ ] Builder, 100 Hände und Goldfish erneut vergleichen
 
 ## Danach
 
@@ -84,14 +82,14 @@ Referenzarchetypen: Burn, Tokens, Artifacts, Control und Mill. Jeder Zyklus ende
 5. belastbare Regression-Baseline statt `baseline: none`.
 6. erste v2-KGB und Club-/Meta-Benchmark.
 
-## Definition of Done für den aktuellen Token-Meilenstein
+## Definition of Done für den Token-Meilenstein
 
-- Paket- und Produktionsdefinition in Diagnose, Builder und Simulation konsistent
+- Paket-, Produktions- und Aktivierungsdefinition konsistent
 - Full- und Sparse-Pool funktionieren
 - vollständige Testsuite und Fast-Validierung grün
 - fünf Referenzarchetypen und sechs Matchups
 - genau 100 Hände je Deck mit Seed 1701
 - Buildermetriken unverändert
-- Produktionskapazität evidenzbasiert dokumentiert
+- automatische Enginekapazität evidenzbasiert dokumentiert
 - keine unbegründete Regression anderer Referenzarchetypen
 - KGB-Entscheidung, Reflexion und genau ein nächster Schritt dokumentiert

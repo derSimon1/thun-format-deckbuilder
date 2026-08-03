@@ -27,6 +27,8 @@ class TokenProductionProfile:
     minimum_output: int = 0
     variable_output: bool = False
     repeatable: bool = False
+    activated: bool = False
+    activation_mana: int = 0
     delayed_by_death: bool = False
     conditional: bool = False
 
@@ -36,6 +38,8 @@ class TokenProductionProfile:
             return "none"
         if self.delayed_by_death:
             return "death"
+        if self.activated:
+            return "activated"
         if self.conditional:
             return "conditional"
         if self.repeatable:
@@ -99,6 +103,25 @@ def _is_named_self_death(sentence: str, analysis: CardAnalysis) -> bool:
     )
 
 
+def _activated_mana_cost(sentence: str) -> int | None:
+    """Return a conservative mana cost for a token-producing activated ability."""
+
+    if ":" not in sentence:
+        return None
+    cost, effect = sentence.split(":", 1)
+    if not _is_creature_token_sentence(effect):
+        return None
+    mana = 0
+    for symbol in re.findall(r"\{([^}]+)\}", cost.upper()):
+        if symbol.isdigit():
+            mana += int(symbol)
+        elif symbol in {"T", "Q", "X"}:
+            continue
+        elif any(color in symbol.split("/") for color in "WUBRGC"):
+            mana += 1
+    return mana
+
+
 def analyze_token_production(analysis: CardAnalysis) -> TokenProductionProfile:
     """Classify creature-token production for conservative solitaire play."""
 
@@ -112,6 +135,12 @@ def analyze_token_production(analysis: CardAnalysis) -> TokenProductionProfile:
 
     outputs = tuple(_output_for_sentence(sentence) for sentence in sentences)
     package = analyze_token_package(analysis)
+    activated_costs = tuple(
+        cost
+        for sentence in sentences
+        if (cost := _activated_mana_cost(sentence)) is not None
+    )
+    activated = bool(activated_costs)
     delayed_by_death = any(
         _is_named_self_death(sentence, analysis) for sentence in sentences
     )
@@ -137,7 +166,9 @@ def analyze_token_production(analysis: CardAnalysis) -> TokenProductionProfile:
         creates_creature_tokens=True,
         minimum_output=max(value for value, _ in outputs),
         variable_output=any(variable for _, variable in outputs),
-        repeatable=package.repeatable_creature_source,
+        repeatable=package.repeatable_creature_source and not activated,
+        activated=activated,
+        activation_mana=min(activated_costs, default=0),
         delayed_by_death=delayed_by_death,
         conditional=conditional,
     )
@@ -155,6 +186,8 @@ def token_production_roles(analysis: CardAnalysis) -> tuple[str, ...]:
     }
     if profile.variable_output:
         roles.add("token_output_variable")
+    if profile.activated:
+        roles.add(f"token_activation_mana_{min(profile.activation_mana, 9)}")
     return tuple(sorted(roles))
 
 
@@ -196,7 +229,13 @@ def build_token_production_capacity(
             }
         )
 
-    cards.sort(key=lambda item: (str(item["mode"]), float(item["mana_value"]), str(item["name"])))
+    cards.sort(
+        key=lambda item: (
+            str(item["mode"]),
+            float(item["mana_value"]),
+            str(item["name"]),
+        )
+    )
     return {
         "distinct_cards": len(cards),
         "max_copies": max_copies,
