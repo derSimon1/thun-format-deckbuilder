@@ -45,3 +45,13 @@ def test_simulation_metadata_is_not_treated_as_functional_role() -> None:
     assert tuple(str(item.role) for item in contribution.roles) == (
         "token_creature_maker",
     )
+
+
+def test_contribution_counts_only_strict_colorless_pips() -> None:
+    strict = knowledge_with_roles("removal")
+    strict.card["mana_cost"] = "{1}{W}{C}{C}"
+    hybrid = knowledge_with_roles("removal")
+    hybrid.card["mana_cost"] = "{W/C}{2/C}"
+
+    assert contribution_from_knowledge(strict).pip_count("C") == 2
+    assert contribution_from_knowledge(hybrid).pip_count("C") == 0

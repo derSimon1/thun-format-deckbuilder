@@ -68,4 +68,13 @@ class CandidateEvaluator:
             components.append(curve_component)
         components.extend(self.synergy_engine.score(contribution, state))
         components.extend(self.archetype_evaluator.score(knowledge, contribution, profile))
+        colorless_pips = contribution.pip_count("C")
+        if colorless_pips:
+            components.append(
+                ScoreComponent(
+                    category="mana_strain",
+                    value=-2.0 * colorless_pips,
+                    reason="Requires dedicated true-colorless mana sources.",
+                )
+            )
         return CandidateScore(card_name=contribution.card_name, components=tuple(components))

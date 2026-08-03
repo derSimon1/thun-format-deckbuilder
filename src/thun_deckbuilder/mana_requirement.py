@@ -90,6 +90,23 @@ def mana_symbol_requirements(
     return tuple(requirements)
 
 
+def strict_mana_symbol_count(mana_cost: str, symbol: str) -> int:
+    """Count symbols that require exactly one specific mana type.
+
+    Hybrid and generic alternatives are deliberately excluded: ``{W/C}`` and
+    ``{2/C}`` can be paid without true colorless mana and therefore do not
+    impose the dedicated-source burden of a strict ``{C}`` symbol.
+    """
+
+    wanted = symbol.strip().upper()
+    if wanted not in COLORS:
+        raise ValueError(f"Unsupported strict mana symbol: {symbol}")
+    return sum(
+        normalized.strip().upper() == wanted
+        for normalized in re.findall(r"\{([^}]+)\}", mana_cost or "")
+    )
+
+
 def source_can_pay(options: frozenset[str], source: str) -> bool:
     """Return whether one source pays one symbol; generic sources never pay {C}."""
 

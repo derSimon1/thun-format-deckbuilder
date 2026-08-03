@@ -43,6 +43,42 @@ Eine vollständig qualifizierte v2-KGB existiert noch nicht. `baseline: none` be
 - **Lokale Validierung:** Routing-Assertions grün; 322 Tests in 34,93 s; Fast und Token-Diagnose grün; Benchmarks, 100 Hände, Planfähigkeit 77 %, Produktions-/Finishdichten und Deck-Hash bitstabil; keine Regression.
 - **KGB-Entscheidung vor Push:** keine neue KGB. Die Änderung verbessert Prozesssicherheit, nicht belegte Deckstärke; `baseline: none` bleibt bestehen.
 
+## Mana-Strain-Zyklus – lokale Evidenz vor CI
+
+- **Ursache:** D-015 machte `{C}`-Karten korrekt spielbar, Candidate Scoring
+  bewertete aber nur Kartenqualität, Rollen und Synergien. Der Opportunitätspreis
+  dauerhaft gebundener echter Farblosquellen fehlte; dadurch verdrängten zwei
+  marginale `Warping Wail` stärkere farbige Go-Wide-Kandidaten.
+- **Hypothese:** Ein allgemeiner, erklärbarer Abzug von 2 Punkten pro striktem
+  `{C}`-Symbol bildet die Quellenspannung ab, ohne hochwertige `{C}`-Karten
+  pauschal zu verbieten. Hybridkosten bleiben unberührt.
+- **Änderungen:** zentraler Zähler für strikte Manasymbole; `{C}`-Pips in der
+  normalisierten Kartenbeitragsstruktur; `mana_strain` im Candidate Scoring;
+  gezielte Regressionstests und Workflow `Token Go Wide – Mana Strain`.
+- **Lokale Validierung:** 43 gezielte Tests und 325 Gesamttests in 44,76 s
+  grün; Fast-Validierung und 100-Hand-Diagnose bestanden; Arena-Import 60/15;
+  keine Regression. Benchmarks Burn/Tokens/Artifacts/Control/Mill bleiben
+  `83/98/90/85/80`.
+- **Vorher/Nachher:** gegenüber dem Castability-Stand Early Play T2/T3
+  `93/95 → 94/96`, Goldfish-Schaden `24,84 → 24,94`, Killrate
+  `65 → 66 %`, Board `9,02 → 9,10`. Die Liste wechselt von zwei
+  `Warping Wail`, einer `Basilica Shepherd` und `22 Plains + 2 Wastes` zurück
+  auf zwei `Battle Menu`, drei `Okoye` und `24 Plains`; der Deck-Hash ist wieder
+  `133e45be5a4ca94dc6bb8dddeb6c811db9e2889ced915f54c018898441668815`.
+- **Opening Hands und Matchups:** Seed `1701`, 100 Hände, Keepability/Plan
+  `77/77 %`, Mana-/Farbfehler `22/0 %`. Burn/Artifacts/Mill bleiben
+  `48/98/100 %`; 35 Maker, 30 sofortige Maker, 22 Multi-Maker, 7 Anthems und
+  0 Outlets bleiben stabil.
+- **Alternative Erklärung/Risiko:** Der Gewinn kann primär aus der konkreten
+  Rangfolge von `Battle Menu`/`Okoye` gegen `Warping Wail` stammen. Der
+  allgemeine Malus ist deshalb bewusst klein: Er macht `{C}` nicht unzulässig
+  und greift nur bei strikten, tatsächlich dedizierte Quellen erzwingenden
+  Symbolen. Reale Spiele bleiben ungeprüft.
+- **KGB-Entscheidung vor Push:** keine neue KGB. Der frühere stabile Kern wird
+  reproduzierbar wiederhergestellt, aber `baseline: none` bleibt bis zur
+  ausdrücklichen v2-Qualifikation bestehen.
+
 ## Nächster ausführbarer Schritt
 
-Nach erfolgreicher Agent-Instructions-CI den kleinen Early-Play-/Goldfish-Verlust der nun zugelassenen `Warping Wail`-Auswahl gegen alternative castbare Go-Wide-Kandidaten isoliert bewerten.
+Nach erfolgreicher Mana-Strain-CI die Diskrepanz zwischen 100 % Strategy
+Commitment und 0 % wiederholbarer Engine als eng abgegrenzte Diagnose prüfen.

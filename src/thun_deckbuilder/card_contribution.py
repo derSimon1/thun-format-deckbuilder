@@ -6,6 +6,7 @@ from typing import Mapping
 
 from thun_deckbuilder.card_role import CardRole, normalize_role
 from thun_deckbuilder.knowledge_base import CardKnowledge
+from thun_deckbuilder.mana_requirement import strict_mana_symbol_count
 from thun_deckbuilder.synergy_tag import SynergyTag, normalize_synergy_tag
 
 
@@ -83,6 +84,9 @@ def contribution_from_knowledge(knowledge: CardKnowledge) -> CardContribution:
     for symbol in _COLOR_SYMBOL.findall(mana_cost):
         color = symbol.upper()
         pips[color] = pips.get(color, 0) + 1
+    strict_colorless = strict_mana_symbol_count(mana_cost, "C")
+    if strict_colorless:
+        pips["C"] = strict_colorless
 
     functional_roles = tuple(
         role

@@ -124,3 +124,20 @@ Bei fachlicher Klassifikation haben spezifische Oracle-Text-Signale Vorrang vor 
 Eine `{C}`-Karte ist nur zulässig, wenn der konfigurierte Mana-Builder echte farblose Quellen erzeugen kann. Die Basic-Land-Manabasis verwendet dafür `Wastes` und reserviert mindestens so viele passende Quellen, wie ein einzelner Zauber an strikten gleichartigen Symbolen verlangt.
 
 **Begründung:** Das frühere pauschale Verbot verhinderte legale, castbare Kandidaten. Eine bloße Entfernung des Verbots hätte dagegen unspielbare Karten ohne echte farblose Quellen zugelassen.
+
+## D-016 – Strikte `{C}`-Kosten tragen einen Quellenspannungsbeitrag
+
+**Datum:** 2026-08-04
+**Status:** akzeptiert
+
+Candidate Scoring zieht pro strikt erforderlichem `{C}`-Symbol 2 Punkte als
+erklärbare `mana_strain` ab. Der Beitrag modelliert den Opportunitätspreis
+dauerhaft gebundener echter Farblosquellen, ohne die Karte unzulässig zu machen.
+Hybridkosten wie `{W/C}` und `{2/C}` lösen den Beitrag nicht aus, weil sie keine
+echte farblose Quelle erzwingen.
+
+**Begründung:** Nach D-015 wurde `Warping Wail` korrekt castbar, verdrängte aber
+trotz leicht schlechterer Opening-Hand- und Goldfish-Metriken farbige
+Go-Wide-Kandidaten. Eligibility beantwortet, ob eine Karte spielbar ist;
+Candidate Scoring muss zusätzlich bewerten, ob die dafür gebundene Manabasis den
+Nutzen rechtfertigt.

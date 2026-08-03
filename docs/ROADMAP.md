@@ -14,6 +14,7 @@
 - [x] Burn-Cuts rollenbasiert absichern
 - [x] Arena-Import und 100 Hände final bewerten
 - [x] Root-`AGENTS.md` als dauerhafte Repository-Einstiegsanweisung validieren
+- [x] Quellenspannung strikter `{C}`-Kosten im Candidate Scoring modellieren
 
 ## Stabiler Stand – Run 78
 
@@ -25,20 +26,22 @@
 - Burn-Plan: 3 `Dawnbringer Cleric` hinein; 2 `Descendant of Storms`, 1 `Duty Beyond Death` heraus
 - Mainboard-Hash `133e45be5a4ca94dc6bb8dddeb6c811db9e2889ced915f54c018898441668815`
 
-## Aktueller Zyklus – Agent Instructions
+## Aktueller Zyklus – Mana Strain
 
-1. Verbindliche Dokumenthierarchie knapp routen, nicht duplizieren.
-2. Zyklus-, Test-, Artefakt-, PR- und GitHub-CLI-Regeln am Root auffindbar machen.
-3. 322 Tests, Fast, 100 Hände und alle Referenzmetriken unverändert bestätigen.
-4. Workflow `Token Go Wide – Agent Instructions` nennen und CI-Artefakt auswerten.
+1. Strikte `{C}`-Pips zentral und ohne Hybrid-Fehlklassifikation erfassen.
+2. Dedizierte echte Farblosquellen als kleinen, erklärbaren Scoring-Beitrag
+   modellieren, nicht als Eligibility-Verbot.
+3. Stärkeren Token-Kern sowie alle fünf Referenzarchetypen bestätigen.
+4. Workflow `Token Go Wide – Mana Strain` nennen und CI-Artefakt auswerten.
 
 ## Prioritäten danach
 
-1. Kleinen Early-Play-/Goldfish-Verlust der `Warping Wail`-Auswahl isoliert bewerten.
-2. Strategy Commitment und Opening Hands verfeinern.
+1. Strategy Commitment und wiederholbare Engine-Diagnose abgleichen.
+2. Opening Hands verfeinern.
 3. Anthem-/Combatmodell verbessern.
 4. Regression-Baseline statt `baseline: none`.
 
 ## Genau ein nächster ausführbarer Schritt
 
-Nach erfolgreicher Agent-Instructions-CI den kleinen Early-Play-/Goldfish-Verlust der nun zugelassenen `Warping Wail`-Auswahl gegen alternative castbare Go-Wide-Kandidaten isoliert bewerten.
+Nach erfolgreicher Mana-Strain-CI die Diskrepanz zwischen 100 % Strategy
+Commitment und 0 % wiederholbarer Engine als eng abgegrenzte Diagnose prüfen.
