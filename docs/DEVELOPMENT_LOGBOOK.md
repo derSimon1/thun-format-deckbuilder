@@ -23,32 +23,36 @@ Run 63 zeigte, dass der Mono-White-Pool nur drei mögliche Kopien einer automati
 - Goldfish: 23,72 Schaden, 63 % Killrate, Board 9,30
 - Matchups: Burn 0 %, Artifacts 58 %, Mill 100 %
 
-Der einzige Testfehler entstand durch gemischte Enum- und String-Repräsentationen der Rollen.
+### Runs 65 und 66
 
-### Run 65
+- Run 65: Commit `a9dc0ea54a842f2b50547768a185abd49b2062cb`, Workflow `30820717373`, fehlgeschlagen
+- Run 66: Commit `50c174413f42d6a185631e6d1ae6fd0d5bf69257`, Workflow `30821482441`, fehlgeschlagen
+- in beiden Runs: Fast-Validierung und Token-Diagnose erfolgreich; nur derselbe Full-Pool-Test rot
+- Run-66-Artefakt `global-calibration-pr-66`, ID `8859139442`
+- Run 66: 300 Tests bestanden, 1 fehlgeschlagen
+- Qualitätsbericht belegt 21 `token_multi_maker`-Kopien bei Minimum 6
 
-- Commit `a9dc0ea54a842f2b50547768a185abd49b2062cb`
-- Workflow `30820717373`, fehlgeschlagen
-- 300 Tests bestanden, 1 Test fehlgeschlagen
-- Fast-Validierung und Artefakte gegenüber Run 64 unverändert
-- Artefakt `global-calibration-pr-65`, ID `8858844642`
+### Belegte Ursache
 
-Die Annahme, `str(CardRole)` liefere den kanonischen Rollenwert, war falsch. Der Test muss den Enum-Wert verwenden und bei Strings zurückfallen.
+Der Produktionscode und die Artefakte erfüllen das Go-Wide-Paket. Der Test zählte rohe `DeckEntry.roles`, deren Enum-/String-Repräsentation kein stabiler öffentlicher Vertrag ist. Zwei Normalisierungsvarianten änderten daran nichts. Der kanonische Vertrag ist `deck.quality_report.role_quality`, denn genau dieser Bericht steuert und dokumentiert die erfüllten Profilrollen.
 
 ## Aktueller Hotfix-Zyklus
 
-- Ursache: gemischte Enum-/String-Rollen im Full-Pool-Test
-- Hypothese: `getattr(role, "value", str(role))` normalisiert beide Repräsentationen
-- Änderung: nur Testnormalisierung und Dokumentation
-- Erfolg: 301 Tests und Fast-Validierung grün; Deck und Metriken unverändert
-- KGB-Entscheidung vor Push: keine neue KGB
+- **Ursache:** Test prüft eine interne Rollenrepräsentation statt des kanonischen Qualitätsberichts.
+- **Hypothese:** Prüfung von `quality_report.role_quality` beseitigt den repräsentationsabhängigen Fehler, ohne Produktionscode oder Deckliste zu ändern.
+- **Änderung:** nur Full-Pool-Test sowie Logbook und Roadmap.
+- **Erfolg:** vollständige Testsuite und Fast-Validierung grün; Deck-Hash, Benchmark 96 und Go-Wide-Dichten unverändert.
+- **Rollback:** Produktionsmetriken oder Referenzbenchmarks verändern sich.
+- **KGB-Entscheidung vor Push:** keine neue KGB.
 
 ## Reflexion
 
-- Benchmark 96 belegt bessere Rollenerfüllung, aber nicht automatisch bessere Club-Performance.
+- Zwei aufeinanderfolgende Test-Hotfixes scheiterten, weil weiterhin die falsche Abstraktionsebene geprüft wurde.
+- Der Qualitätsbericht ist stabiler als rohe Rollenobjekte und entspricht dem fachlichen Ziel des Tests.
+- Benchmark 96 belegt Rollenerfüllung, aber noch nicht automatisch bessere Club-Performance.
 - Das Burn-Matchup bleibt die stärkste offene spielerische Warnung.
-- Die Go-Wide-Liste enthält eine Karte mit erforderlichem farblosem Mana, während die aktuelle Basismana-Analyse nur W/U/B/R/G verarbeitet. Dieser Castability-Fall muss nach grünem Gate geprüft werden.
+- Die Go-Wide-Liste enthält eine Karte mit erforderlichem farblosem Mana; dieser Castability-Fall folgt erst nach grünem Gate.
 
 ## Nächster ausführbarer Schritt
 
-Den Enum-Wert-Hotfix veröffentlichen und den Workflow vollständig auswerten. Bei grünem Gate anschließend die farblose Manaanforderung global absichern.
+Den Qualitätsbericht-Hotfix veröffentlichen und den Workflow vollständig auswerten. Bei grünem Gate die farblose Manaanforderung global absichern.

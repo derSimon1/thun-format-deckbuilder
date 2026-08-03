@@ -18,8 +18,9 @@ Referenzarchetypen: Burn, Tokens, Artifacts, Control und Mill.
 - [x] Go-Wide-Planwahl auf sofortige Maker, Multi-Maker und Anthems ausgerichtet
 - [x] Go-Wide-Profil mit kapazitätsgeprüften Mindestdichten
 - [x] Fast-Validierung erzeugt Profil Go Wide
-- [x] Run 64/65: Benchmark 96 und stabile andere Referenzbenchmarks
-- [ ] Full-Pool-Rollentest auf kanonischen Enum-Wert normalisieren
+- [x] Benchmark 96 und stabile andere Referenzbenchmarks
+- [x] Artefakte bestätigen 36 Kreatur-Token-Maker, 25 sofortige Maker, 21 Multi-Maker und 6 Anthems
+- [ ] Full-Pool-Test auf den kanonischen Qualitätsbericht umstellen
 - [ ] vollständigen grünen Workflow bestätigen
 - [ ] Arena-Import und 100 Hände final bewerten
 
@@ -39,6 +40,7 @@ Referenzarchetypen: Burn, Tokens, Artifacts, Control und Mill.
 - Keepability/Planfähigkeit 77/77 %
 - Goldfish 23,72 Schaden und 63 % Killrate
 - Matchups Burn/Artifacts/Mill: 0/58/100 %
+- Runs 64–66 scheiterten ausschließlich am repräsentationsabhängigen Full-Pool-Test
 
 ## Prioritäten nach grünem Testgate
 
@@ -51,4 +53,4 @@ Referenzarchetypen: Burn, Tokens, Artifacts, Control und Mill.
 
 ## Genau ein nächster ausführbarer Schritt
 
-Den Full-Pool-Test mit `getattr(role, "value", str(role))` auf den kanonischen Rollenwert umstellen, CI und Artefakte auswerten und danach die farblose Manaanforderung bearbeiten.
+Den Full-Pool-Test über `deck.quality_report.role_quality` prüfen, CI und Artefakte auswerten und danach die farblose Manaanforderung bearbeiten.

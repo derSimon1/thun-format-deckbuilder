@@ -42,19 +42,16 @@ def test_full_pool_selects_and_fulfils_reliable_go_wide_package():
             colors=["W"],
         )
 
-    role_counts: dict[str, int] = {}
-    for entry in deck.mainboard:
-        for role in set(entry.roles):
-            normalized_role = getattr(role, "value", str(role))
-            role_counts[normalized_role] = (
-                role_counts.get(normalized_role, 0) + entry.quantity
-            )
-
     assert "Go Wide" in deck.profile_name
-    assert role_counts["token_creature_maker"] >= 15
-    assert role_counts["token_immediate_maker"] >= 9
-    assert role_counts["token_multi_maker"] >= 6
-    assert role_counts["anthem"] >= 3
+    assert deck.quality_report is not None
+    role_quality = {
+        str(item.role): item.current
+        for item in deck.quality_report.role_quality
+    }
+    assert role_quality["token_creature_maker"] >= 15
+    assert role_quality["token_immediate_maker"] >= 9
+    assert role_quality["token_multi_maker"] >= 6
+    assert role_quality["anthem"] >= 3
 
 
 def test_generic_builder_generates_token_deck():
