@@ -16,8 +16,9 @@
 - [x] Token-Hauptplan vor der Kartenauswahl bestimmen
 - [x] Signale für Go Wide, Value Tokens und Aristocrats unterscheiden
 - [x] Token-Karten planabhängig bewerten
-- [ ] planspezifische Rollenminimums und Dichteziele
+- [x] planspezifische Rollenminimums und Dichteziele
 - [ ] Rollen-Mischmasch im Qualitätsbericht negativ bewerten
+- [ ] Strategy-Commitment-Bericht mit Plan, Dichten und Warnungen
 - [ ] Engine Density modellieren
 - [ ] Finish Density modellieren
 - [ ] klare Wincondition-Erkennung
@@ -41,12 +42,11 @@
 
 ## Aktuelle Priorität
 
-1. PR-Validierung der Token-Plan-Erkennung und Artefaktprüfung
-2. planspezifische Rollenminimums und Strategy-Commitment-Bericht
-3. Engine Density
-4. Finish Density
-5. belastbare Vergleichsbaseline
-6. Meta-Benchmark
+1. Strategy-Commitment-Bericht und negative Bewertung von Rollen-Mischmasch
+2. Engine Density
+3. Finish Density
+4. belastbare Vergleichsbaseline
+5. Meta-Benchmark
 
 ## Definition of Done für den nächsten Sprint
 

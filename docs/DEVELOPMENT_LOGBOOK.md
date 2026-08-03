@@ -78,14 +78,6 @@ Token-Subarchetyp-Erkennung und planabhängige Rollenpriorisierung implementiere
 
 Mehrstündige autonome Kalibrierung mit vier ChatGPT-Aufgaben pro Stunde und einem GitHub-Zeitplan-Workflow.
 
-### Erwartung
-
-- etwa 24 ChatGPT-Zyklen
-- regelmäßig neue, belegte Verbesserungen
-- Commit nach sinnvoller Änderung
-- anschließende CI-Verifikation
-- fortlaufendes Lernen und Dokumentieren
-
 ### Tatsächliches Ergebnis
 
 - über Nacht liefen nur drei sichtbare GitHub-Workflows
@@ -108,21 +100,9 @@ Mehrstündige autonome Kalibrierung mit vier ChatGPT-Aufgaben pro Stunde und ein
 
 GitHub Actions ist künftig Validator, nicht Entwicklungsagent. Ein produktiver Zyklus beginnt mit einer konkreten Hypothese und endet entweder mit einem sinnvollen Commit plus verifiziertem Workflow oder mit einem dokumentierten Stopgrund plus nächstem ausführbarem Schritt.
 
-### Neue Schutzregeln
-
-- keine Dummy-Commits
-- nach zwei gleichen No-Change-Zyklen Priorität wechseln
-- nach Commit Run-ID innerhalb von zehn Minuten prüfen
-- jeder No-Change-Zyklus muss Erkenntnis und nächsten Schritt liefern
-- Zeitplan-Workflows gelten nicht als Beleg für Entwicklungsfortschritt
-
 ### Confidence
 
 Hoch. Branch-Historie, PR-Head und Workflowverhalten bestätigen die Diagnose.
-
-### Nächster Schritt
-
-Development System v1.0 im Repository verankern und den nächsten Lauf ausschließlich über die versionierte Spezifikation und den versionierten Kalibrierungsprompt steuern.
 
 ---
 
@@ -154,28 +134,71 @@ Eine konservative, kartenname-unabhängige Signalerkennung kann Go Wide, Value T
 
 - isolierte zielgerichtete Tests der neuen Plan- und Scoringlogik: 4 bestanden
 - Syntaxprüfung der neuen und geänderten Module: bestanden
-- vollständige Repository-Tests und PR-Fast-Validierung: nach Commit durch den neuen PR-Workflow zu verifizieren
+- vollständiger PR-Workflow: Run `30785153345`, erfolgreich
 
-### Vorläufiges Ergebnis
+### Ergebnis
 
-Der Hauptplan wird jetzt vor der Komposition gewählt und die Bewertung bevorzugt Karten, die diesen Plan unterstützen. Der bisherige Standard bleibt bei Gleichstand konservativ Go Wide.
+Der Hauptplan wird vor der Komposition gewählt und die Bewertung bevorzugt Karten, die diesen Plan unterstützen. Der bisherige Standard bleibt bei Gleichstand konservativ Go Wide.
 
 ### Confidence
 
-Mittel. Die Kernlogik ist gezielt getestet; hohe Confidence erst nach grüner vollständiger CI und Prüfung der erzeugten Token-Artefakte.
+Hoch für die technische Integration, mittel für die spielerische Kalibrierung bis zum externen Pioneer- und Club-Benchmark.
 
 ### Lessons Learned
 
 - Subarchetypen lassen sich über wiederverwendbare Oracle-Text- und Rollensignale modellieren, ohne konkrete Kartenlisten fest zu codieren.
 - Ein einzelnes Sacrifice- oder Draw-Wording darf nicht den gesamten Plan umleiten; deshalb werden Pläne ohne mehrere Supportsignale abgewertet.
-- Planerkennung allein reicht noch nicht: Die Rollenminimums des Deckprofils sind weiterhin für alle Token-Pläne identisch.
-
-### Offene Risiken
-
-- Die Auswahl erfolgt aus der gesamten legalen Mono-White-Kandidatenmenge; die Verteilung realer Karten kann einen Plan durch reine Verfügbarkeit bevorzugen.
-- Planspezifische Rollenminimums, Engine Density und Finish Density fehlen noch.
-- Matchup-Extreme müssen weiterhin gegen echte Clubtests geprüft werden.
+- Planerkennung allein reicht nicht: Die Rollenminimums des Deckprofils müssen den gewählten Plan ebenfalls ausdrücken.
 
 ### Nächster Schritt
 
-PR-Workflow und Artefakte prüfen. Danach planspezifische Rollenminimums sowie einen expliziten Strategy-Commitment-Bericht ergänzen.
+Planspezifische Rollenminimums ergänzen und danach Strategy Commitment explizit berichten.
+
+---
+
+## 2026-08-03 – Zwei-Stunden-Kalibrierung, Zyklus 2: Planspezifische Dichteziele
+
+### Ziel
+
+Den erkannten Token-Hauptplan in verbindliche Rollenminimums übersetzen, damit die Komposition nicht trotz korrekter Planerkennung in ein Rollen-Mischmasch zurückfällt.
+
+### Ausgangslage
+
+- Ausgangs-Head: `5a1db8d9d83bca0ff639d72d9c8884551097cdfc`
+- PR #14 offen und mergeable
+- vorheriger Workflow: Run `30785153345`, erfolgreich
+- alle drei Token-Pläne verwendeten weiterhin das unveränderte Go-Wide-Profil
+
+### Hypothese
+
+Konservative planspezifische Mindestdichten erzwingen die definierenden Pakete, ohne die 36 Zauberslots vollständig zu blockieren: Go Wide braucht Maker plus Board-Payoffs, Value Tokens braucht Maker plus Card Advantage, Aristocrats braucht Fodder plus Sacrifice-Outlets plus Death-Payoffs.
+
+### Änderungen
+
+1. Zentrale `token_profile_for_plan`-Funktion mit unterschiedlichen Rollenminimums und Dichtezielen.
+2. Token-Generator verwendet das ausgewählte Planprofil direkt bei der Komposition.
+3. Vier Regressionstests sichern definierende Mindestpakete und abweichende Landzahlen.
+
+### Validierung
+
+- statische Plausibilitätsprüfung: Mindestpakete bleiben unter den verfügbaren Zauberslots
+- vollständige Testsuite und Fast-Validierung: durch den neuen PR-Workflow zu verifizieren
+- fünf Archetypen, Token-Matchups und BO3-Berichte: durch die Workflow-Artefakte zu prüfen
+
+### Vorläufiges Ergebnis
+
+Die Planentscheidung beeinflusst nun nicht nur das Scoring, sondern auch die zwingend zu erfüllenden Rollen. Damit wird Strategy Commitment erstmals strukturell in der Komposition verankert.
+
+### Confidence
+
+Mittel bis zum vollständigen grünen Workflow und zur Artefaktprüfung.
+
+### Offene Risiken
+
+- Rollen können überlappen; erfüllte Mindestzahlen sind deshalb noch kein vollständiger Strategy-Commitment-Score.
+- Die Mono-White-Kartenmenge könnte für Aristocrats nicht genug echte Outlets enthalten; ein Workflowfehler wäre hier ein nützlicher Kapazitätshinweis statt ein Grund, Mindestwerte blind zu senken.
+- Engine Density und Finish Density bleiben separat zu modellieren.
+
+### Nächster Schritt
+
+Workflow und erzeugte Token-Artefakte prüfen. Danach einen expliziten Strategy-Commitment-Bericht ergänzen, der Plan, Soll-/Ist-Dichten, Rollenüberlappung und Mischmasch-Warnungen ausweist.

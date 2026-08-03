@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 from thun_deckbuilder.deck_generator import GeneratedDeck
-from thun_deckbuilder.deck_profile import DeckProfile, TOKENS_PROFILE
 from thun_deckbuilder.knowledge_base import CardKnowledge, KnowledgeBase
 from thun_deckbuilder.token_plan import TokenPlan, detect_token_plan
+from thun_deckbuilder.token_profiles import token_profile_for_plan
 from thun_deckbuilder.token_scoring import score_token_card
 
 
@@ -106,12 +106,7 @@ def generate_token_deck(
         if _is_reasonable_token_card(card)
     )
     plan_report = detect_token_plan(eligible_cards)
-    profile = DeckProfile(
-        name=f"{TOKENS_PROFILE.name} — {plan_report.plan.label}",
-        lands=lands,
-        role_targets=TOKENS_PROFILE.role_targets,
-        curve_targets=TOKENS_PROFILE.curve_targets,
-    )
+    profile = token_profile_for_plan(plan_report.plan, lands=lands)
     result = build_composition(
         knowledge_base.cards,
         profile=profile,
