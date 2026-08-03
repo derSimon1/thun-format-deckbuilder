@@ -41,7 +41,7 @@ def test_food_only_card_loses_broad_token_maker_role_and_is_not_eligible():
     assert not _is_reasonable_token_card(refined)
 
 
-def test_creature_token_card_keeps_broad_role_and_gains_precise_role():
+def test_creature_token_card_gains_package_and_production_roles():
     refined = _with_precise_token_roles(
         knowledge(
             "Soldiers",
@@ -50,7 +50,12 @@ def test_creature_token_card_keeps_broad_role_and_gains_precise_role():
             type_line="Sorcery",
         )
     )
-    assert {"token_maker", "token_creature_maker"}.issubset(refined.roles)
+    assert {
+        "token_maker",
+        "token_creature_maker",
+        "token_output_2",
+        "token_production_immediate",
+    }.issubset(refined.roles)
     assert _is_reasonable_token_card(refined)
 
 
@@ -84,7 +89,6 @@ def test_real_outlet_and_death_payoff_receive_precise_roles():
             type_line="Creature — Cleric",
         )
     )
-
     assert {"sacrifice", "sacrifice_outlet"}.issubset(outlet.roles)
     assert {"death_payoff", "drain_payoff", "token_payoff"}.issubset(
         payoff.roles

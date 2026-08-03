@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import random
+import re
 from dataclasses import dataclass
 
 from thun_deckbuilder.deck_generator import DeckEntry, GeneratedDeck
@@ -20,6 +21,27 @@ class GoldfishReport:
     mill_out_by_final_turn_pct: int = 0
     average_artifacts_in_play: float = 0.0
     average_shrines_in_play: float = 0.0
+    average_token_board_size: float = 0.0
+    average_token_engines_in_play: float = 0.0
+
+
+@dataclass(frozen=True)
+class _TokenSpellEffect:
+    body: float = 0.0
+    immediate_tokens: float = 0.0
+    repeatable_tokens: float = 0.0
+    anthem_bonus: float = 0.0
+    payoff_bonus: float = 0.0
+
+    @property
+    def priority(self) -> float:
+        return (
+            self.body
+            + self.immediate_tokens
+            + self.repeatable_tokens * 2.0
+            + self.anthem_bonus * 3.0
+            + self.payoff_bonus * 4.0
+        )
 
 
 def _signals(entry: DeckEntry) -> frozenset[str]:
@@ -36,7 +58,7 @@ def _signals(entry: DeckEntry) -> frozenset[str]:
     if "creature" in entry.type_line.lower():
         found.add("creature")
     roles = {role.lower() for role in entry.roles}
-    if "token_maker" in roles:
+    if roles.intersection({"token_maker", "token_creature_maker"}):
         found.add("token_maker")
     if "anthem" in roles:
         found.add("anthem")
@@ -45,13 +67,44 @@ def _signals(entry: DeckEntry) -> frozenset[str]:
     return frozenset(found)
 
 
+def _token_spell_effect(entry: DeckEntry) -> _TokenSpellEffect:
+    roles = {role.lower() for role in entry.roles}
+    signals = _signals(entry)
+    is_maker = "token_maker" in signals
+    output = 2.0 if is_maker else 0.0
+    for role in roles:
+        match = re.fullmatch(r"token_output_(\d+)", role)
+        if match:
+            output = float(match.group(1))
+            break
+
+    mode = "immediate" if is_maker else "none"
+    for candidate in ("death", "conditional", "repeatable", "immediate"):
+        if f"token_production_{candidate}" in roles:
+            mode = candidate
+            break
+
+    return _TokenSpellEffect(
+        body=1.0 if "creature" in signals else 0.0,
+        immediate_tokens=output if mode == "immediate" else 0.0,
+        repeatable_tokens=output if mode == "repeatable" else 0.0,
+        anthem_bonus=0.5 if "anthem" in signals else 0.0,
+        payoff_bonus=0.15 if "token_payoff" in signals else 0.0,
+    )
+
+
 def _is_keepable(cards: list[tuple[str, DeckEntry | None]]) -> bool:
     lands = sum(1 for kind, _ in cards if kind == "land")
-    early = any(kind == "spell" and entry is not None and entry.mana_value <= 2 for kind, entry in cards)
+    early = any(
+        kind == "spell" and entry is not None and entry.mana_value <= 2
+        for kind, entry in cards
+    )
     return 2 <= lands <= 4 and early
 
 
-def _bottom_for_six(cards: list[tuple[str, DeckEntry | None]]) -> list[tuple[str, DeckEntry | None]]:
+def _bottom_for_six(
+    cards: list[tuple[str, DeckEntry | None]],
+) -> list[tuple[str, DeckEntry | None]]:
     lands = sum(1 for kind, _ in cards if kind == "land")
     if lands >= 5:
         index = next(i for i, (kind, _) in enumerate(cards) if kind == "land")
@@ -63,7 +116,9 @@ def _bottom_for_six(cards: list[tuple[str, DeckEntry | None]]) -> list[tuple[str
     else:
         index = max(
             range(len(cards)),
-            key=lambda i: -1 if cards[i][0] == "land" else (cards[i][1].mana_value if cards[i][1] else 0),
+            key=lambda i: -1
+            if cards[i][0] == "land"
+            else (cards[i][1].mana_value if cards[i][1] else 0),
         )
     return cards[:index] + cards[index + 1 :]
 
@@ -84,19 +139,12 @@ def _spell_value(entry: DeckEntry, archetype: str) -> tuple[int, float, str]:
         value = 1.0 if "shrine" in signals else 0.0
         return mana, value, "shrine"
     if archetype == "tokens":
-        if "token_maker" in signals:
-            return mana, 2.0, "token"
-        if "creature" in signals:
-            return mana, 1.0, "creature"
-        if "anthem" in signals:
-            return mana, 1.5, "anthem"
-        if "token_payoff" in signals:
-            return mana, 1.25, "token_payoff"
+        return mana, _token_spell_effect(entry).priority, "token_card"
     return mana, 0.0, "none"
 
 
 class GoldfishSimulator:
-    """Play deterministic five-turn solitaire games using simple archetype heuristics."""
+    """Play deterministic five-turn solitaire games using archetype heuristics."""
 
     def simulate(
         self,
@@ -119,6 +167,7 @@ class GoldfishSimulator:
         mulligans = kills = mill_outs = 0
         total_unused = total_cast = total_damage = total_mill = 0.0
         total_artifacts = total_shrines = 0.0
+        total_token_board = total_token_engines = 0.0
 
         for _ in range(samples):
             shuffled = library[:]
@@ -136,9 +185,10 @@ class GoldfishSimulator:
             spells_cast = unused = 0
             creatures: list[float] = []
             ready_tokens = pending_tokens = 0.0
+            active_token_engines: list[float] = []
             anthem_bonus = payoff_bonus = 0.0
 
-            for turn in range(1, turns + 1):
+            for _turn in range(1, turns + 1):
                 if archetype == "tokens":
                     ready_tokens += pending_tokens
                     pending_tokens = 0.0
@@ -157,14 +207,28 @@ class GoldfishSimulator:
                         if kind != "spell" or entry is None:
                             continue
                         cost, value, metric = _spell_value(entry, archetype)
-                        if cost <= mana:
-                            candidates.append((value / cost, value, -cost, index, cost, metric, entry))
+                        if cost <= mana and not (
+                            archetype == "tokens" and value <= 0
+                        ):
+                            candidates.append(
+                                (value / cost, value, -cost, index, cost, metric, entry)
+                            )
                     if not candidates:
                         break
                     _, value, _, index, cost, metric, entry = max(candidates)
                     hand.pop(index)
                     mana -= cost
                     spells_cast += 1
+
+                    if archetype == "tokens":
+                        effect = _token_spell_effect(entry)
+                        pending_tokens += effect.body + effect.immediate_tokens
+                        if effect.repeatable_tokens:
+                            active_token_engines.append(effect.repeatable_tokens)
+                        anthem_bonus += effect.anthem_bonus
+                        payoff_bonus += effect.payoff_bonus
+                        continue
+
                     if metric == "damage":
                         damage += value
                         if "creature" in _signals(entry):
@@ -175,14 +239,6 @@ class GoldfishSimulator:
                         artifacts += value
                     elif metric == "shrine":
                         shrines += value
-                    elif metric == "creature":
-                        pending_tokens += 1.0
-                    elif metric == "token":
-                        pending_tokens += 2.0
-                    elif metric == "anthem":
-                        anthem_bonus += 0.5
-                    elif metric == "token_payoff":
-                        payoff_bonus += 0.15
                 if archetype == "burn":
                     damage += sum(creatures)
                 elif archetype == "mill":
@@ -191,6 +247,7 @@ class GoldfishSimulator:
                     damage += shrines
                 elif archetype == "tokens":
                     damage += ready_tokens * (1.0 + anthem_bonus + payoff_bonus)
+                    pending_tokens += sum(active_token_engines)
                 unused += mana
 
             total_unused += unused
@@ -199,6 +256,8 @@ class GoldfishSimulator:
             total_mill += milled
             total_artifacts += artifacts
             total_shrines += shrines
+            total_token_board += ready_tokens + pending_tokens
+            total_token_engines += len(active_token_engines)
             kills += int(damage >= 20)
             mill_outs += int(milled >= 53)
 
@@ -216,4 +275,6 @@ class GoldfishSimulator:
             mill_out_by_final_turn_pct=pct(mill_outs),
             average_artifacts_in_play=round(total_artifacts / samples, 2),
             average_shrines_in_play=round(total_shrines / samples, 2),
+            average_token_board_size=round(total_token_board / samples, 2),
+            average_token_engines_in_play=round(total_token_engines / samples, 2),
         )

@@ -9,6 +9,7 @@ from thun_deckbuilder.knowledge_base import CardKnowledge, KnowledgeBase
 from thun_deckbuilder.strategy_commitment import evaluate_token_commitment
 from thun_deckbuilder.token_packages import analyze_token_package
 from thun_deckbuilder.token_plan import TokenPlan, detect_token_plan
+from thun_deckbuilder.token_production import token_production_roles
 from thun_deckbuilder.token_profiles import (
     capacity_checked_token_profile,
     token_profile_for_plan,
@@ -21,7 +22,7 @@ def _is_mono_white(knowledge: CardKnowledge) -> bool:
 
 
 def _with_precise_token_roles(knowledge: CardKnowledge) -> CardKnowledge:
-    """Return a Token-specific view with broad false positives removed."""
+    """Return a Token-specific view with precise package and production roles."""
 
     signals = analyze_token_package(knowledge.analysis)
     roles = {str(role) for role in knowledge.roles}
@@ -46,6 +47,7 @@ def _with_precise_token_roles(knowledge: CardKnowledge) -> CardKnowledge:
             {
                 CardRole.TOKEN_MAKER.value,
                 CardRole.TOKEN_CREATURE_MAKER.value,
+                *token_production_roles(knowledge.analysis),
             }
         )
     if signals.repeatable_creature_source:
@@ -100,8 +102,6 @@ def _base_token_candidate(knowledge: CardKnowledge) -> bool:
 
 
 def _is_token_plan_card(knowledge: CardKnowledge) -> bool:
-    """Return cards that define or directly support a Token plan."""
-
     if not _base_token_candidate(knowledge):
         return False
     signals = analyze_token_package(knowledge.analysis)
@@ -132,8 +132,6 @@ def _is_sparse_pool_filler(knowledge: CardKnowledge) -> bool:
 
 
 def _is_reasonable_token_card(knowledge: CardKnowledge) -> bool:
-    """Compatibility helper for tests and external callers."""
-
     return _is_token_plan_card(knowledge) or _is_sparse_pool_filler(knowledge)
 
 
@@ -148,8 +146,6 @@ def _composition_candidates(
     spell_slots: int,
     max_copies: int,
 ) -> tuple[CardKnowledge, ...]:
-    """Add neutral creatures only when plan cards cannot fill the spell section."""
-
     if _copy_capacity(plan_cards, max_copies) >= spell_slots:
         return plan_cards
     fillers = tuple(
@@ -218,10 +214,7 @@ def generate_token_deck(
 ) -> GeneratedDeck:
     from thun_deckbuilder.composition_engine import build_composition
 
-    token_cards = tuple(
-        _with_precise_token_roles(card)
-        for card in knowledge_base.cards
-    )
+    token_cards = tuple(_with_precise_token_roles(card) for card in knowledge_base.cards)
     plan_cards = tuple(card for card in token_cards if _is_token_plan_card(card))
     plan_report = detect_token_plan(plan_cards)
     configured_profile = token_profile_for_plan(plan_report.plan, lands=lands)

@@ -108,6 +108,109 @@ def test_token_payoffs_improve_existing_combat_progress():
     assert supported_report.average_damage > plain_report.average_damage
 
 
+def precise_roles(output: int, mode: str, *extra: str) -> tuple[str, ...]:
+    return (
+        "token_maker",
+        "token_creature_maker",
+        f"token_output_{output}",
+        f"token_production_{mode}",
+        *extra,
+    )
+
+
+def test_two_token_spell_outperforms_one_token_spell():
+    one = GeneratedDeck(
+        mainboard=(
+            entry("One", 40, 1, roles=precise_roles(1, "immediate")),
+        ),
+        lands=20,
+    )
+    two = GeneratedDeck(
+        mainboard=(
+            entry("Two", 40, 1, roles=precise_roles(2, "immediate")),
+        ),
+        lands=20,
+    )
+    simulator = GoldfishSimulator()
+    one_report = simulator.simulate(one, archetype="tokens", samples=400)
+    two_report = simulator.simulate(two, archetype="tokens", samples=400)
+    assert two_report.average_damage > one_report.average_damage
+    assert two_report.average_token_board_size > one_report.average_token_board_size
+
+
+def test_death_trigger_does_not_create_free_tokens_in_solitaire():
+    deck = GeneratedDeck(
+        mainboard=(
+            entry("Death Spell", 40, 1, roles=precise_roles(1, "death")),
+        ),
+        lands=20,
+    )
+    report = GoldfishSimulator().simulate(deck, archetype="tokens", samples=300)
+    assert report.average_damage == 0
+    assert report.average_token_board_size == 0
+
+
+def test_repeatable_engine_outgrows_equal_one_shot_output():
+    immediate = GeneratedDeck(
+        mainboard=(
+            entry("One Shot", 36, 2, roles=precise_roles(1, "immediate")),
+        ),
+        lands=24,
+    )
+    repeatable = GeneratedDeck(
+        mainboard=(
+            entry("Engine", 36, 2, roles=precise_roles(1, "repeatable")),
+        ),
+        lands=24,
+    )
+    simulator = GoldfishSimulator()
+    immediate_report = simulator.simulate(
+        immediate, archetype="tokens", samples=500
+    )
+    repeatable_report = simulator.simulate(
+        repeatable, archetype="tokens", samples=500
+    )
+    assert repeatable_report.average_damage > immediate_report.average_damage
+    assert repeatable_report.average_token_engines_in_play > 0
+
+
+def test_token_maker_creature_contributes_its_own_body():
+    spell = GeneratedDeck(
+        mainboard=(
+            entry("Spell", 36, 2, roles=precise_roles(1, "immediate")),
+        ),
+        lands=24,
+    )
+    creature = GeneratedDeck(
+        mainboard=(
+            entry(
+                "Creature Maker",
+                36,
+                2,
+                type_line="Creature — Cleric",
+                roles=precise_roles(1, "immediate"),
+            ),
+        ),
+        lands=24,
+    )
+    simulator = GoldfishSimulator()
+    spell_report = simulator.simulate(spell, archetype="tokens", samples=400)
+    creature_report = simulator.simulate(creature, archetype="tokens", samples=400)
+    assert creature_report.average_damage > spell_report.average_damage
+    assert creature_report.average_token_board_size > spell_report.average_token_board_size
+
+
+def test_conditional_output_is_not_assumed_in_clean_goldfish():
+    deck = GeneratedDeck(
+        mainboard=(
+            entry("Conditional", 40, 1, roles=precise_roles(2, "conditional")),
+        ),
+        lands=20,
+    )
+    report = GoldfishSimulator().simulate(deck, archetype="tokens", samples=300)
+    assert report.average_damage == 0
+
+
 def test_invalid_simulation_arguments_are_rejected():
     deck = GeneratedDeck(mainboard=(entry("Bolt", 36, 1),), lands=24)
     try:
