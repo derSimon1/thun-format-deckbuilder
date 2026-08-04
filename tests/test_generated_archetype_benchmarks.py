@@ -17,10 +17,16 @@ def entry(name, qty, mv, type_line, roles=(), reasons=()):
 def test_artifact_benchmark_counts_artifact_density():
     deck = GeneratedDeck(
         mainboard=(
-            entry("Cheap Artifact", 24, 1, "Artifact"),
-            entry("Draw Engine", 5, 2, "Artifact Creature", ("card_draw",)),
+            entry("Cheap Artifact", 24, 1, "Artifact", ("artifact_enabler",)),
+            entry(
+                "Draw Engine",
+                5,
+                2,
+                "Artifact Creature",
+                ("artifact_enabler", "card_draw"),
+            ),
             entry("Removal", 5, 2, "Instant", ("removal",)),
-            entry("Payoff", 4, 3, "Creature", reasons=("Affinity-Payoff",)),
+            entry("Payoff", 4, 3, "Creature", ("artifact_payoff",)),
         ),
         lands=22,
     )
@@ -29,6 +35,39 @@ def test_artifact_benchmark_counts_artifact_density():
 
     assert report.signature_items[0].key == "artifact_cards"
     assert report.signature_items[0].actual == 29
+    assert report.land_item.score == 100
+
+
+def test_artifact_benchmark_ignores_legacy_reason_without_central_role():
+    deck = GeneratedDeck(
+        mainboard=(
+            entry("Legacy Text Only", 6, 2, "Creature", reasons=("Affinity-Payoff",)),
+        ),
+        lands=22,
+    )
+
+    report = BenchmarkAnalyzer().analyze(deck, "artifacts")
+
+    assert report.signature_items[1].actual == 0
+
+
+def test_control_benchmark_counts_answers_and_finishers():
+    deck = GeneratedDeck(
+        mainboard=(
+            entry("Counter", 9, 2, "Instant", reasons=("Counter target spell",)),
+            entry("Removal", 6, 2, "Instant", ("removal",), ("Control removal",)),
+            entry("Draw", 7, 3, "Instant", ("card_draw",), ("Card advantage engine",)),
+            entry("Finisher", 3, 6, "Creature", ("finisher",), ("Control-Finisher",)),
+            entry("Support", 10, 3, "Instant"),
+        ),
+        lands=25,
+    )
+
+    report = BenchmarkAnalyzer().analyze(deck, "control")
+
+    assert report.signature_items[0].key == "control_answers"
+    assert report.signature_items[0].actual == 15
+    assert report.signature_items[1].actual == 3
     assert report.land_item.score == 100
 
 
@@ -52,8 +91,8 @@ def test_shrine_benchmark_counts_shrines_and_fixing():
 def test_mill_benchmark_counts_real_mill_sources():
     deck = GeneratedDeck(
         mainboard=(
-            entry("Mill Spell", 18, 2, "Sorcery", reasons=("Millt 8 Karten",)),
-            entry("Mill Engine", 6, 2, "Creature", reasons=("Wiederholbares Mill",)),
+            entry("Mill Spell", 18, 2, "Sorcery", ("mill_source",)),
+            entry("Mill Engine", 6, 2, "Creature", ("mill_source", "mill_engine")),
             entry("Draw", 6, 2, "Instant", ("card_draw",)),
             entry("Removal", 6, 2, "Instant", ("removal",)),
         ),
@@ -62,6 +101,8 @@ def test_mill_benchmark_counts_real_mill_sources():
 
     report = BenchmarkAnalyzer().analyze(deck, "mill")
 
-    assert report.signature_items[0].key == "mill_sources"
-    assert report.signature_items[0].actual == 24
-    assert report.score >= 80
+    signature = report.signature_items[0]
+    assert signature.key == "mill_sources"
+    assert signature.actual == 24
+    assert signature.score == 100
+    assert report.land_item.score == 100

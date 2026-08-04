@@ -17,6 +17,36 @@ def test_benchmark_reports_role_curve_and_land_scores():
     assert 0 <= report.score <= 100
 
 
+def test_benchmark_role_minimums_do_not_penalize_excess():
+    deck = GeneratedDeck(
+        mainboard=(
+            entry("Bolt", 30, 1, ("burn",)),
+            entry("Creature", 12, 2, ("aggro_creature",)),
+            entry("Draw", 6, 3, ("card_draw",)),
+        ),
+        lands=24,
+    )
+
+    report = BenchmarkAnalyzer().analyze(deck, "burn")
+
+    assert [item.score for item in report.role_items] == [100, 100, 100]
+
+
+def test_mill_signature_uses_machine_readable_source_role():
+    deck = GeneratedDeck(
+        mainboard=(
+            entry("Real Mill", 12, 2, ("mill_source",)),
+            entry("Support", 24, 2, ("card_draw", "removal")),
+        ),
+        lands=24,
+    )
+
+    report = BenchmarkAnalyzer().analyze(deck, "mill")
+
+    assert report.signature_items[0].key == "mill_sources"
+    assert report.signature_items[0].actual == 12
+
+
 def test_benchmark_rejects_unknown_archetype():
     try:
         BenchmarkAnalyzer().analyze(GeneratedDeck((), 24), "unknown")

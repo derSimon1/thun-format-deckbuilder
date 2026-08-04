@@ -15,13 +15,27 @@ def _card(name, mana_value, type_line, oracle_text):
 
 def test_efficient_opponent_mill_scores_highly():
     result = score_mill_card(_card("Mind Burst", 2, "Sorcery", "Target opponent mills 8 cards."))
-    assert "Millt 8 Karten" in result.reasons
+    assert "Millt sofort 8 Karten" in result.reasons
     assert "Sehr effizientes Mill" in result.reasons
 
 
 def test_repeatable_mill_gets_bonus():
     result = score_mill_card(_card("Crab", 1, "Creature", "Whenever a land enters under your control, target opponent mills 3 cards."))
-    assert "Wiederholbares Mill" in result.reasons
+    assert "Wiederholbares Mill: 3 Karten" in result.reasons
+
+
+def test_one_shot_mill_permanent_does_not_receive_engine_bonus():
+    result = score_mill_card(
+        _card(
+            "Wall of Memories",
+            2,
+            "Creature — Wall",
+            "When this creature enters, target player mills four cards.",
+        )
+    )
+
+    assert "Millt sofort 4 Karten" in result.reasons
+    assert not any("Wiederholbares Mill" in reason for reason in result.reasons)
 
 
 def test_interactive_mill_card_gets_defensive_credit():

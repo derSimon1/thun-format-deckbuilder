@@ -2,9 +2,9 @@ from thun_deckbuilder.card_analyzer import analyze_card
 from thun_deckbuilder.card_scoring import (
     score_artifact_card,
     score_burn_card,
-    score_mill_card,
     score_shrine_card,
 )
+from thun_deckbuilder.mill_scoring import score_mill_card
 
 
 def _card(name, mana_value, type_line, oracle_text, *, colors=(), power=None):

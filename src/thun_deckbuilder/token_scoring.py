@@ -2,8 +2,14 @@ from __future__ import annotations
 
 import re
 
-from thun_deckbuilder.card_analyzer import CardAnalysis
+from thun_deckbuilder.card_analyzer import (
+    CardAnalysis,
+    cast_accessible_oracle_text,
+    cast_immediate_team_buff_segments,
+)
 from thun_deckbuilder.card_scoring import ScoreBreakdown
+from thun_deckbuilder.token_plan import TokenPlan, token_card_signals
+from thun_deckbuilder.token_production import analyze_token_production
 
 
 _NUMBER_WORDS = {
@@ -22,7 +28,7 @@ def estimated_token_output(text: str) -> int | None:
     """Return the smallest explicit number of tokens created by the card.
 
     ``None`` represents variable output (for example ``create X`` or
-    ``for each``).  The conservative minimum is used because overestimating a
+    ``for each``). The conservative minimum is used because overestimating a
     conditional token card was a recurring source of poor White Tokens picks.
     """
 
@@ -47,44 +53,20 @@ def estimated_token_output(text: str) -> int | None:
     return min(values)
 
 
-def _is_repeatable_token_source(text: str) -> bool:
-    return "create" in text and "token" in text and any(
-        phrase in text
-        for phrase in (
-            "at the beginning of",
-            "whenever one or more",
-            "whenever another",
-            "whenever a creature",
-            "whenever you attack",
-            "whenever this creature attacks",
-            "{t}: create",
-        )
-    )
+def score_token_card(
+    analysis: CardAnalysis,
+    plan: TokenPlan = TokenPlan.GO_WIDE,
+) -> ScoreBreakdown:
+    """Score a token card for one explicitly selected strategic plan.
 
-
-def _is_global_anthem(text: str) -> bool:
-    return any(
-        phrase in text
-        for phrase in (
-            "creatures you control get +",
-            "other creatures you control get +",
-            "tokens you control get +",
-            "creature tokens you control get +",
-        )
-    )
-
-
-def score_token_card(analysis: CardAnalysis) -> ScoreBreakdown:
-    """Score a card specifically for a mono-white go-wide token deck.
-
-    The calibration rewards reliable board development and persistent payoffs.
-    It deliberately discounts conditional copy effects, temporary pumps and
-    expensive cards that produce too little material.
+    The shared base rewards efficient board development. Plan-specific signals
+    then reward commitment to Go Wide, Value Tokens, or Aristocrats and discount
+    packages that pull the deck in a different direction.
     """
 
     score = 0.0
     reasons: list[str] = []
-    text = analysis.oracle_text.lower()
+    text = cast_accessible_oracle_text(analysis).lower()
     mana_value = analysis.mana_value
 
     curve_scores = {0: 2.0, 1: 5.0, 2: 5.0, 3: 3.5, 4: 1.5, 5: 0.0}
@@ -96,7 +78,14 @@ def score_token_card(analysis: CardAnalysis) -> ScoreBreakdown:
     elif mana_value >= 5:
         reasons.append("Hohe Manakosten")
 
-    token_output = estimated_token_output(text)
+    production = analyze_token_production(analysis)
+    token_output = (
+        None
+        if production.variable_output
+        else production.minimum_output
+        if production.creates_creature_tokens
+        else 0
+    )
     if token_output is None:
         score += 2.0
         reasons.append("Skalierende Token-Erzeugung")
@@ -119,19 +108,28 @@ def score_token_card(analysis: CardAnalysis) -> ScoreBreakdown:
             score -= 3.0
             reasons.append("Zu wenig Board-Präsenz für die Manakosten")
 
-    if _is_repeatable_token_source(text):
+    if production.mode == "repeatable":
         score += 4.0
         reasons.append("Wiederholbare Token-Quelle")
 
-    if _is_global_anthem(text):
-        if "until end of turn" in text:
+    buff_segments = cast_immediate_team_buff_segments(analysis)
+    power_buff_segments = tuple(
+        segment for segment in buff_segments if " get +" in segment
+    )
+    if power_buff_segments:
+        if any(
+            "until end of turn" in segment for segment in power_buff_segments
+        ):
             score += 1.0
             reasons.append("Temporärer Team-Bonus")
         else:
             score += 4.0
             reasons.append("Dauerhafter Team-Bonus")
 
-    if "put a +1/+1 counter on each" in text:
+    if any(
+        "put a +1/+1 counter on each creature you control" in segment
+        for segment in buff_segments
+    ):
         score += 3.5
         reasons.append("Dauerhafte Verstärkung des gesamten Boards")
 
@@ -162,7 +160,7 @@ def score_token_card(analysis: CardAnalysis) -> ScoreBreakdown:
 
     if any(phrase in text for phrase in ("destroy all creatures", "exile all creatures")):
         score -= 7.0
-        reasons.append("Widerspricht dem eigenen Go-wide-Spielplan")
+        reasons.append("Widerspricht dem eigenen Token-Spielplan")
 
     if "token that's a copy" in text and any(
         phrase in text
@@ -174,5 +172,43 @@ def score_token_card(analysis: CardAnalysis) -> ScoreBreakdown:
     if "sacrifice a creature" in text and "create" not in text:
         score -= 2.0
         reasons.append("Verbraucht das eigene Board ohne Token-Ersatz")
+
+    signals = token_card_signals(analysis)
+    if plan is TokenPlan.GO_WIDE:
+        if signals.creates_multiple_tokens:
+            score += 1.5
+            reasons.append("Go Wide: mehrere Körper")
+        if signals.anthem or signals.evasion_payoff:
+            score += 2.0
+            reasons.append("Go Wide: Team-Finisher")
+        if signals.sacrifice and not signals.creates_tokens:
+            score -= 2.0
+            reasons.append("Go Wide: planfremdes Opferpaket")
+    elif plan is TokenPlan.VALUE:
+        if signals.repeatable_source:
+            score += 3.0
+            reasons.append("Value Tokens: wiederholbare Engine")
+        if signals.card_advantage:
+            score += 2.5
+            reasons.append("Value Tokens: Kartenvorteil")
+        if signals.token_value_payoff:
+            score += 2.0
+            reasons.append("Value Tokens: Token-Value-Payoff")
+        if signals.sacrifice and not signals.death_payoff:
+            score -= 1.0
+            reasons.append("Value Tokens: ungestütztes Opferpaket")
+    else:
+        if signals.sacrifice:
+            score += 5.0
+            reasons.append("Aristocrats: Opfermöglichkeit")
+        if signals.death_payoff:
+            score += 4.0
+            reasons.append("Aristocrats: Todestrigger")
+        if signals.drain_payoff:
+            score += 3.0
+            reasons.append("Aristocrats: Drain-Finisher")
+        if signals.anthem and not signals.death_payoff:
+            score -= 1.5
+            reasons.append("Aristocrats: planfremder Anthem-Payoff")
 
     return ScoreBreakdown(score=score, reasons=tuple(reasons))

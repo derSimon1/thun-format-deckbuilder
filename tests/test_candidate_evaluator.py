@@ -7,10 +7,15 @@ from thun_deckbuilder.deck_state import DeckState
 from thun_deckbuilder.knowledge_base import CardKnowledge
 
 
-def make_card(name: str, roles: set[str], mana_value: int = 2) -> CardKnowledge:
+def make_card(
+    name: str,
+    roles: set[str],
+    mana_value: int = 2,
+    mana_cost: str = "{1}{W}",
+) -> CardKnowledge:
     card = {
         "name": name,
-        "mana_cost": "{1}{W}",
+        "mana_cost": mana_cost,
         "mana_value": mana_value,
         "colors": ["W"],
         "color_identity": ["W"],
@@ -57,3 +62,20 @@ def test_score_contains_explainable_components() -> None:
     assert score.values_for("base_quality")
     assert score.values_for("role_need")
     assert score.values_for("curve")
+
+
+def test_strict_colorless_cost_has_explainable_source_strain() -> None:
+    colorless = make_card("Colorless", {"removal"}, mana_cost="{1}{C}{C}")
+
+    score = evaluate(colorless, DeckState())
+
+    assert tuple(item.value for item in score.values_for("mana_strain")) == (-4.0,)
+    assert "dedicated true-colorless" in score.components[-1].reason
+
+
+def test_cards_without_strict_colorless_cost_have_no_source_strain() -> None:
+    colored = make_card("Colored", {"removal"}, mana_cost="{1}{W}")
+    hybrid = make_card("Hybrid", {"removal"}, mana_cost="{W/C}")
+
+    assert not evaluate(colored, DeckState()).values_for("mana_strain")
+    assert not evaluate(hybrid, DeckState()).values_for("mana_strain")

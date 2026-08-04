@@ -4,6 +4,10 @@ from dataclasses import replace
 from typing import Callable
 
 from thun_deckbuilder.card_analyzer import CardAnalysis
+from thun_deckbuilder.artifact_signals import (
+    analyze_artifact,
+    artifact_functional_roles,
+)
 from thun_deckbuilder.card_scoring import (
     ScoreBreakdown,
     score_artifact_card,
@@ -55,6 +59,8 @@ MILL_PROFILE = DeckProfile(
     name="Dimir Mill",
     lands=24,
     role_targets=(
+        RoleTarget("mill_source", minimum=12, target=18),
+        RoleTarget("mill_engine", minimum=3, target=9),
         RoleTarget("card_draw", minimum=0, target=6),
         RoleTarget("removal", minimum=0, target=7),
     ),
@@ -76,10 +82,15 @@ def _within_colors(analysis: CardAnalysis, colors: tuple[str, ...]) -> bool:
 
 def _artifact_eligible(knowledge: CardKnowledge, colors: tuple[str, ...]) -> bool:
     analysis = knowledge.analysis
-    text = analysis.oracle_text.lower()
     if analysis.is_land or not _within_colors(analysis, colors):
         return False
-    return analysis.is_artifact or "artifact" in text or score_artifact_card(analysis).score >= 4
+    signals = analyze_artifact(analysis)
+    return (
+        signals.enabler
+        or signals.payoff
+        or signals.engine
+        or signals.conditional_artifacts > 0
+    )
 
 
 def _shrine_eligible(knowledge: CardKnowledge, colors: tuple[str, ...]) -> bool:
@@ -121,6 +132,12 @@ class CalibratedStrategy:
         self.eligibility = eligibility
         self.required_colors = required_colors
 
+    def _knowledge_cards(
+        self,
+        knowledge_base: KnowledgeBase,
+    ) -> tuple[CardKnowledge, ...]:
+        return knowledge_base.cards
+
     def _build_candidate(
         self,
         knowledge_base: KnowledgeBase,
@@ -128,8 +145,9 @@ class CalibratedStrategy:
         lands: int,
     ) -> LandCountCandidate[tuple]:
         profile = replace(self.profile, lands=lands)
+        cards = self._knowledge_cards(knowledge_base)
         result = build_composition(
-            knowledge_base.cards,
+            cards,
             profile=profile,
             deck_size=request.deck_size,
             max_copies=request.max_copies,
@@ -138,7 +156,7 @@ class CalibratedStrategy:
         )
         optimized_entries = optimize_entries(
             result.entries,
-            knowledge_base.cards,
+            cards,
             archetype=request.archetype,
             colors=request.colors,
             scorer=self.scorer,
@@ -188,7 +206,7 @@ class CalibratedStrategy:
             opening_hand_report=chosen.report,
         )
         sideboard = SideboardBuilder().build(
-            knowledge_base.cards,
+            self._knowledge_cards(knowledge_base),
             deck,
             archetype=request.archetype,
             colors=request.colors,
@@ -210,6 +228,17 @@ class ArtifactStrategy(CalibratedStrategy):
             profile=ARTIFACT_PROFILE,
             scorer=score_artifact_card,
             eligibility=_artifact_eligible,
+        )
+
+    def _knowledge_cards(self, knowledge_base) -> tuple[CardKnowledge, ...]:
+        return tuple(
+            replace(
+                knowledge,
+                roles=frozenset(
+                    {*knowledge.roles, *artifact_functional_roles(knowledge.analysis)}
+                ),
+            )
+            for knowledge in knowledge_base.cards
         )
 
 

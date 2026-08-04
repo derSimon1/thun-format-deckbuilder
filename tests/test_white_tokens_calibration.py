@@ -1,6 +1,12 @@
 from thun_deckbuilder.card_analyzer import analyze_card
 from thun_deckbuilder.knowledge_base import CardKnowledge
-from thun_deckbuilder.token_generator import _is_reasonable_token_card, _score_for_composition
+from thun_deckbuilder.token_generator import (
+    _go_wide_production_adjustment,
+    _is_plan_compatible_card,
+    _is_reasonable_token_card,
+    _score_for_composition,
+)
+from thun_deckbuilder.token_plan import TokenPlan
 from thun_deckbuilder.token_scoring import estimated_token_output, score_token_card
 
 
@@ -72,6 +78,59 @@ def test_persistent_anthem_beats_temporary_pump():
     assert persistent.score > temporary.score
 
 
+def test_transform_gated_back_face_does_not_score_as_cast_time_output():
+    gated = analyze_card(
+        {
+            "name": "Front // Back",
+            "mana_value": 2,
+            "mana_cost": "{1}{W}",
+            "colors": ["W"],
+            "color_identity": ["W"],
+            "type_line": "Artifact // Artifact",
+            "oracle_text": (
+                "Craft with artifact {5}{W}{W}. Return this card transformed. // "
+                "When this artifact enters, create two 1/1 creature tokens. "
+                "Creatures you control get +1/+1."
+            ),
+        }
+    )
+
+    result = score_token_card(gated)
+
+    assert not any("Token" in reason for reason in result.reasons)
+    assert not any("Team-Bonus" in reason for reason in result.reasons)
+
+
+def test_conditional_attack_maker_is_not_scored_as_repeatable_engine():
+    result = score_token_card(
+        analysis(
+            "Whenever this creature attacks, you may pay {1}{W}. If you do, "
+            "it endures 1. (Put a +1/+1 counter on it or create a 1/1 white "
+            "Spirit creature token.)",
+            mana_value=1,
+            type_line="Creature — Spirit",
+        )
+    )
+
+    assert "Wiederholbare Token-Quelle" not in result.reasons
+
+
+def test_target_limited_saga_buff_does_not_score_as_team_finisher():
+    result = score_token_card(
+        analysis(
+            "Read ahead (Choose a chapter.)\n"
+            "II — Create a 1/1 white Bird creature token.\n"
+            "III — Put a +1/+1 counter on each of up to two target creatures.",
+            mana_value=3,
+            type_line="Enchantment — Saga",
+        )
+    )
+
+    assert "Erzeugt einen Token" in result.reasons
+    assert "Dauerhafte Verstärkung des gesamten Boards" not in result.reasons
+    assert "Go Wide: Team-Finisher" not in result.reasons
+
+
 def test_board_wipe_is_not_eligible_for_go_wide_tokens():
     card = knowledge("Destroy all creatures.", ("removal", "board_wipe"), mana_value=4)
     assert not _is_reasonable_token_card(card)
@@ -79,8 +138,6 @@ def test_board_wipe_is_not_eligible_for_go_wide_tokens():
 
 def test_card_that_only_mentions_tokens_is_not_eligible():
     card = knowledge("Exile target token.", ("removal",), mana_value=1)
-    # It remains useful interaction and is therefore eligible through its
-    # utility role; a pure token mention without utility must be rejected.
     pure_mention = knowledge("Target token gains flying until end of turn.", ("token_maker",), mana_value=1)
     assert _is_reasonable_token_card(card)
     assert not _is_reasonable_token_card(pure_mention)
@@ -92,3 +149,44 @@ def test_composition_score_prefers_reliable_multi_body_card():
     multi_score, _ = _score_for_composition(multi)
     single_score, _ = _score_for_composition(single)
     assert multi_score > single_score
+
+
+def test_go_wide_penalizes_death_delayed_production():
+    card = knowledge(
+        "When this creature dies, create two 1/1 white Soldier creature tokens.",
+        ("token_maker",),
+    )
+    adjustment, reason = _go_wide_production_adjustment(card)
+    assert adjustment == -2.5
+    assert reason == "Go Wide: Produktion erst nach eigenem Tod"
+
+
+def test_go_wide_penalizes_conditional_production():
+    card = knowledge(
+        "If you control an artifact, create two 1/1 white Soldier creature tokens.",
+        ("token_maker",),
+    )
+    adjustment, reason = _go_wide_production_adjustment(card)
+    assert adjustment == -1.5
+    assert reason == "Go Wide: bedingte Produktion"
+
+
+def test_go_wide_scales_activated_penalty_with_mana_cost():
+    cheap = knowledge("{1}{W}: Create a 1/1 white Soldier creature token.", ("token_maker",))
+    expensive = knowledge("{4}{W}: Create a 1/1 white Soldier creature token.", ("token_maker",))
+    cheap_adjustment, _ = _go_wide_production_adjustment(cheap)
+    expensive_adjustment, reason = _go_wide_production_adjustment(expensive)
+    assert cheap_adjustment == -2.0
+    assert expensive_adjustment == -3.0
+    assert expensive_adjustment < cheap_adjustment
+    assert reason == "Go Wide: zusätzliche Aktivierungskosten"
+
+
+def test_go_wide_rejects_pure_sacrifice_outlet():
+    outlet = knowledge(
+        "Sacrifice a creature: Create a Food token.",
+        ("sacrifice", "sacrifice_outlet"),
+        mana_value=1,
+    )
+    assert not _is_plan_compatible_card(outlet, TokenPlan.GO_WIDE)
+    assert _is_plan_compatible_card(outlet, TokenPlan.ARISTOCRATS)

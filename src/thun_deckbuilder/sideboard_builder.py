@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from collections import Counter
 from dataclasses import dataclass
 from typing import Iterable
@@ -14,6 +15,11 @@ class SideboardRule:
     phrases: tuple[str, ...]
     roles: tuple[str, ...] = ()
     priority: float = 1.0
+
+
+def sideboard_role_marker(label: str) -> str:
+    normalized = re.sub(r"[^a-z0-9]+", "_", label.lower()).strip("_")
+    return f"sideboard_{normalized}"
 
 
 ARTIFACT_ENCHANTMENT_ANSWER = SideboardRule(
@@ -51,6 +57,22 @@ COUNTERSPELL = SideboardRule(
     ("counter target spell", "counter target noncreature spell"),
     priority=3.5,
 )
+TOKEN_PROTECTION = SideboardRule(
+    "protection",
+    (
+        "creatures you control gain indestructible",
+        "creatures you control gain hexproof",
+        "you gain 2 life",
+        "you gain 3 life",
+        "you gain 4 life",
+        "you gain 5 life",
+        "you gain life equal to",
+        "prevent all damage",
+        "prevent the next",
+    ),
+    roles=("protection",),
+    priority=6,
+)
 
 
 RULES: dict[str, tuple[SideboardRule, ...]] = {
@@ -65,17 +87,9 @@ RULES: dict[str, tuple[SideboardRule, ...]] = {
         CREATURE_SWEEPER,
     ),
     "tokens": (
+        TOKEN_PROTECTION,
         ARTIFACT_ENCHANTMENT_ANSWER,
         GRAVEYARD_HATE,
-        SideboardRule(
-            "protection",
-            (
-                "creatures you control gain indestructible",
-                "creatures you control gain hexproof",
-            ),
-            roles=("protection",),
-            priority=4,
-        ),
         CREATURE_SWEEPER,
     ),
     "artifacts": (
@@ -154,6 +168,37 @@ RULES: dict[str, tuple[SideboardRule, ...]] = {
 }
 
 
+def _matching_rules(
+    knowledge: CardKnowledge,
+    rules: tuple[SideboardRule, ...],
+) -> tuple[SideboardRule, ...]:
+    """Prefer exact Oracle-text categories over broad functional roles."""
+
+    text = knowledge.analysis.oracle_text.lower()
+    phrase_matches = tuple(
+        rule
+        for rule in rules
+        if any(phrase in text for phrase in rule.phrases)
+        and not (
+            rule is TOKEN_PROTECTION
+            and "choose one" not in text
+            and any(
+                targeted_action in text
+                for targeted_action in ("destroy target", "exile target")
+            )
+        )
+    )
+    if phrase_matches:
+        return phrase_matches
+
+    role_values = {str(role) for role in knowledge.roles}
+    return tuple(
+        rule
+        for rule in rules
+        if rule.roles and role_values.intersection(rule.roles)
+    )
+
+
 class SideboardBuilder:
     """Build a conservative 15-card sideboard from legal, on-colour cards."""
 
@@ -179,19 +224,14 @@ class SideboardBuilder:
             available = max_copies - main_counts[analysis.name]
             if available <= 0:
                 continue
-            text = analysis.oracle_text.lower()
-            matched: list[str] = []
-            score = 0.0
-            for rule in rules:
-                phrase_match = any(phrase in text for phrase in rule.phrases)
-                role_match = any(str(role) in rule.roles for role in knowledge.roles)
-                if phrase_match or role_match:
-                    matched.append(rule.label)
-                    score += rule.priority
-            if score <= 0:
+
+            matched_rules = _matching_rules(knowledge, rules)
+            if not matched_rules:
                 continue
+            score = sum(rule.priority for rule in matched_rules)
             score -= analysis.mana_value * 0.15
-            scored.append((score, knowledge, tuple(dict.fromkeys(matched))))
+            matched = tuple(dict.fromkeys(rule.label for rule in matched_rules))
+            scored.append((score, knowledge, matched))
 
         scored.sort(
             key=lambda item: (
@@ -210,21 +250,18 @@ class SideboardBuilder:
                 3,
                 remaining,
             )
+            markers = {sideboard_role_marker(reason) for reason in reasons}
             entries.append(
                 DeckEntry(
                     name=knowledge.analysis.name,
                     quantity=quantity,
-                    mana_cost=parse_mana_cost(
-                        str(knowledge.card.get("mana_cost", ""))
-                    ),
+                    mana_cost=parse_mana_cost(str(knowledge.card.get("mana_cost", ""))),
                     mana_value=knowledge.analysis.mana_value,
                     type_line=knowledge.analysis.type_line,
                     score=score,
-                    reasons=tuple(
-                        f"Sideboard: {reason}" for reason in reasons
-                    ),
+                    reasons=tuple(f"Sideboard: {reason}" for reason in reasons),
                     roles=tuple(
-                        sorted(str(role) for role in knowledge.roles)
+                        sorted({str(role) for role in knowledge.roles}.union(markers))
                     ),
                 )
             )

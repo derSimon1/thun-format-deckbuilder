@@ -3,7 +3,11 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 
-from thun_deckbuilder.card_analyzer import CardAnalysis
+from thun_deckbuilder.card_analyzer import (
+    CardAnalysis,
+    additional_creature_sacrifice_cost,
+    exact_target_life_gate,
+)
 
 
 _DAMAGE_PATTERN = re.compile(r"(?:deals?|deal)\s+(\d+)\s+damage")
@@ -71,9 +75,14 @@ def score_burn_card(analysis: CardAnalysis) -> ScoreBreakdown:
 
     damage = _fixed_damage(text)
     if damage:
-        score += float(damage)
+        life_gate = exact_target_life_gate(analysis)
+        credited_damage = float(damage)
+        if life_gate is not None:
+            credited_damage *= 0.25
+            reasons.append(f"Enges Lebenspunkt-Gate: exakt {life_gate}")
+        score += credited_damage
         reasons.append(f"{damage} Schaden")
-        efficiency = damage / max(mana_value, 1.0)
+        efficiency = credited_damage / max(mana_value, 1.0)
         if hits_any_target or hits_player:
             if efficiency >= 2.5:
                 score += 2.5
@@ -118,6 +127,12 @@ def score_burn_card(analysis: CardAnalysis) -> ScoreBreakdown:
     if conditional_hits:
         score -= min(3.0, 1.5 * conditional_hits)
         reasons.append("Bedingter oder zusätzlicher Aufwand")
+    sacrificed_creatures = additional_creature_sacrifice_cost(analysis)
+    if sacrificed_creatures:
+        score -= 2.5 * sacrificed_creatures
+        reasons.append(
+            f"Verbraucht {sacrificed_creatures} Kreatur als Zauberkosten"
+        )
     if "damage to you" in text:
         score -= 2.0
         reasons.append("Eigenschaden")
@@ -126,12 +141,15 @@ def score_burn_card(analysis: CardAnalysis) -> ScoreBreakdown:
 
 
 def score_artifact_card(analysis: CardAnalysis) -> ScoreBreakdown:
+    from thun_deckbuilder.artifact_signals import analyze_artifact
+
     score = 0.0
     reasons: list[str] = []
     text = f" {analysis.oracle_text.lower()} "
     mana_value = max(analysis.mana_value, 0.0)
+    signals = analyze_artifact(analysis)
 
-    if analysis.is_artifact:
+    if signals.artifact_card:
         score += 2.0
         reasons.append("Artefakt")
         if mana_value <= 1:
@@ -155,15 +173,33 @@ def score_artifact_card(analysis: CardAnalysis) -> ScoreBreakdown:
         "sacrifice an artifact": (2.5, "Artefakt-Sacrifice-Synergie"),
     }
     for phrase, (bonus, reason) in mechanic_hits.items():
-        if phrase in text:
+        hit = (
+            bool(re.search(r"\bimprovise\b", text))
+            if phrase == "improvise"
+            else phrase in text
+        )
+        if phrase == "for each artifact you control" and not signals.payoff:
+            hit = False
+        if hit:
             score += bonus
             reasons.append(reason)
 
-    token_types = tuple(token for token in ("treasure", "clue", "blood", "powerstone", "food") if token in text)
-    if "create" in text and token_types:
-        score += 2.0 + min(1.5, 0.5 * len(token_types))
+    if signals.payoff:
+        score += 1.5
+        reasons.append("Zentral bestätigter Artifact-Payoff")
+
+    if signals.payoff and not any(phrase in text for phrase in mechanic_hits):
+        score += 3.5
+        reasons.append("Artifact-Payoff")
+    created_immediately = signals.immediate_artifacts - int(signals.artifact_card)
+    if created_immediately > 0:
+        score += 2.0 + min(1.5, created_immediately * 0.5)
         reasons.append("Erzeugt Artefakt-Spielsteine")
-    if analysis.is_artifact and "draw a card" in text:
+    elif signals.conditional_artifacts or signals.repeatable_artifacts:
+        score += 2.5
+        reasons.append("Bedingte Artifact-Produktion")
+
+    if signals.artifact_card and "draw a card" in text:
         score += 1.5
         reasons.append("Artefakt mit Kartennachschub")
     if analysis.is_creature and analysis.power is not None and mana_value > 0 and analysis.power / mana_value >= 1.0:
@@ -173,7 +209,7 @@ def score_artifact_card(analysis: CardAnalysis) -> ScoreBreakdown:
     payoff_phrases = tuple(mechanic_hits)
     has_payoff = any(phrase in text for phrase in payoff_phrases)
     has_utility = any(phrase in text for phrase in ("draw a card", "create", "add {", "destroy target", "exile target"))
-    if analysis.is_artifact and mana_value >= 4 and not has_payoff and not has_utility:
+    if signals.artifact_card and mana_value >= 4 and not has_payoff and not has_utility:
         score -= 3.0
         reasons.append("Teures Artefakt ohne Synergie")
 

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import math
 import random
 from dataclasses import dataclass
 
@@ -50,13 +51,39 @@ def _threat_density(deck: GeneratedDeck) -> float:
         if "creature" in entry.type_line.lower()
         or "shrine" in entry.type_line.lower()
         or "artifact" in entry.type_line.lower()
+        or "planeswalker" in entry.type_line.lower()
+        or "control_finisher" in entry.roles
     )
     return count / max(1, sum(item.quantity for item in deck.mainboard))
 
 
+def _burn_stabilization_density(deck: GeneratedDeck) -> float:
+    """Count only explicit postboard protection cards, not broad lifegain guesses."""
+
+    total = max(1, sum(item.quantity for item in deck.mainboard))
+    count = sum(
+        entry.quantity
+        for entry in deck.mainboard
+        if "sideboard_protection" in entry.roles
+    )
+    return count / total
+
+
+def _lethal_race_progress(report: GoldfishReport) -> float:
+    """Measure damage pressure with diminishing returns after lethal."""
+
+    ratio = max(0.0, report.average_damage / 20.0)
+    if ratio <= 1.0:
+        damage_progress = ratio
+    else:
+        damage_progress = 1.0 + 0.25 * math.log2(ratio)
+    kill_consistency = min(1.0, max(0.0, report.kill_by_final_turn_pct / 100.0))
+    return damage_progress + 0.2 * kill_consistency
+
+
 def _base_progress(report: GoldfishReport, archetype: str) -> float:
     if archetype in {"burn", "tokens"}:
-        return report.average_damage / 20.0
+        return _lethal_race_progress(report)
     if archetype == "mill":
         return report.average_cards_milled / 53.0
     if archetype == "artifacts":
@@ -67,13 +94,7 @@ def _base_progress(report: GoldfishReport, archetype: str) -> float:
 
 
 class MatchupSimulator:
-    """Compare two generated decks under simplified mutual interaction.
-
-    This is intentionally a deterministic heuristic model rather than a full
-    Magic rules engine. Goldfish progress supplies each deck's proactive plan;
-    interaction density suppresses opposing progress and threat density helps a
-    deck recover from disruption.
-    """
+    """Compare two generated decks under simplified mutual interaction."""
 
     def simulate(
         self,
@@ -89,8 +110,18 @@ class MatchupSimulator:
             raise ValueError("samples must be positive")
 
         goldfish = GoldfishSimulator()
-        report_a = deck_a.goldfish_report or goldfish.simulate(deck_a, archetype=archetype_a)
-        report_b = deck_b.goldfish_report or goldfish.simulate(deck_b, archetype=archetype_b)
+        report_a = deck_a.goldfish_report or goldfish.simulate(
+            deck_a,
+            archetype=archetype_a,
+            samples=samples,
+            seed=seed + 1000,
+        )
+        report_b = deck_b.goldfish_report or goldfish.simulate(
+            deck_b,
+            archetype=archetype_b,
+            samples=samples,
+            seed=seed + 2000,
+        )
 
         progress_a = _base_progress(report_a, archetype_a)
         progress_b = _base_progress(report_b, archetype_b)
@@ -98,6 +129,8 @@ class MatchupSimulator:
         interaction_b = _interaction_density(deck_b)
         threats_a = _threat_density(deck_a)
         threats_b = _threat_density(deck_b)
+        stabilization_a = _burn_stabilization_density(deck_a) if archetype_b == "burn" else 0.0
+        stabilization_b = _burn_stabilization_density(deck_b) if archetype_a == "burn" else 0.0
 
         rng = random.Random(seed)
         wins_a = wins_b = draws = 0
@@ -107,8 +140,20 @@ class MatchupSimulator:
             variance_b = rng.uniform(-0.12, 0.12)
             resilience_a = threats_a * 0.18
             resilience_b = threats_b * 0.18
-            score_a = progress_a + resilience_a - interaction_b * 0.65 + variance_a
-            score_b = progress_b + resilience_b - interaction_a * 0.65 + variance_b
+            score_a = (
+                progress_a
+                + resilience_a
+                + stabilization_a * 3.0
+                - interaction_b * 0.65
+                + variance_a
+            )
+            score_b = (
+                progress_b
+                + resilience_b
+                + stabilization_b * 3.0
+                - interaction_a * 0.65
+                + variance_b
+            )
             total_a += score_a
             total_b += score_b
             margin = score_a - score_b

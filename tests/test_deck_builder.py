@@ -44,7 +44,7 @@ def test_generate_deck_rejects_unknown_archetype():
         ):
             generate_deck(
                 database=database,
-                archetype="control",
+                archetype="combo",
                 colors=["U"],
             )
 

@@ -61,6 +61,20 @@ def test_improvise_receives_payoff_bonus():
     assert "Improvise-Payoff" in result.reasons
 
 
+def test_improvised_in_card_name_is_not_the_improvise_mechanic():
+    result = score_artifact_card(
+        _artifact_card(
+            "Improvised Weaponry",
+            3,
+            "Sorcery",
+            "Improvised Weaponry deals 2 damage to any target. "
+            "Create a Treasure token.",
+        )
+    )
+
+    assert "Improvise-Payoff" not in result.reasons
+
+
 def test_artifact_token_producer_is_recognized():
     result = score_artifact_card(
         _artifact_card(

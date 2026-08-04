@@ -3,7 +3,7 @@ from thun_deckbuilder.card_contribution import contribution_from_knowledge
 from thun_deckbuilder.knowledge_base import CardKnowledge
 
 
-def test_contribution_uses_existing_roles_synergies_and_mana_pips() -> None:
+def knowledge_with_roles(*roles: str) -> CardKnowledge:
     card = {
         "name": "Test Captain",
         "mana_cost": "{1}{W}{W}",
@@ -12,17 +12,47 @@ def test_contribution_uses_existing_roles_synergies_and_mana_pips() -> None:
         "oracle_text": "Creatures you control get +1/+1.",
         "color_identity": ["W"],
     }
-    analysis = analyze_card(card)
-    knowledge = CardKnowledge(
+    return CardKnowledge(
         card=card,
-        analysis=analysis,
-        roles=frozenset({"anthem", "token_payoff"}),
+        analysis=analyze_card(card),
+        roles=frozenset(roles),
         synergies=frozenset({"go_wide"}),
     )
 
-    contribution = contribution_from_knowledge(knowledge)
+
+def test_contribution_uses_existing_roles_synergies_and_mana_pips() -> None:
+    contribution = contribution_from_knowledge(
+        knowledge_with_roles("anthem", "token_payoff")
+    )
 
     assert contribution.strength_for("anthem") == 1.0
     assert contribution.pip_count("W") == 2
     assert contribution.tags == frozenset({"go_wide"})
     assert contribution.is_legendary
+
+
+def test_simulation_metadata_is_not_treated_as_functional_role() -> None:
+    contribution = contribution_from_knowledge(
+        knowledge_with_roles(
+            "token_creature_maker",
+            "token_output_2",
+            "token_production_immediate",
+            "token_activation_mana_4",
+            "cast_additional_creature_sacrifice_1",
+        )
+    )
+
+    assert contribution.strength_for("token_creature_maker") == 1.0
+    assert tuple(str(item.role) for item in contribution.roles) == (
+        "token_creature_maker",
+    )
+
+
+def test_contribution_counts_only_strict_colorless_pips() -> None:
+    strict = knowledge_with_roles("removal")
+    strict.card["mana_cost"] = "{1}{W}{C}{C}"
+    hybrid = knowledge_with_roles("removal")
+    hybrid.card["mana_cost"] = "{W/C}{2/C}"
+
+    assert contribution_from_knowledge(strict).pip_count("C") == 2
+    assert contribution_from_knowledge(hybrid).pip_count("C") == 0

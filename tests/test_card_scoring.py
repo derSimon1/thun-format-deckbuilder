@@ -123,3 +123,53 @@ def test_hasty_efficient_creature_gets_aggro_credit():
 
     assert "Haste" in result.reasons
     assert "Sehr effiziente Aggro-Kreatur" in result.reasons
+
+
+def test_exact_life_total_burn_does_not_receive_full_damage_credit():
+    narrow = score_burn_card(
+        _burn_card(
+            "Narrow Finisher",
+            4,
+            "Instant",
+            (
+                "If target player has exactly 10 life, Narrow Finisher "
+                "deals 10 damage to that player."
+            ),
+        )
+    )
+    reliable = score_burn_card(
+        _burn_card(
+            "Reliable Burn",
+            3,
+            "Instant",
+            "Reliable Burn deals 3 damage to target player.",
+        )
+    )
+
+    assert narrow.score < reliable.score
+    assert "Enges Lebenspunkt-Gate: exakt 10" in narrow.reasons
+
+
+def test_burn_score_accounts_for_a_creature_consumed_as_cast_cost():
+    costly = score_burn_card(
+        _burn_card(
+            "Costly Burn",
+            2,
+            "Instant",
+            (
+                "As an additional cost to cast this spell, sacrifice a creature. "
+                "Costly Burn deals 4 damage to any target."
+            ),
+        )
+    )
+    free = score_burn_card(
+        _burn_card(
+            "Free Burn",
+            2,
+            "Instant",
+            "Free Burn deals 4 damage to any target.",
+        )
+    )
+
+    assert costly.score < free.score
+    assert "Verbraucht 1 Kreatur als Zauberkosten" in costly.reasons

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
-from math import ceil
+from dataclasses import dataclass, replace
 from typing import Iterable
 
 from thun_deckbuilder.composition_engine import build_composition
@@ -52,6 +51,34 @@ def profile_from_learning(
     )
 
 
+def _adapt_profile_to_legal_pool(
+    profile: DeckProfile,
+    cards: Iterable[CardKnowledge],
+    *,
+    allowed_colors: set[str],
+    max_copies: int,
+) -> DeckProfile:
+    eligible_cards = tuple(
+        card
+        for card in cards
+        if not card.analysis.is_land
+        and set(card.analysis.color_identity).issubset(allowed_colors)
+    )
+    adjusted_roles: list[RoleTarget] = []
+    for role_target in profile.role_targets:
+        capacity = sum(
+            max_copies
+            for card in eligible_cards
+            if role_target.role in card.roles
+        )
+        minimum = min(role_target.minimum, capacity)
+        target = max(minimum, min(role_target.target, capacity))
+        adjusted_roles.append(
+            RoleTarget(role_target.role, minimum=minimum, target=target)
+        )
+    return replace(profile, role_targets=tuple(adjusted_roles))
+
+
 class LearnedArchetypeStrategy:
     """Build a legal deck from a profile learned from external decklists."""
 
@@ -70,6 +97,12 @@ class LearnedArchetypeStrategy:
         core = {item.name.casefold() for item in self.config.profile.core_cards}
         replacements = {name.casefold() for name in self.config.replacement_names}
         role_weights = dict(self.config.profile.role_targets)
+        profile = _adapt_profile_to_legal_pool(
+            self.deck_profile,
+            knowledge_base.cards,
+            allowed_colors=allowed_colors,
+            max_copies=max_copies,
+        )
 
         def eligible(card: CardKnowledge) -> bool:
             return (
@@ -97,7 +130,7 @@ class LearnedArchetypeStrategy:
 
         result = build_composition(
             knowledge_base.cards,
-            profile=self.deck_profile,
+            profile=profile,
             deck_size=deck_size,
             max_copies=max_copies,
             eligible=eligible,
@@ -105,13 +138,13 @@ class LearnedArchetypeStrategy:
         )
         mana = ManaBaseBuilder().build(
             result.entries,
-            total_lands=self.deck_profile.lands,
+            total_lands=profile.lands,
             deck_size=deck_size,
         )
         return GeneratedDeck(
             mainboard=result.entries,
-            lands=self.deck_profile.lands,
-            profile_name=self.deck_profile.name,
+            lands=profile.lands,
+            profile_name=profile.name,
             requested_roles=result.requested_roles,
             fulfilled_roles=result.fulfilled_roles,
             warnings=result.warnings,

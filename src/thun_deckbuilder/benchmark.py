@@ -12,6 +12,7 @@ class SignatureTarget:
     target: int
     type_phrases: tuple[str, ...] = ()
     reason_phrases: tuple[str, ...] = ()
+    roles: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -64,22 +65,34 @@ BENCHMARKS: dict[str, BenchmarkProfile] = {
         curve_targets=(("1", 10), ("2", 14), ("3", 9), ("4+", 5)),
         lands=22,
         signature_targets=(
-            SignatureTarget(
-                "artifact_cards",
-                28,
-                type_phrases=("artifact",),
-            ),
+            SignatureTarget("artifact_cards", 28, roles=("artifact_enabler",)),
             SignatureTarget(
                 "artifact_payoffs",
                 6,
+                roles=("artifact_payoff",),
+            ),
+        ),
+    ),
+    "control": BenchmarkProfile(
+        archetype="control",
+        display_name="Dimir Control",
+        role_targets=(("removal", 8), ("card_draw", 7)),
+        curve_targets=(("1", 4), ("2", 12), ("3", 10), ("4+", 9)),
+        lands=25,
+        signature_targets=(
+            SignatureTarget(
+                "control_answers",
+                14,
                 reason_phrases=(
-                    "Affinity-Payoff",
-                    "Improvise-Payoff",
-                    "Metalcraft-Payoff",
-                    "Artifactfall-Payoff",
-                    "Artefakt-Skalierung",
-                    "Artefakt-Anthem",
+                    "Counter target spell",
+                    "Control removal",
+                    "Sweeper",
                 ),
+            ),
+            SignatureTarget(
+                "control_finishers",
+                3,
+                reason_phrases=("Control-Finisher",),
             ),
         ),
     ),
@@ -90,11 +103,7 @@ BENCHMARKS: dict[str, BenchmarkProfile] = {
         curve_targets=(("1", 3), ("2", 8), ("3", 11), ("4+", 14)),
         lands=24,
         signature_targets=(
-            SignatureTarget(
-                "shrine_cards",
-                15,
-                type_phrases=("shrine",),
-            ),
+            SignatureTarget("shrine_cards", 15, type_phrases=("shrine",)),
             SignatureTarget(
                 "fixing_sources",
                 7,
@@ -109,17 +118,7 @@ BENCHMARKS: dict[str, BenchmarkProfile] = {
         curve_targets=(("1", 6), ("2", 12), ("3", 10), ("4+", 8)),
         lands=24,
         signature_targets=(
-            SignatureTarget(
-                "mill_sources",
-                20,
-                reason_phrases=(
-                    "Millt ",
-                    "Wiederholbares Mill",
-                    "Skalierendes Mill",
-                    "Sehr effizientes Mill",
-                    "Effizientes Mill",
-                ),
-            ),
+            SignatureTarget("mill_sources", 20, roles=("mill_source",)),
         ),
     ),
 }
@@ -130,6 +129,13 @@ def _closeness(actual: int, target: int) -> int:
         return 100 if actual == 0 else 0
     difference = abs(actual - target)
     return max(0, round(100 * (1 - difference / target)))
+
+
+def _minimum_score(actual: int, target: int) -> int:
+    """Score a minimum requirement without penalizing useful excess."""
+    if target <= 0:
+        return 100
+    return min(100, round(100 * actual / target))
 
 
 def _curve_band(mana_value: float) -> str:
@@ -145,12 +151,15 @@ def _curve_band(mana_value: float) -> str:
 def _matches_signature(entry, target: SignatureTarget) -> bool:
     type_line = entry.type_line.lower()
     reasons = tuple(reason.lower() for reason in entry.reasons)
-    return any(
-        phrase.lower() in type_line for phrase in target.type_phrases
-    ) or any(
-        phrase.lower() in reason
-        for phrase in target.reason_phrases
-        for reason in reasons
+    roles = {str(role) for role in entry.roles}
+    return (
+        any(phrase.lower() in type_line for phrase in target.type_phrases)
+        or any(
+            phrase.lower() in reason
+            for phrase in target.reason_phrases
+            for reason in reasons
+        )
+        or bool(roles.intersection(target.roles))
     )
 
 
@@ -168,7 +177,7 @@ class BenchmarkAnalyzer:
             curve_counts[_curve_band(entry.mana_value)] += entry.quantity
 
         role_items = tuple(
-            BenchmarkItem(role, target, role_counts[role], _closeness(role_counts[role], target))
+            BenchmarkItem(role, target, role_counts[role], _minimum_score(role_counts[role], target))
             for role, target in profile.role_targets
         )
         curve_items = tuple(
@@ -193,7 +202,7 @@ class BenchmarkAnalyzer:
                 item.key,
                 item.target,
                 item.actual,
-                _closeness(item.actual, item.target),
+                _minimum_score(item.actual, item.target),
             )
             for item in signature_items
         )

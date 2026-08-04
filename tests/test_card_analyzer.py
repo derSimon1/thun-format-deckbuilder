@@ -1,6 +1,11 @@
 from thun_deckbuilder.card_analyzer import (
+    additional_creature_sacrifice_cost,
     analyze_card,
+    cast_accessible_oracle_text,
     detect_features,
+    exact_target_life_gate,
+    has_activated_sacrifice_outlet,
+    simulation_metadata_roles,
 )
 
 
@@ -150,3 +155,89 @@ def test_analyze_card_includes_features():
 
     assert "damage" in analysis.features
     assert isinstance(analysis.features, frozenset)
+
+
+def test_transform_gated_back_face_is_not_cast_accessible():
+    analysis = analyze_card(
+        {
+            "name": "Front // Back",
+            "mana_value": 2,
+            "type_line": "Artifact // Artifact",
+            "oracle_text": (
+                "Craft with artifact {5}{W}{W}. "
+                "Return this card transformed. // "
+                "When this artifact enters, create two creature tokens. "
+                "Creatures you control get +1/+1."
+            ),
+        }
+    )
+
+    assert cast_accessible_oracle_text(analysis) == (
+        "Craft with artifact {5}{W}{W}. Return this card transformed."
+    )
+
+
+def test_modal_back_face_remains_cast_accessible():
+    analysis = analyze_card(
+        {
+            "name": "Creature // Adventure",
+            "mana_value": 4,
+            "type_line": "Creature // Sorcery — Adventure",
+            "oracle_text": "Vigilance // Create a 2/2 creature token.",
+        }
+    )
+
+    assert cast_accessible_oracle_text(analysis) == analysis.oracle_text
+
+
+def test_detects_only_additional_creature_sacrifice_cast_costs():
+    additional = analyze_card(
+        {
+            "name": "Cost",
+            "type_line": "Instant",
+            "oracle_text": (
+                "As an additional cost to cast this spell, sacrifice a "
+                "creature. Creatures you control gain indestructible."
+            ),
+        }
+    )
+    activated = analyze_card(
+        {
+            "name": "Outlet",
+            "type_line": "Creature",
+            "oracle_text": "Sacrifice a creature: Scry 1.",
+        }
+    )
+    effect = analyze_card(
+        {
+            "name": "Edict",
+            "type_line": "Sorcery",
+            "oracle_text": "Each player sacrifices a creature.",
+        }
+    )
+
+    assert additional_creature_sacrifice_cost(additional) == 1
+    assert additional_creature_sacrifice_cost(activated) == 0
+    assert additional_creature_sacrifice_cost(effect) == 0
+    assert not has_activated_sacrifice_outlet(additional)
+    assert has_activated_sacrifice_outlet(activated, permanent_type="creature")
+    assert not has_activated_sacrifice_outlet(effect)
+
+
+def test_exact_life_gate_becomes_simulation_metadata() -> None:
+    analysis = analyze_card(
+        {
+            "name": "Narrow Finisher",
+            "type_line": "Instant",
+            "oracle_text": (
+                "If target player has exactly 10 life, Narrow Finisher "
+                "deals 10 damage to that player."
+            ),
+        }
+    )
+
+    assert exact_target_life_gate(analysis) == 10
+    assert simulation_metadata_roles(analysis) == (
+        "cast_target_life_exact_10",
+        "burn_damage_10",
+    )

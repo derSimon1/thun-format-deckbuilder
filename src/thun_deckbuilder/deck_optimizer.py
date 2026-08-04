@@ -5,6 +5,8 @@ from dataclasses import replace
 from typing import Callable, Iterable
 
 from thun_deckbuilder.card_analyzer import CardAnalysis
+from thun_deckbuilder.artifact_signals import analyze_artifact
+from thun_deckbuilder.artifact_signals import artifact_metadata_roles
 from thun_deckbuilder.card_scoring import ScoreBreakdown
 from thun_deckbuilder.deck_generator import DeckEntry, parse_mana_cost
 from thun_deckbuilder.knowledge_base import CardKnowledge
@@ -24,15 +26,14 @@ def _signals(archetype: str, analysis: CardAnalysis) -> frozenset[str]:
     signals: set[str] = set()
 
     if archetype == "artifacts":
-        if analysis.is_artifact:
+        artifact = analyze_artifact(analysis)
+        if artifact.enabler:
             signals.add("core")
-        if any(phrase in text for phrase in (
-            "affinity for artifacts", "improvise", "metalcraft",
-            "whenever an artifact enters", "for each artifact you control",
-            "artifacts you control get", "sacrifice an artifact",
-        )):
+        if artifact.payoff:
             signals.add("payoff")
-        if analysis.mana_value <= 2 and analysis.is_artifact:
+        if artifact.engine:
+            signals.add("engine")
+        if analysis.mana_value <= 2 and artifact.enabler:
             signals.add("enabler")
 
     elif archetype == "shrines":
@@ -193,7 +194,18 @@ def optimize_entries(
             type_line=card.analysis.type_line,
             score=result.score,
             reasons=result.reasons,
-            roles=tuple(sorted(str(role) for role in card.roles)),
+            roles=tuple(
+                sorted(
+                    {
+                        *(str(role) for role in card.roles),
+                        *(
+                            artifact_metadata_roles(card.analysis)
+                            if archetype == "artifacts"
+                            else ()
+                        ),
+                    }
+                )
+            ),
         )
 
     quantities = Counter({entry.name: entry.quantity for entry in entries})

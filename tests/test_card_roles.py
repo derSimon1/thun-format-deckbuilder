@@ -99,6 +99,26 @@ def test_detects_token_payoff_and_anthem():
     assert "token_payoff" in roles
 
 
+def test_delayed_or_limited_counter_effect_is_not_an_anthem():
+    for text in (
+        "When the fourth counter is put on this enchantment, put a +1/+1 "
+        "counter on each creature you control.",
+        "Put a +1/+1 counter on each other creature you control named Test.",
+        "Put a +1/+1 counter on each of up to two target creatures.",
+    ):
+        card = {
+            "name": "Test",
+            "mana_value": 2,
+            "colors": ["W"],
+            "color_identity": ["W"],
+            "type_line": "Enchantment",
+            "oracle_text": text,
+        }
+        roles = detect_roles(analyze_card(card))
+        assert "anthem" not in roles
+        assert "token_payoff" not in roles
+
+
 def test_detects_early_creature_as_aggro_creature():
     card = {
         "name": "Test Aggro",
