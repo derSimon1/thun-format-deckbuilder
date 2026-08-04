@@ -329,7 +329,8 @@ def generate_token_deck(
         f"neutral={commitment.neutral_cards}"
     )
     engine_summary = (
-        f"Engine Density {plan_report.plan.label}: "
+        f"Engine Density {plan_report.plan.label}"
+        f"{' (required)' if engine_density.engine_required else ' (optional)'}: "
         f"{engine_density.engine_density:.0%}; "
         f"copies={engine_density.engine_copies}/{engine_density.spell_copies}, "
         f"distinct={engine_density.distinct_engines}"

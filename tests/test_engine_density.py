@@ -53,6 +53,24 @@ def test_one_shot_token_maker_is_material_not_engine():
 
     assert report.engine_copies == 0
     assert report.engine_density == 0
+    assert not report.engine_required
+    assert not report.warnings
+
+
+def test_value_plan_without_engine_keeps_actionable_warning():
+    report = evaluate_token_engine_density(
+        (entry("Raise the Team", 12, ("token_maker",)),),
+        (
+            knowledge(
+                "Raise the Team",
+                "When this creature enters, create two 1/1 creature tokens.",
+                ("token_maker",),
+            ),
+        ),
+        TokenPlan.VALUE,
+    )
+
+    assert report.engine_required
     assert any("Keine wiederholbare Engine" in item for item in report.warnings)
 
 

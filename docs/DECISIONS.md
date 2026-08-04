@@ -141,3 +141,23 @@ trotz leicht schlechterer Opening-Hand- und Goldfish-Metriken farbige
 Go-Wide-Kandidaten. Eligibility beantwortet, ob eine Karte spielbar ist;
 Candidate Scoring muss zusätzlich bewerten, ob die dafür gebundene Manabasis den
 Nutzen rechtfertigt.
+
+## D-017 – Engine-Pflicht ist planabhängig
+
+**Datum:** 2026-08-04
+**Status:** akzeptiert
+
+Eine wiederholbare Engine ist für Value Tokens und Aristocrats eine
+Funktionsvoraussetzung. Beim aggressiven Go-Wide-Plan ist sie dagegen eine
+optionale Resilienzschicht; dessen Pflichtkern besteht aus frühen,
+zuverlässigen Makern und realistischem Team-Scaling.
+
+Die Engine Density wird für alle Pläne weiterhin numerisch ausgewiesen. Eine
+fehlende Engine erzeugt aber nur dann eine Mangelwarnung, wenn der gewählte Plan
+sie benötigt.
+
+**Begründung:** Die frühere universelle Warnung stellte 0 % Engine Density bei
+100 % Go-Wide-Commitment als Widerspruch dar. Ein kontrollierter Einbau der
+einzigen verfügbaren automatischen Mono-White-Engine verschlechterte die
+Mehrseed-Metriken und bestätigte, dass die Warnung statt der Deckliste falsch
+kalibriert war.

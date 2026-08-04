@@ -83,7 +83,41 @@ Eine vollständig qualifizierte v2-KGB existiert noch nicht. `baseline: none` be
   `global-calibration-pr-85` (ID `8872721218`); 447 Logzeilen und 49
   Artefaktdateien geprüft, keine fachliche Regression.
 
+## Plan-Aware-Engines-Zyklus – lokale Evidenz vor CI
+
+- **Ursache:** Engine Density meldete bei jedem Token-Plan 0 % als Mangel,
+  obwohl die Spezifikation für Go Wide frühe Maker plus Scaling und keine
+  wiederholbare Value-Engine verlangt. Dadurch wirkten 100 % Strategy
+  Commitment und 0 % Engine Density fälschlich widersprüchlich.
+- **Hypothese:** Eine explizite planabhängige Engine-Pflicht beseitigt die
+  irreführende Go-Wide-Warnung, ohne die numerische Messung oder echte
+  Warnungen für Value Tokens und Aristocrats zu schwächen.
+- **Verworfene Deckvariante:** Eine `Cathar's Call` statt einer
+  `Rally the Monastery` erhöhte die angezeigte Engine Density, verschlechterte
+  aber über 20 Goldfish-Seeds Schaden `24,838 → 24,815` und Killrate
+  `65,50 → 65,35 %`; über zehn Matchup-Seeds sanken modellierte
+  Artifact-Siege `68,7 → 62,6 %`. Burn/Mill blieben `0/100 %`. Die
+  Deckänderung wurde deshalb verworfen.
+- **Änderungen:** `EngineDensityReport` weist `engine_required` aus; die
+  Null-Engine-Warnung gilt nur für enginepflichtige Pläne; die Zusammenfassung
+  kennzeichnet `required` beziehungsweise `optional`. Workflow:
+  `Token Go Wide – Plan-Aware Engines`.
+- **Lokale Validierung:** 43 gezielte Tests und 326 Gesamttests in 46,61 s
+  grün; Fast und Token-Diagnose bestanden. Alle fachlichen Vergleichsartefakte
+  sind semantisch identisch zum Ausgangsstand: Benchmarks `83/98/90/85/80`,
+  0 Regressionen, Deck-Hash `133e45be5a4ca94dc6bb8dddeb6c811db9e2889ced915f54c018898441668815`,
+  100 Hände mit Seed `1701`, Keepability/Plan `77/77 %`, T2/T3 `94/96 %`.
+- **Reflexion:** Die Simulation kann langfristige Resilienz einer Aura-Engine
+  unter Interaktion unterschätzen; reale Spiele fehlen. Die Mehrseed-Daten
+  widerlegen aber eine automatische Aufnahme der einzigen Pool-Engine. Die
+  Änderung ist nicht auf eine Kartenfixture, sondern auf die Planinvariante
+  kalibriert. Confidence: hoch für die Diagnose, mittel für die spielerische
+  Ablehnung von `Cathar's Call`.
+- **KGB-Entscheidung vor Push:** keine neue KGB. Messbarkeit wird verbessert,
+  die Deckqualität bleibt gleich und `baseline: none` besteht fort.
+
 ## Nächster ausführbarer Schritt
 
-Nach erfolgreicher Mana-Strain-CI die Diskrepanz zwischen 100 % Strategy
-Commitment und 0 % wiederholbarer Engine als eng abgegrenzte Diagnose prüfen.
+Die 23 marginalen Token-Starthände nach konkreten, häufigsten
+Sequenzproblemen clustern und nur eine belegte Builder- oder
+Handklassifikationsursache bearbeiten.

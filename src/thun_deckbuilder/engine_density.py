@@ -18,6 +18,7 @@ class EngineDensityReport:
     engine_density: float
     distinct_engines: int
     engine_names: tuple[str, ...]
+    engine_required: bool
     warnings: tuple[str, ...] = ()
 
 
@@ -36,6 +37,12 @@ def _supports_engine_plan(card: CardKnowledge, plan: TokenPlan) -> bool:
             for marker in ("whenever", "at the beginning", "draw a card")
         )
     )
+
+
+def _engine_is_required(plan: TokenPlan) -> bool:
+    """Return whether the selected plan needs a repeatable engine to function."""
+
+    return plan is not TokenPlan.GO_WIDE
 
 
 def evaluate_token_engine_density(
@@ -70,7 +77,8 @@ def evaluate_token_engine_density(
     density = 0.0 if spell_copies == 0 else engine_copies / spell_copies
     distinct = len(set(engine_names))
     warnings: list[str] = []
-    if engine_copies == 0:
+    engine_required = _engine_is_required(plan)
+    if engine_copies == 0 and engine_required:
         warnings.append(
             f"Keine wiederholbare Engine für {plan.label} im Deck erkannt."
         )
@@ -86,5 +94,6 @@ def evaluate_token_engine_density(
         engine_density=density,
         distinct_engines=distinct,
         engine_names=tuple(sorted(set(engine_names))),
+        engine_required=engine_required,
         warnings=tuple(warnings),
     )
