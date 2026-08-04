@@ -186,7 +186,11 @@ Maschinenlesbare Rohdaten oder eine kompakte Zusammenfassung werden unter `artif
 - **Tokens – Aristocrats:** Material plus Outlet plus Death-/Drain-/Sacrifice-Payoff.
 - **Artifacts:** früher Enabler plus Synergie-Piece, Engine oder Payoff.
 - **Control:** relevante frühe Interaktion gegen den konkreten gegnerischen Plan, anschließende Stabilisierung, Kartenvorteil und belastbare Wincondition.
-- **Mill:** frühe Mill-Engine oder wiederholbare Mill-Quelle plus Schutz, Interaktion oder Tempo.
+- **Mill:** frühe Mill-Engine oder wiederholbare Mill-Quelle plus Schutz,
+  Interaktion oder Tempo. Eine permanente Typzeile allein begründet keine
+  Engine: Einmaleffekt und wiederholbarer Durchsatz werden getrennt erfasst;
+  verbrauchende oder nicht intrinsisch bezahlbare Aktivierungen zählen nicht
+  als autonome Engine.
 
 Control-Antworten dürfen nicht nur generisch als Interaktion gezählt werden. Sie müssen gegen den konkreten gegnerischen Plan wirksam sein. Ein Control-Deck muss eine Partie nicht nur verzögern, sondern nach Stabilisierung auch beenden können.
 

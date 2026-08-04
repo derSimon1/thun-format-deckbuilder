@@ -3,10 +3,15 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 
-from thun_deckbuilder.card_analyzer import CardAnalysis
+from thun_deckbuilder.card_analyzer import (
+    CardAnalysis,
+    cast_accessible_effect_segments,
+)
 
 
 _NUMBER_WORDS = {
+    "a": 1,
+    "an": 1,
     "one": 1,
     "two": 2,
     "three": 3,
@@ -60,6 +65,9 @@ class MillSignals:
     scalable: bool
     fixed_cards: int
     opponent_focused: bool
+    immediate_cards: int
+    repeatable_cards: int
+    conditional_cards: int
 
 
 def _amount(value: str) -> int:
@@ -68,13 +76,44 @@ def _amount(value: str) -> int:
     return _NUMBER_WORDS.get(value, 0)
 
 
+def _fixed_mill_cards(text: str) -> int:
+    values = [_amount(value) for value in _FIXED_MILL_PATTERN.findall(text)]
+    values.extend(_amount(value) for value in _PUT_PATTERN.findall(text))
+    return max(values, default=0)
+
+
+def _reusable_activation(segment: str) -> bool:
+    for match in re.finditer(r":", segment):
+        effect = segment[match.end() :]
+        if not (_FIXED_MILL_PATTERN.search(effect) or _PUT_PATTERN.search(effect)):
+            continue
+        cost = segment[: match.start()].rsplit(".", 1)[-1]
+        if (
+            "sacrifice" in cost
+            or "pay {e}" in cost
+            or re.search(
+                r"tap (?:two|three|four|five|\d+) untapped", cost
+            )
+        ):
+            continue
+        return True
+    return False
+
+
+def _has_mill_activation(segment: str) -> bool:
+    return any(
+        _FIXED_MILL_PATTERN.search(segment[match.end() :])
+        or _PUT_PATTERN.search(segment[match.end() :])
+        for match in re.finditer(r":", segment)
+    )
+
+
 def analyze_mill(analysis: CardAnalysis) -> MillSignals:
     """Classify real opponent-mill sources without counting self-mill."""
 
-    text = " ".join(analysis.oracle_text.lower().split())
-    fixed_values = [_amount(value) for value in _FIXED_MILL_PATTERN.findall(text)]
-    fixed_values.extend(_amount(value) for value in _PUT_PATTERN.findall(text))
-    fixed_cards = max(fixed_values, default=0)
+    segments = cast_accessible_effect_segments(analysis)
+    text = " ".join(" ".join(segments).split())
+    fixed_cards = _fixed_mill_cards(text)
 
     explicit_opponent = any(
         phrase in text
@@ -98,18 +137,44 @@ def analyze_mill(analysis: CardAnalysis) -> MillSignals:
         or "mills cards" in text
         or "mill that many" in text
     )
-    permanent = any(
-        card_type in analysis.type_line.lower()
-        for card_type in ("creature", "artifact", "enchantment", "planeswalker")
-    )
-    engine = source and (
-        any(phrase in text for phrase in _REPEATABLE_PHRASES)
-        or permanent
-    )
+    immediate_cards = 0
+    repeatable_cards = 0
+    conditional_cards = 0
+    for segment in segments:
+        amount = _fixed_mill_cards(segment)
+        if amount <= 0:
+            continue
+        repeatable = any(
+            phrase in segment for phrase in _REPEATABLE_PHRASES
+        ) or _reusable_activation(segment)
+        if repeatable:
+            repeatable_cards = max(repeatable_cards, amount)
+        elif _has_mill_activation(segment):
+            conditional_cards = max(conditional_cards, amount)
+        else:
+            immediate_cards = max(immediate_cards, amount)
+    engine = source and repeatable_cards > 0
     return MillSignals(
         source=source,
         engine=engine,
         scalable=scalable,
         fixed_cards=fixed_cards,
         opponent_focused=explicit_opponent,
+        immediate_cards=immediate_cards,
+        repeatable_cards=repeatable_cards,
+        conditional_cards=conditional_cards,
     )
+
+
+def simulation_metadata_roles(analysis: CardAnalysis) -> tuple[str, ...]:
+    """Return mill throughput metadata for deterministic simulation."""
+
+    signals = analyze_mill(analysis)
+    roles: list[str] = []
+    if signals.immediate_cards:
+        roles.append(f"mill_immediate_{signals.immediate_cards}")
+    if signals.repeatable_cards:
+        roles.append(f"mill_repeatable_{signals.repeatable_cards}")
+    if signals.conditional_cards:
+        roles.append(f"mill_conditional_{signals.conditional_cards}")
+    return tuple(roles)

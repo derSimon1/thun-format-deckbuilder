@@ -166,7 +166,12 @@ def _spell_value(entry: DeckEntry, archetype: str) -> tuple[int, float, str]:
         )
         return mana, value, "damage"
     if archetype == "mill":
-        value = 5.0 if "mill" in signals else 0.5
+        immediate = _metadata_number(entry, "mill_immediate_")
+        repeatable = _metadata_number(entry, "mill_repeatable_")
+        conditional = _metadata_number(entry, "mill_conditional_")
+        value = float(immediate + repeatable * 2)
+        if not value and not conditional:
+            value = 5.0 if "mill" in signals else 0.5
         return mana, value, "mill"
     if archetype == "artifacts":
         value = 1.0 if "artifact" in signals else 0.0
@@ -220,12 +225,16 @@ class GoldfishSimulator:
             damage = milled = artifacts = shrines = 0.0
             spells_cast = unused = 0
             creatures: list[float] = []
+            active_mill_engines: list[float] = []
+            pending_mill_engines: list[float] = []
             ready_tokens = pending_tokens = 0.0
             active_token_engines: list[float] = []
             anthem_bonus = payoff_bonus = 0.0
 
             for _turn in range(1, turns + 1):
                 temporary_anthem_bonus = 0.0
+                active_mill_engines.extend(pending_mill_engines)
+                pending_mill_engines = []
                 if archetype == "tokens":
                     ready_tokens += pending_tokens
                     pending_tokens = 0.0
@@ -303,7 +312,14 @@ class GoldfishSimulator:
                         if "creature" in _signals(entry):
                             creatures.append(max(1.0, value))
                     elif metric == "mill":
-                        milled += value
+                        immediate = _metadata_number(entry, "mill_immediate_")
+                        repeatable = _metadata_number(entry, "mill_repeatable_")
+                        if immediate or repeatable:
+                            milled += immediate
+                            if repeatable:
+                                pending_mill_engines.append(float(repeatable))
+                        else:
+                            milled += value
                     elif metric == "artifact":
                         artifacts += value
                     elif metric == "shrine":
@@ -311,7 +327,7 @@ class GoldfishSimulator:
                 if archetype == "burn":
                     damage += sum(creatures)
                 elif archetype == "mill":
-                    milled += max(0.0, milled * 0.05)
+                    milled += sum(active_mill_engines)
                 elif archetype == "shrines":
                     damage += shrines
                 elif archetype == "tokens":

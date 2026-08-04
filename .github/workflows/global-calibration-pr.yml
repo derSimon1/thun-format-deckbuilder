@@ -1,5 +1,5 @@
 name: Global Calibration PR
-run-name: Burn – Cast Condition Semantics
+run-name: Mill – Engine Throughput Precision
 
 on:
   pull_request:

@@ -12,10 +12,11 @@ def score_mill_card(analysis: CardAnalysis) -> ScoreBreakdown:
     mana_value = max(analysis.mana_value, 0.0)
     signals = analyze_mill(analysis)
 
-    if signals.fixed_cards and signals.opponent_focused:
-        score += float(signals.fixed_cards)
-        reasons.append(f"Millt {signals.fixed_cards} Karten")
-        efficiency = signals.fixed_cards / max(mana_value, 1.0)
+    initial_value = signals.immediate_cards
+    if initial_value and signals.opponent_focused:
+        score += float(initial_value)
+        reasons.append(f"Millt sofort {initial_value} Karten")
+        efficiency = initial_value / max(mana_value, 1.0)
         if efficiency >= 4.0:
             score += 3.0
             reasons.append("Sehr effizientes Mill")
@@ -31,8 +32,11 @@ def score_mill_card(analysis: CardAnalysis) -> ScoreBreakdown:
         reasons.append("Skalierendes Mill")
 
     if signals.engine:
-        score += 3.0
-        reasons.append("Wiederholbares Mill")
+        recurring_value = min(signals.repeatable_cards, 4)
+        score += 3.0 + recurring_value
+        reasons.append(
+            f"Wiederholbares Mill: {signals.repeatable_cards} Karten"
+        )
 
     if "draw a card" in text:
         score += 1.5

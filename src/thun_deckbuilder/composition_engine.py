@@ -14,6 +14,9 @@ from thun_deckbuilder.deck_quality import DeckQualityAnalyzer, DeckQualityReport
 from thun_deckbuilder.deck_profile import DeckProfile
 from thun_deckbuilder.deck_state import DeckState
 from thun_deckbuilder.knowledge_base import CardKnowledge
+from thun_deckbuilder.mill_signals import (
+    simulation_metadata_roles as mill_simulation_metadata_roles,
+)
 from thun_deckbuilder.selection_trace import SelectionTrace
 
 
@@ -61,6 +64,7 @@ def _entry(
                 {
                     *(str(role) for role in candidate.knowledge.roles),
                     *simulation_metadata_roles(analysis),
+                    *mill_simulation_metadata_roles(analysis),
                 }
             )
         ),

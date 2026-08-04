@@ -1,5 +1,23 @@
 # Specification Changelog
 
+## 2.0 – Mill-Engine-Durchsatz 2026-08-04
+
+### Geändert
+
+- Mill-Quellen tragen getrennte Einmal- und Wiederholkapazitäten.
+- Permanente Einmaleffekte gelten nicht länger allein wegen ihrer Typzeile als
+  Engine.
+- Mill-Profil, Opening Hands, Goldfish und CI-Diagnose teilen dieselbe
+  Quellen-/Engine-Semantik.
+- Verbrauchende oder Mehrpermanenten-Aktivierungen werden nicht als
+  intrinsischer Wiederholdurchsatz simuliert.
+
+### Anlass
+
+Einmalige Adventure-/ETB-Effekte und nicht bezahlbare Mehr-Advisor-Kosten
+blähten Engine-Dichte und Mill-Goldfish auf, während das Profil keine echte
+Mill-Quellenmindestdichte verlangte.
+
 ## 2.0 – Burn-Cast-Bedingungen 2026-08-04
 
 ### Geändert

@@ -475,6 +475,7 @@ def test_aristocrats_material_without_outlet_or_payoff_is_not_plan_capable():
                     18,
                     1,
                     type_line="Creature",
+                    roles=("mill_source", "mill_engine"),
                     reasons=("Repeatable mill engine",),
                     mana_cost="{U}",
                     colored="U",

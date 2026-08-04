@@ -98,6 +98,39 @@ def test_mill_report_tracks_cards_milled_instead_of_damage():
     assert report.average_damage == 0
 
 
+def test_repeatable_mill_metadata_recurs_but_one_shot_permanent_does_not():
+    one_shot = GeneratedDeck(
+        mainboard=(
+            entry(
+                "One-Shot Wall",
+                36,
+                1,
+                type_line="Creature",
+                roles=("mill_source", "mill_immediate_3"),
+            ),
+        ),
+        lands=24,
+    )
+    engine = GeneratedDeck(
+        mainboard=(
+            entry(
+                "Repeatable Crab",
+                36,
+                1,
+                type_line="Creature",
+                roles=("mill_source", "mill_engine", "mill_repeatable_3"),
+            ),
+        ),
+        lands=24,
+    )
+
+    simulator = GoldfishSimulator()
+    one_shot_report = simulator.simulate(one_shot, archetype="mill", samples=400)
+    engine_report = simulator.simulate(engine, archetype="mill", samples=400)
+
+    assert engine_report.average_cards_milled > one_shot_report.average_cards_milled
+
+
 def test_artifact_and_shrine_reports_track_board_progress():
     artifacts = GeneratedDeck(
         mainboard=(entry("Cheap Relic", 36, 1, type_line="Artifact"),),

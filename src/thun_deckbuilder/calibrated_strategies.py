@@ -55,6 +55,8 @@ MILL_PROFILE = DeckProfile(
     name="Dimir Mill",
     lands=24,
     role_targets=(
+        RoleTarget("mill_source", minimum=12, target=18),
+        RoleTarget("mill_engine", minimum=3, target=9),
         RoleTarget("card_draw", minimum=0, target=6),
         RoleTarget("removal", minimum=0, target=7),
     ),

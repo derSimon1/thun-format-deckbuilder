@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import random
+import re
 from itertools import combinations as all_combinations
 
 import ci_global_validation_v2 as v2
@@ -156,12 +157,22 @@ def _sideboard_diagnostics(deck) -> dict[str, object]:
 
 
 def _mill_deck_diagnostics(deck) -> dict[str, object]:
+    def metadata(entry, prefix: str) -> int:
+        for role in entry.roles:
+            match = re.fullmatch(rf"{re.escape(prefix)}(\d+)", str(role))
+            if match:
+                return int(match.group(1))
+        return 0
+
     cards = [
         {
             "name": entry.name,
             "quantity": entry.quantity,
             "mana_value": entry.mana_value,
             "engine": "mill_engine" in entry.roles,
+            "immediate_cards": metadata(entry, "mill_immediate_"),
+            "repeatable_cards": metadata(entry, "mill_repeatable_"),
+            "conditional_cards": metadata(entry, "mill_conditional_"),
             "roles": list(entry.roles),
             "reasons": list(entry.reasons),
         }
@@ -174,6 +185,15 @@ def _mill_deck_diagnostics(deck) -> dict[str, object]:
             card["quantity"] for card in cards if card["engine"]
         ),
         "distinct_sources": len(cards),
+        "immediate_capacity": sum(
+            card["quantity"] * card["immediate_cards"] for card in cards
+        ),
+        "repeatable_capacity": sum(
+            card["quantity"] * card["repeatable_cards"] for card in cards
+        ),
+        "conditional_capacity": sum(
+            card["quantity"] * card["conditional_cards"] for card in cards
+        ),
         "cards": cards,
     }
 
@@ -199,6 +219,9 @@ def _write_mill_capacity() -> None:
                     "engine": signals.engine,
                     "scalable": signals.scalable,
                     "fixed_cards": signals.fixed_cards,
+                    "immediate_cards": signals.immediate_cards,
+                    "repeatable_cards": signals.repeatable_cards,
+                    "conditional_cards": signals.conditional_cards,
                 }
             )
     cards.sort(key=lambda item: (item["mana_value"], item["name"]))

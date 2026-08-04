@@ -34,8 +34,21 @@ def _knowledge(
 
 
 def test_calibrated_profiles_do_not_force_generic_support():
-    for profile in (ARTIFACT_PROFILE, SHRINE_PROFILE, MILL_PROFILE):
+    for profile in (ARTIFACT_PROFILE, SHRINE_PROFILE):
         assert all(target.minimum == 0 for target in profile.role_targets)
+    generic_mill_support = {
+        str(target.role): target.minimum
+        for target in MILL_PROFILE.role_targets
+        if str(target.role) in {"card_draw", "removal"}
+    }
+    assert generic_mill_support == {"card_draw": 0, "removal": 0}
+
+
+def test_mill_profile_requires_archetype_specific_source_and_engine_density():
+    targets = {str(target.role): target for target in MILL_PROFILE.role_targets}
+
+    assert targets["mill_source"].minimum == 12
+    assert targets["mill_engine"].minimum == 3
 
 
 def test_shrine_allows_core_and_cheap_support_but_rejects_slow_filler():

@@ -382,16 +382,9 @@ def _signals(card: _PlanCard, archetype: str, plan: str) -> dict[str, bool]:
         engine = engine or (artifact and repeatable)
         finisher = finisher or payoff
     elif archetype == "mill":
-        mill = "mill" in text or "library into" in text
+        mill = "mill_source" in roles
         enabler = mill
-        engine = engine or (
-            mill
-            and (
-                repeatable
-                or is_creature
-                or "enchantment" in card.type_line.lower()
-            )
-        )
+        engine = engine or "mill_engine" in roles
         payoff = mill
         finisher = finisher or mill
     elif archetype == "control":

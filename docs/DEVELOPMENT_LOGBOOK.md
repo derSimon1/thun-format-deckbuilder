@@ -37,6 +37,40 @@ Eine vollständig qualifizierte v2-KGB existiert noch nicht. `baseline: none` be
   Regel- und Messkorrektheit; `baseline: none` bleibt bis CI und realer
   Kalibrierung bestehen.
 
+## Mill – Engine Throughput Precision (lokale Evidenz vor CI)
+
+- **Ursache:** Jede permanente Mill-Quelle galt pauschal als Engine. Dadurch
+  waren ETB-Wände und die Adventure-Hälfte von `Merfolk Secretkeeper`
+  angeblich wiederholbar; `Persistent Petitioners` erhielt ohne vier Advisors
+  den vollen Zwölf-Karten-Durchsatz. Der Goldfish gab jeder Quelle pauschal
+  fünf Karten und ließ das Gesamtergebnis zusätzlich pro Zug wachsen.
+- **Hypothese:** Effektsegmentbasierte Einmal-/Wiederholsignale, echte
+  Mill-Rollenziele und durchsatzbasierte Simulation erzeugen eine kohärentere
+  Liste und erklären ihren Plan ohne Typzeilen-Heuristik.
+- **Änderungen:** zentrale `immediate_cards`-/`repeatable_cards`-Signale;
+  wiederverwendbare Aktivierung nur ohne verbrauchende oder Mehrpermanenten-
+  Kosten; Mill-Quellen-/Engine-Dichten im Profil; Opening Hands und Goldfish
+  verwenden die Rollen und maschinenlesbaren Durchsatzmarker; CI-Artefakte
+  berichten beide Kapazitäten getrennt.
+- **Lokale Validierung:** 55 gezielte Tests, 366 Gesamttests und Fast `PASS`.
+  Benchmarks Burn/Tokens/Artifacts/Control bleiben 83/93/91/85; Mill steigt
+  80 → 82. Alle fünf Arena-Exporte bleiben 60/15.
+- **Fairer Championvergleich:** Unter derselben neuen Semantik steigt Mill
+  14,21 → 19,36 Karten (+36 %), Mulligans sinken 24 → 22 % und Spells
+  steigen 5,35 → 5,63. Die neue Liste hat 24 Quellen, 12 Engines,
+  Einmalkapazität 48 und Wiederholkapazität 30.
+- **100 Hände:** Hash `070982d6d9bca34992e49f195e03c0183d6efc5b13dbdff00bdbffb901bb4571`,
+  Seed 1701, Keepability 74 → 77 %, Planfähigkeit 55 → 75 %, T2/T3
+  81/87 → 83/87 %, Manafehler 22 → 20 %.
+- **Alternative Erklärung/Risiko:** Bedingte Engines werden nach dem Cast
+  vereinfacht einmal pro Folgezug ausgelöst; Voraussetzungen wie Max Speed,
+  Clues, Landfall und Angriffe sind noch keine vollständige Zustandsmaschine.
+  0 % Mill-out bis Zug 5 ist deshalb kein Gegenbeweis zur verbesserten
+  Frühkapazität. Das Tokens-Mill-Matchup bleibt an einer Modellgrenze.
+- **KGB-Entscheidung vor Push:** keine neue KGB. Der Challenger ist lokal
+  fachlich besser, aber `baseline: none`, CI und reale Arena-Evidenz verhindern
+  eine voll qualifizierte KGB.
+
 ## Token Go Wide – stabiler Kern
 
 - Run 74: Benchmark 98, 35 Maker, 30 sofortige Maker, 22 Multi-Maker, 7 Anthems, 0 Outlets.

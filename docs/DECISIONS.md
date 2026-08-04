@@ -304,3 +304,27 @@ Opportunitätspreis und gibt eng gegatetem Schaden nur reduzierten Auswahlwert.
 wirkbarer Vier-Schaden-Zauber behandelt; `Hidetsugu's Second Rite` erhielt
 vollen Zehn-Schaden-Wert ohne das Fenster bei exakt 10 Leben. Beide Annahmen
 erzeugten falsche Synergien, illegale Sequenzen und aufgeblähte Goldfish-Werte.
+
+## D-025 – Mill-Engines benötigen wiederholbaren Effektzugang
+
+**Datum:** 2026-08-04
+**Status:** akzeptiert
+
+Eine permanente Typzeile macht einen Mill-Effekt nicht wiederholbar. Engine
+ist nur ein wiederkehrender Trigger oder eine wiederverwendbare Aktivierung im
+gleichen Effektsegment. ETB-, Adventure-, Saga- und andere Einmaleffekte
+bleiben Quellen, aber keine Engines. Aktivierungen mit Selbstopfer, endlicher
+Energie oder mehreren als Kosten getappten Permanenten liefern keinen
+intrinsischen Wiederholdurchsatz; andere Fähigkeiten derselben Karte werden
+separat bewertet.
+
+Einmal- und Wiederholkarten werden als maschinenlesbare Durchsatzmarker an den
+Deckeintrag gegeben. Mill-Scoring, Profil, Opening-Hand-Plan, Goldfish und
+Diagnoseartefakt verwenden dieselben zentralen Signale. Bedingte Engines
+beginnen im Goldfish frühestens im Folgezug; pauschales Fünf-Karten-Mill und
+prozentuales Anwachsen bereits gemillter Karten entfallen.
+
+**Begründung:** `Merfolk Secretkeeper` wurde wegen seiner Kreatur-Typzeile als
+Engine gezählt. Drei `Persistent Petitioners` simulierten je zwölf Karten,
+obwohl die betreffende Aktivierung vier Advisors als Kosten verlangt. Beides
+verzerrte Auswahl, Planfähigkeit und Goldfish.

@@ -30,6 +30,8 @@
 - [x] Token-spezifische Outlet-Rollen und -Synergien gemeinsam präzisieren
 - [x] globale Outlet-Tags, Opfer-Cast-Kosten und exakte Burn-Lebensfenster
   gemeinsam modellieren
+- [x] Mill-Einmalquellen, wiederholbare Engines und simulierten Durchsatz
+  zentral trennen
 
 ## Stabiler Stand – Run 78
 
@@ -41,21 +43,21 @@
 - Burn-Plan: 3 `Dawnbringer Cleric` hinein; 2 `Descendant of Storms`, 1 `Duty Beyond Death` heraus
 - Mainboard-Hash `133e45be5a4ca94dc6bb8dddeb6c811db9e2889ced915f54c018898441668815`
 
-## Aktueller Zyklus – Burn Cast Condition Semantics
+## Aktueller Zyklus – Mill Engine Throughput Precision
 
-1. zusätzliche Cast-Kosten von aktivierten Opfer-Outlets trennen.
-2. Opfermaterial und exakte Lebenspunktfenster im Burn-Goldfish erzwingen.
-3. bedingten Burn ohne Benchmark-Gaming bewerten.
-4. Champion und Challenger unter derselben Semantik vergleichen.
+1. Einmalquellen von wiederholbaren Mill-Engines trennen.
+2. Quellen- und Engine-Dichten als Mill-Kernrollen absichern.
+3. tatsächlichen Durchsatz statt pauschaler Fünf-Karten-Werte simulieren.
+4. Kapazität und 100-Hände-Planfähigkeit im Artefakt ausweisen.
 
 ## Prioritäten danach
 
-1. Mill-Engine-Erkennung gegen echte wiederholbare Quellen präzisieren.
-2. Control-Stabilisierung und Wincondition-Zugang modellieren.
+1. Control-Stabilisierung und Wincondition-Zugang modellieren.
+2. Artifacts-Payoff-Zugang gegen reine Artefaktmenge abwägen.
 3. Modellierte Matchups gegen reale Spiele kalibrieren.
 4. Regression-Baseline statt `baseline: none`.
 
 ## Genau ein nächster ausführbarer Schritt
 
-Mill-Karten, die nur einmalig Karten abwerfen, von echten Engines trennen und
-Champion/Challenger anhand Mill-out, 100 Händen und aller Referenzen messen.
+Control-Winconditions und Kartenvorteil nach früher Interaktion als echte
+Stabilisierungssequenz messen, ohne reine Verzögerung als Planerfolg zu werten.
