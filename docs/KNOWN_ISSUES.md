@@ -41,6 +41,11 @@ aber mit sechs selbständig nutzbaren Schutzkarten intern weiterhin an die
 Matchprognosen; Stabilisierungseffekt und Draw-/Cast-Wahrscheinlichkeit müssen
 gegen reale Spiele kalibriert werden.
 
+Nach der Kontext-/Dauerkorrektur fällt Token gegen Artifacts modelliert von
+60 % auf 0 % und Control gegen Tokens steigt von 65 % auf 100 %. Diese
+gegenläufigen Extreme bestätigen, dass das Matchupmodell relative Schwäche
+anzeigt, aber absolute Prozentwerte weiterhin nicht belastbar sind.
+
 ## KI-006 – Zeitgesteuerte GitHub-Runs sind nicht zuverlässig genug
 
 **Status:** bestätigt  

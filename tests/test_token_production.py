@@ -145,6 +145,114 @@ def test_whenever_trigger_is_not_assumed_to_fire_in_solitaire():
     assert profile.mode == "conditional"
 
 
+def test_follow_up_reminder_sentence_inherits_attack_and_payment_condition():
+    analysis = card(
+        "Descendant",
+        "Whenever this creature attacks, you may pay {1}{W}. If you do, it "
+        "endures 1. (Put a +1/+1 counter on it or create a 1/1 white Spirit "
+        "creature token.)",
+        type_line="Creature — Spirit",
+    )
+
+    profile = analyze_token_production(analysis)
+
+    assert profile.mode == "conditional"
+    assert profile.conditional
+    assert "token_production_immediate" not in token_production_roles(analysis)
+
+
+def test_later_saga_chapter_is_delayed_without_read_ahead():
+    profile = analyze_token_production(
+        card(
+            "Slow Saga",
+            "I — Scry 1.\nII — Create a 1/1 white Bird creature token.",
+            type_line="Enchantment — Saga",
+        )
+    )
+
+    assert profile.mode == "conditional"
+
+
+def test_read_ahead_can_make_a_later_saga_chapter_immediate():
+    profile = analyze_token_production(
+        card(
+            "Read-Ahead Saga",
+            "Read ahead (Choose a chapter and start with that many lore "
+            "counters.)\nI — Scry 1.\nII — Create a 1/1 white Bird creature "
+            "token.",
+            type_line="Enchantment — Saga",
+        )
+    )
+
+    assert profile.mode == "immediate"
+
+
+def test_modal_bullet_inherits_landfall_trigger_but_plain_choice_does_not():
+    landfall = analyze_token_production(
+        card(
+            "Retreat",
+            "Landfall — Whenever a land you control enters, choose one —\n"
+            "• Create a 1/1 white Ally creature token.\n"
+            "• Creatures you control get +1/+1 until end of turn.",
+        )
+    )
+    plain_choice = analyze_token_production(
+        card(
+            "Menu",
+            "Choose one —\n• Create a 1/1 white Knight creature token.\n"
+            "• You gain 4 life.",
+            type_line="Instant",
+        )
+    )
+
+    assert landfall.mode == "conditional"
+    assert plain_choice.mode == "immediate"
+
+
+def test_non_entry_when_trigger_is_conditional_but_self_entry_is_immediate():
+    leaves = analyze_token_production(
+        card(
+            "Valor",
+            "When enchanted creature leaves the battlefield, create a 1/1 "
+            "white Spirit creature token.",
+            type_line="Enchantment — Aura",
+        )
+    )
+    enters = analyze_token_production(
+        card(
+            "Captain",
+            "When this creature enters, create a 1/1 white Soldier creature "
+            "token.",
+            type_line="Creature — Human",
+        )
+    )
+
+    assert leaves.mode == "conditional"
+    assert enters.mode == "immediate"
+
+
+def test_short_legend_name_and_token_rules_text_do_not_hide_immediate_etb():
+    legendary = analyze_token_production(
+        card(
+            "Okoye, Leader",
+            "When Okoye enters, create two 1/1 white Soldier creature tokens.",
+            type_line="Legendary Creature — Human",
+        )
+    )
+    rules_text = analyze_token_production(
+        card(
+            "Attendant",
+            'When this creature enters, create a 1/1 blue Wizard creature token '
+            'with "{1}, Sacrifice this token: Counter target noncreature spell."',
+            type_line="Creature — Human",
+        )
+    )
+
+    assert legendary.mode == "immediate"
+    assert legendary.minimum_output == 2
+    assert rules_text.mode == "immediate"
+
+
 def test_capacity_groups_modes_and_filters_duplicates_off_color_and_lands():
     cards = (
         raw_card(

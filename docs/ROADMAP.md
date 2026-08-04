@@ -21,6 +21,8 @@
 - [x] transformationsgesperrte Rückseiteneffekte aus Sofortrollen entfernen
 - [x] Sideboard-Suche über Mehrkopien-Schwellen führen und zielabhängigen
   Lebensgewinn abgrenzen
+- [x] Trigger-, Saga-, Modal- und Anthem-Kontext bis in Goldfish-Dauersemantik
+  vereinheitlichen
 
 ## Stabiler Stand – Run 78
 
@@ -32,21 +34,21 @@
 - Burn-Plan: 3 `Dawnbringer Cleric` hinein; 2 `Descendant of Storms`, 1 `Duty Beyond Death` heraus
 - Mainboard-Hash `133e45be5a4ca94dc6bb8dddeb6c811db9e2889ced915f54c018898441668815`
 
-## Aktueller Zyklus – Threshold-Aware Sideboarding
+## Aktueller Zyklus – Context-Gated Effects
 
-1. Sechs reale Ersatzpakete über mehrere Seeds verwerfen: kein Burn-Gewinn.
-2. Greedy-Einzelkartenfalle bei drei `Dawnbringer Cleric` korrigieren.
-3. Zielabhängigen Lifegain von selbständigem Schutz trennen.
-4. Workflow `Token Go Wide – Threshold-Aware Sideboarding` auswerten.
+1. Triggerkontext über Folgesätze und modale Bullets bewahren.
+2. Read-ahead von verzögerten Saga-Kapiteln unterscheiden.
+3. begrenzte/aktivierte Buffs aus globalen Anthems entfernen.
+4. temporäre Anthems im Goldfish am Zugende auslaufen lassen.
 
 ## Prioritäten danach
 
-1. Weitere verzögerte Tokenproduktion (Trigger/Sagas) prüfen.
-2. Modellierte Matchups gegen reale Spiele kalibrieren.
-3. Burn-/Artifact-Ersatzpaket erst mit präziserer Simulation erneut prüfen.
+1. Zusätzliche Cast-Kosten und Boardverbrauch im Token-Goldfish modellieren.
+2. Bedingte/dead-on-board Kandidaten unter korrekter Semantik neu gewichten.
+3. Modellierte Matchups gegen reale Spiele kalibrieren.
 4. Regression-Baseline statt `baseline: none`.
 
 ## Genau ein nächster ausführbarer Schritt
 
-Trigger- und Saga-Text zentral so segmentieren, dass bedingte oder verzögerte
-Tokenproduktion und begrenzte Buffs nicht als sofortige Go-Wide-Effekte gelten.
+Zusätzliche Opferkosten wie bei `Duty Beyond Death` zentral erkennen und im
+Token-Goldfish nur bei vorhandenem, tatsächlich verbrauchtem Board bezahlen.

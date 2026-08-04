@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 from typing import Any
 
@@ -54,6 +55,118 @@ def cast_accessible_oracle_text(analysis: CardAnalysis) -> str:
     if any(marker in front.lower() for marker in _TRANSFORM_GATES):
         return front
     return analysis.oracle_text
+
+
+def cast_accessible_effect_segments(analysis: CardAnalysis) -> tuple[str, ...]:
+    """Return cast-accessible Oracle abilities without losing sentence context.
+
+    Oracle newlines and modal-face separators delimit abilities. Full stops do
+    not: reminder text and follow-up sentences often carry the condition or
+    target that governs a later ``create`` or team-buff phrase.
+    """
+
+    raw_segments = tuple(
+        segment.strip().lower()
+        for segment in re.split(
+            r"\n| // ", cast_accessible_oracle_text(analysis)
+        )
+        if segment.strip()
+    )
+    segments: list[str] = []
+    choice_context = ""
+    for segment in raw_segments:
+        if "choose one" in segment:
+            choice_context = segment
+            segments.append(segment)
+            continue
+        if choice_context and (
+            segment.startswith("•") or re.match(r"^\+\s*\{", segment)
+        ):
+            segments.append(f"{choice_context} {segment}")
+            continue
+        choice_context = ""
+        segments.append(segment)
+    return tuple(segments)
+
+
+def saga_chapter_is_delayed(segment: str, full_text: str) -> bool:
+    match = re.match(r"^(i|ii|iii|iv|v|vi)\s*[—-]", segment)
+    if match is None or "read ahead" in full_text:
+        return False
+    return match.group(1) != "i"
+
+
+def cast_immediate_team_buff_segments(
+    analysis: CardAnalysis,
+) -> tuple[str, ...]:
+    """Return global team buffs available from the normal cast.
+
+    Target-limited, name-limited, delayed-trigger and extra Spree-mode effects
+    are not global Go-Wide anthems. Self-enter triggers and read-ahead Saga
+    chapters remain cast-accessible.
+    """
+
+    text = cast_accessible_oracle_text(analysis).lower()
+    power_patterns = (
+        "other creatures you control get +",
+        "creature tokens you control get +",
+        "creatures you control get +",
+        "tokens you control get +",
+    )
+    counter_pattern = "put a +1/+1 counter on each creature you control"
+    accepted: list[str] = []
+    front_name = analysis.name.split(" // ", 1)[0].lower()
+    enter_markers = (
+        "when this creature enters",
+        "when this permanent enters",
+        "when this enchantment enters",
+        "when this artifact enters",
+        f"when {front_name} enters",
+    )
+    for segment in cast_accessible_effect_segments(analysis):
+        power_pattern = next(
+            (pattern for pattern in power_patterns if pattern in segment),
+            None,
+        )
+        counter_buff = counter_pattern in segment
+        if power_pattern is None and not counter_buff:
+            continue
+        effect_index = (
+            segment.index(power_pattern)
+            if power_pattern is not None
+            else segment.index(counter_pattern)
+        )
+        if ":" in segment[:effect_index] or "solved —" in segment[:effect_index]:
+            continue
+        if power_pattern is not None:
+            prefix = segment[:effect_index].rstrip()
+            allowed_prefix = not prefix or any(
+                marker in prefix for marker in enter_markers
+            )
+            if not allowed_prefix:
+                continue
+        if " get +" in segment and re.search(r"get \+0/", segment):
+            continue
+        if any(
+            limit in segment
+            for limit in (
+                "target creature",
+                "target player controls",
+                "each of up to",
+                "you control named",
+            )
+        ):
+            continue
+        if "+ {" in segment or saga_chapter_is_delayed(segment, text):
+            continue
+        triggered = any(
+            marker in segment
+            for marker in ("whenever", "at the beginning", "if ", "when ")
+        )
+        if triggered and not any(marker in segment for marker in enter_markers):
+            continue
+        accepted.append(segment)
+    return tuple(accepted)
 
 
 def _parse_number(value: Any) -> float | None:

@@ -101,6 +101,36 @@ def test_transform_gated_back_face_does_not_score_as_cast_time_output():
     assert not any("Team-Bonus" in reason for reason in result.reasons)
 
 
+def test_conditional_attack_maker_is_not_scored_as_repeatable_engine():
+    result = score_token_card(
+        analysis(
+            "Whenever this creature attacks, you may pay {1}{W}. If you do, "
+            "it endures 1. (Put a +1/+1 counter on it or create a 1/1 white "
+            "Spirit creature token.)",
+            mana_value=1,
+            type_line="Creature — Spirit",
+        )
+    )
+
+    assert "Wiederholbare Token-Quelle" not in result.reasons
+
+
+def test_target_limited_saga_buff_does_not_score_as_team_finisher():
+    result = score_token_card(
+        analysis(
+            "Read ahead (Choose a chapter.)\n"
+            "II — Create a 1/1 white Bird creature token.\n"
+            "III — Put a +1/+1 counter on each of up to two target creatures.",
+            mana_value=3,
+            type_line="Enchantment — Saga",
+        )
+    )
+
+    assert "Erzeugt einen Token" in result.reasons
+    assert "Dauerhafte Verstärkung des gesamten Boards" not in result.reasons
+    assert "Go Wide: Team-Finisher" not in result.reasons
+
+
 def test_board_wipe_is_not_eligible_for_go_wide_tokens():
     card = knowledge("Destroy all creatures.", ("removal", "board_wipe"), mana_value=4)
     assert not _is_reasonable_token_card(card)

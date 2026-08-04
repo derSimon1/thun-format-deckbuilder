@@ -2,7 +2,10 @@ from __future__ import annotations
 
 import re
 
-from thun_deckbuilder.card_analyzer import CardAnalysis
+from thun_deckbuilder.card_analyzer import (
+    CardAnalysis,
+    cast_immediate_team_buff_segments,
+)
 from thun_deckbuilder.card_role import CardRole
 from thun_deckbuilder.mill_signals import analyze_mill
 
@@ -50,14 +53,7 @@ def detect_roles(analysis: CardAnalysis) -> frozenset[CardRole]:
     if mill.engine:
         roles.add(CardRole.MILL_ENGINE)
 
-    anthem_patterns = (
-        "creatures you control get +",
-        "other creatures you control get +",
-        "tokens you control get +",
-        "creature tokens you control get +",
-        "put a +1/+1 counter on each",
-    )
-    if any(pattern in text for pattern in anthem_patterns):
+    if cast_immediate_team_buff_segments(analysis):
         roles.add(CardRole.ANTHEM)
         roles.add(CardRole.TOKEN_PAYOFF)
 

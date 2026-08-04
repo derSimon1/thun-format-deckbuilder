@@ -8,6 +8,8 @@ from typing import Mapping
 from thun_deckbuilder.card_analyzer import (
     CardAnalysis,
     analyze_card,
+    cast_accessible_effect_segments,
+    cast_immediate_team_buff_segments,
     cast_accessible_oracle_text,
 )
 from thun_deckbuilder.deck_generator import GeneratedDeck
@@ -35,14 +37,6 @@ _MULTI_CREATURE_TOKEN = re.compile(
     r"create (?:up to )?(?:two|three|four|five|six|[2-9]|\d{2,}) "
     r"[^.\n]*?creature tokens?"
 )
-
-
-def _sentences(text: str) -> tuple[str, ...]:
-    return tuple(
-        sentence.strip()
-        for sentence in re.split(r"[.\n]", text.lower())
-        if sentence.strip()
-    )
 
 
 def _creates_creature_token(sentence: str) -> bool:
@@ -81,7 +75,7 @@ def analyze_token_package(analysis: CardAnalysis) -> TokenPackageSignals:
     """
 
     text = cast_accessible_oracle_text(analysis).lower()
-    sentences = _sentences(text)
+    sentences = cast_accessible_effect_segments(analysis)
     token_sentences = tuple(
         sentence
         for sentence in sentences
@@ -164,16 +158,7 @@ def analyze_token_package(analysis: CardAnalysis) -> TokenPackageSignals:
         )
         for sentence in sentences
     )
-    anthem = any(
-        phrase in text
-        for phrase in (
-            "creatures you control get +",
-            "other creatures you control get +",
-            "tokens you control get +",
-            "creature tokens you control get +",
-            "put a +1/+1 counter on each",
-        )
-    )
+    anthem = bool(cast_immediate_team_buff_segments(analysis))
     evasion_payoff = any(
         phrase in text
         for phrase in (

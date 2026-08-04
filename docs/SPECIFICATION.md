@@ -133,6 +133,18 @@ Daybound oder eine besiegte Battle gesperrten Rückseite nicht als beim normalen
 Cast sofort verfügbare Produktion, Engine oder Payoff gewertet werden. Modal
 castbare Flächen wie Adventures und Rooms bleiben davon getrennt.
 
+Oracle-Effektanalyse bewahrt den Kontext einer Fähigkeit über Folgesätze,
+Reminder-Text und modale Aufzählungspunkte. Spätere Saga-Kapitel sind ohne
+Read-ahead verzögert; mit Read-ahead darf ein gewähltes späteres Kapitel beim
+Eintritt auslösen. Attack-, Payment-, Landfall-, Leave- und andere Trigger sind
+keine garantierte Cast-Sofortproduktion. Self-ETB-Erzeugung bleibt sofort.
+
+Als sofortiger Go-Wide-Anthem zählt nur ein beim Cast verfügbarer globaler
+Power-Buff oder ein globaler +1/+1-Counter-Effekt. Ziele, Kartennamen,
+Kreaturen-Unterklassen, Aktivierungskosten, Spree, Solved- und andere
+Freischaltungen zählen nicht. Temporäre Anthems gelten nur im aktuellen Zug
+und dürfen im Goldfish nicht über mehrere Züge gestapelt werden.
+
 ## 9. Verbindliche Starthand- und Sequenzanalyse
 
 Für jede erzeugte oder als aktuelle Referenz verwendete Deckliste sind genau 100 reproduzierbare Sieben-Karten-Starthände mit dokumentiertem festem Zufallsseed zu analysieren.

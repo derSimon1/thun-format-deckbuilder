@@ -8,7 +8,9 @@ from typing import Iterable, Mapping
 from thun_deckbuilder.card_analyzer import (
     CardAnalysis,
     analyze_card,
+    cast_accessible_effect_segments,
     cast_accessible_oracle_text,
+    saga_chapter_is_delayed,
 )
 from thun_deckbuilder.token_packages import analyze_token_package
 
@@ -49,14 +51,6 @@ class TokenProductionProfile:
         if self.repeatable:
             return "repeatable"
         return "immediate"
-
-
-def _sentences(text: str) -> tuple[str, ...]:
-    return tuple(
-        sentence.strip()
-        for sentence in re.split(r"[.\n]", text.lower())
-        if sentence.strip()
-    )
 
 
 def _is_creature_token_sentence(sentence: str) -> bool:
@@ -107,6 +101,45 @@ def _is_named_self_death(sentence: str, analysis: CardAnalysis) -> bool:
     )
 
 
+def _is_cast_entry_trigger(sentence: str, analysis: CardAnalysis) -> bool:
+    """Return whether a ``when`` token trigger fires from the normal cast."""
+
+    front_name = analysis.name.split(" // ", 1)[0].lower()
+    short_name = front_name.split(",", 1)[0]
+    return bool(
+        re.search(r"when this [^.\n]{0,40} enters", sentence)
+        or f"when {front_name} enters" in sentence
+        or f"when {short_name} enters" in sentence
+        or "when you unlock this door" in sentence
+    )
+
+
+def _is_conditional_token_sentence(
+    sentence: str,
+    analysis: CardAnalysis,
+    full_text: str,
+) -> bool:
+    before_create = sentence.partition("create")[0]
+    scaling_markers = ("for each", "that many", "equal to", "where x")
+    gate_markers = (
+        "if ",
+        "unless ",
+        "target ",
+        "its controller",
+        "when transformed",
+        "whenever",
+    )
+    return bool(
+        saga_chapter_is_delayed(sentence, full_text)
+        or any(marker in sentence for marker in scaling_markers)
+        or any(marker in before_create for marker in gate_markers)
+        or (
+            "when " in before_create
+            and not _is_cast_entry_trigger(before_create, analysis)
+        )
+    )
+
+
 def _activated_mana_cost(sentence: str) -> int | None:
     """Return a conservative mana cost for a token-producing activated ability."""
 
@@ -129,10 +162,11 @@ def _activated_mana_cost(sentence: str) -> int | None:
 def analyze_token_production(analysis: CardAnalysis) -> TokenProductionProfile:
     """Classify creature-token production for conservative solitaire play."""
 
+    full_text = cast_accessible_oracle_text(analysis).lower()
     sentences = tuple(
-        sentence
-        for sentence in _sentences(cast_accessible_oracle_text(analysis))
-        if _is_creature_token_sentence(sentence)
+        segment
+        for segment in cast_accessible_effect_segments(analysis)
+        if _is_creature_token_sentence(segment)
     )
     if not sentences:
         return TokenProductionProfile()
@@ -149,21 +183,7 @@ def analyze_token_production(analysis: CardAnalysis) -> TokenProductionProfile:
         _is_named_self_death(sentence, analysis) for sentence in sentences
     )
     conditional = any(
-        any(
-            phrase in sentence
-            for phrase in (
-                "if ",
-                "unless ",
-                "for each",
-                "that many",
-                "equal to",
-                "where x",
-                "target ",
-                "its controller",
-                "when transformed",
-                "whenever",
-            )
-        )
+        _is_conditional_token_sentence(sentence, analysis, full_text)
         for sentence in sentences
     )
     return TokenProductionProfile(

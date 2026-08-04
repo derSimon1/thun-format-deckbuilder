@@ -75,6 +75,35 @@ def test_transform_gated_back_face_is_not_an_immediate_token_package():
     assert not signals.anthem
 
 
+def test_only_cast_immediate_global_buffs_are_anthems():
+    fixtures = (
+        "When the fourth plan counter is put on this enchantment, put a "
+        "+1/+1 counter on each creature you control.",
+        "When this creature enters, put a +1/+1 counter on each other "
+        "creature you control named Fixture.",
+        "III — Put a +1/+1 counter on each of up to two target creatures.",
+        "Spree (Choose additional costs.)\n+ {1} — Put a +1/+1 counter on each "
+        "creature target player controls.",
+    )
+
+    assert all(not analyze_token_package(analysis(text)).anthem for text in fixtures)
+    assert analyze_token_package(
+        analysis("Put a +1/+1 counter on each creature you control.")
+    ).anthem
+    assert not analyze_token_package(
+        analysis("Creatures you control get +0/+1.")
+    ).anthem
+    assert all(
+        not analyze_token_package(analysis(text)).anthem
+        for text in (
+            "{5}: Creatures you control get +1/+1 until end of turn.",
+            "Solved — Creatures you control get +1/+0.",
+            "Other artifact creatures you control get +1/+1.",
+            "Attacking creatures you control get +1/+0.",
+        )
+    )
+
+
 def test_activated_creature_sacrifice_is_an_outlet_even_if_it_makes_food():
     signals = analyze_token_package(
         analysis("{T}, Sacrifice a creature: Create a Food token.")

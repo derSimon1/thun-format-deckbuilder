@@ -108,6 +108,51 @@ def test_token_payoffs_improve_existing_combat_progress():
     assert supported_report.average_damage > plain_report.average_damage
 
 
+def test_temporary_anthem_does_not_stack_across_turns():
+    makers = entry(
+        "Raise the Team",
+        24,
+        1,
+        roles=("token_maker", "token_production_immediate", "token_output_1"),
+    )
+    temporary = GeneratedDeck(
+        mainboard=(
+            makers,
+            entry(
+                "Charge",
+                12,
+                1,
+                roles=("anthem",),
+                reasons=("Temporärer Team-Bonus",),
+            ),
+        ),
+        lands=24,
+    )
+    persistent = GeneratedDeck(
+        mainboard=(
+            makers,
+            entry(
+                "Glorious Anthem",
+                12,
+                1,
+                roles=("anthem",),
+                reasons=("Dauerhafter Team-Bonus",),
+            ),
+        ),
+        lands=24,
+    )
+
+    simulator = GoldfishSimulator()
+    temporary_report = simulator.simulate(
+        temporary, archetype="tokens", samples=500
+    )
+    persistent_report = simulator.simulate(
+        persistent, archetype="tokens", samples=500
+    )
+
+    assert persistent_report.average_damage > temporary_report.average_damage
+
+
 def precise_roles(output: int, mode: str, *extra: str) -> tuple[str, ...]:
     return (
         "token_maker",

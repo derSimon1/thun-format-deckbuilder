@@ -2,9 +2,14 @@ from __future__ import annotations
 
 import re
 
-from thun_deckbuilder.card_analyzer import CardAnalysis, cast_accessible_oracle_text
+from thun_deckbuilder.card_analyzer import (
+    CardAnalysis,
+    cast_accessible_oracle_text,
+    cast_immediate_team_buff_segments,
+)
 from thun_deckbuilder.card_scoring import ScoreBreakdown
 from thun_deckbuilder.token_plan import TokenPlan, token_card_signals
+from thun_deckbuilder.token_production import analyze_token_production
 
 
 _NUMBER_WORDS = {
@@ -48,33 +53,6 @@ def estimated_token_output(text: str) -> int | None:
     return min(values)
 
 
-def _is_repeatable_token_source(text: str) -> bool:
-    return "create" in text and "token" in text and any(
-        phrase in text
-        for phrase in (
-            "at the beginning of",
-            "whenever one or more",
-            "whenever another",
-            "whenever a creature",
-            "whenever you attack",
-            "whenever this creature attacks",
-            "{t}: create",
-        )
-    )
-
-
-def _is_global_anthem(text: str) -> bool:
-    return any(
-        phrase in text
-        for phrase in (
-            "creatures you control get +",
-            "other creatures you control get +",
-            "tokens you control get +",
-            "creature tokens you control get +",
-        )
-    )
-
-
 def score_token_card(
     analysis: CardAnalysis,
     plan: TokenPlan = TokenPlan.GO_WIDE,
@@ -100,7 +78,14 @@ def score_token_card(
     elif mana_value >= 5:
         reasons.append("Hohe Manakosten")
 
-    token_output = estimated_token_output(text)
+    production = analyze_token_production(analysis)
+    token_output = (
+        None
+        if production.variable_output
+        else production.minimum_output
+        if production.creates_creature_tokens
+        else 0
+    )
     if token_output is None:
         score += 2.0
         reasons.append("Skalierende Token-Erzeugung")
@@ -123,19 +108,28 @@ def score_token_card(
             score -= 3.0
             reasons.append("Zu wenig Board-Präsenz für die Manakosten")
 
-    if _is_repeatable_token_source(text):
+    if production.mode == "repeatable":
         score += 4.0
         reasons.append("Wiederholbare Token-Quelle")
 
-    if _is_global_anthem(text):
-        if "until end of turn" in text:
+    buff_segments = cast_immediate_team_buff_segments(analysis)
+    power_buff_segments = tuple(
+        segment for segment in buff_segments if " get +" in segment
+    )
+    if power_buff_segments:
+        if any(
+            "until end of turn" in segment for segment in power_buff_segments
+        ):
             score += 1.0
             reasons.append("Temporärer Team-Bonus")
         else:
             score += 4.0
             reasons.append("Dauerhafter Team-Bonus")
 
-    if "put a +1/+1 counter on each" in text:
+    if any(
+        "put a +1/+1 counter on each creature you control" in segment
+        for segment in buff_segments
+    ):
         score += 3.5
         reasons.append("Dauerhafte Verstärkung des gesamten Boards")
 

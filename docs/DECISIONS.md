@@ -220,3 +220,29 @@ bleibt. Die alte Einzelkartensuche konnte diese Schwelle nie überschreiten.
 Eine erste Korrektur boardete zusätzlich `Sanctify` gegen ein Burn-Deck ohne
 Artefakte oder Enchantments ein; dessen Lebensgewinn ist ohne legales Ziel
 nicht verfügbar.
+
+## D-021 – Effektkontext endet nicht am Satzpunkt
+
+**Datum:** 2026-08-04
+**Status:** akzeptiert
+
+Oracle-Newlines und modale Flächentrenner begrenzen Fähigkeiten; Satzpunkte
+innerhalb derselben Fähigkeit tun das nicht. Folgesätze und Reminder-Text
+erben deshalb Trigger-, Zahlungs- und Zielkontext. Modale Bullet-Effekte erben
+den Kontext ihres „choose one“-Headers.
+
+Spätere Saga-Kapitel sind ohne Read-ahead verzögert. Read-ahead darf ein
+späteres Kapitel beim Eintritt wählen und bleibt daher sofort zugänglich.
+Self-ETB-Token sind Cast-Sofortproduktion; Attack-, Payment-, Landfall-,
+Leave- und sonstige bedingte Trigger nicht.
+
+Ein sofortiger Go-Wide-Anthem muss allen relevanten Kreaturen beim Cast echten
+Power-Zuwachs oder globale +1/+1-Counter geben. Ziel-, Namens- und
+Unterklassenbegrenzungen sowie Aktivierungs-, Spree- und Solved-Gates sind
+nicht sofort global. Temporäre Team-Buffs enden im Goldfish mit dem Zug.
+
+**Begründung:** Der Satzsplit isolierte den Reminder-Satz von
+`Descendant of Storms` von dessen Angriffs-/Payment-Trigger. Mehrere begrenzte
+Countertexte galten als globale Anthems, und temporäre `Charge`-Effekte wurden
+über alle Folgezüge akkumuliert. Read-ahead bei `Love Song of Night and Day`
+ist dagegen eine echte Ausnahme: Kapitel II kann beim Eintritt gewählt werden.

@@ -31,6 +31,7 @@ class _TokenSpellEffect:
     immediate_tokens: float = 0.0
     repeatable_tokens: float = 0.0
     anthem_bonus: float = 0.0
+    temporary_anthem_bonus: float = 0.0
     payoff_bonus: float = 0.0
 
     @property
@@ -40,6 +41,7 @@ class _TokenSpellEffect:
             + self.immediate_tokens
             + self.repeatable_tokens * 2.0
             + self.anthem_bonus * 3.0
+            + self.temporary_anthem_bonus * 1.5
             + self.payoff_bonus * 4.0
         )
 
@@ -83,12 +85,22 @@ def _token_spell_effect(entry: DeckEntry) -> _TokenSpellEffect:
         if f"token_production_{candidate}" in roles:
             mode = candidate
             break
+    temporary_anthem = any(
+        "temporärer team-bonus" in reason.lower()
+        or "temporary team bonus" in reason.lower()
+        for reason in entry.reasons
+    )
 
     return _TokenSpellEffect(
         body=1.0 if "creature" in signals else 0.0,
         immediate_tokens=output if mode == "immediate" else 0.0,
         repeatable_tokens=output if mode == "repeatable" else 0.0,
-        anthem_bonus=0.5 if "anthem" in signals else 0.0,
+        anthem_bonus=(
+            0.5 if "anthem" in signals and not temporary_anthem else 0.0
+        ),
+        temporary_anthem_bonus=(
+            0.5 if "anthem" in signals and temporary_anthem else 0.0
+        ),
         payoff_bonus=0.15 if "token_payoff" in signals else 0.0,
     )
 
@@ -189,6 +201,7 @@ class GoldfishSimulator:
             anthem_bonus = payoff_bonus = 0.0
 
             for _turn in range(1, turns + 1):
+                temporary_anthem_bonus = 0.0
                 if archetype == "tokens":
                     ready_tokens += pending_tokens
                     pending_tokens = 0.0
@@ -226,6 +239,7 @@ class GoldfishSimulator:
                         if effect.repeatable_tokens:
                             active_token_engines.append(effect.repeatable_tokens)
                         anthem_bonus += effect.anthem_bonus
+                        temporary_anthem_bonus += effect.temporary_anthem_bonus
                         payoff_bonus += effect.payoff_bonus
                         continue
 
@@ -246,7 +260,12 @@ class GoldfishSimulator:
                 elif archetype == "shrines":
                     damage += shrines
                 elif archetype == "tokens":
-                    damage += ready_tokens * (1.0 + anthem_bonus + payoff_bonus)
+                    damage += ready_tokens * (
+                        1.0
+                        + anthem_bonus
+                        + temporary_anthem_bonus
+                        + payoff_bonus
+                    )
                     pending_tokens += sum(active_token_engines)
                 unused += mana
 

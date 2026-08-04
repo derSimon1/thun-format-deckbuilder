@@ -1,5 +1,24 @@
 # Specification Changelog
 
+## 2.0 – Kontextgebundene Token- und Anthem-Effekte 2026-08-04
+
+### Geändert
+
+- Oracle-Fähigkeiten behalten Bedingungen über Folgesätze, Reminder-Text und
+  modale Aufzählungspunkte hinweg.
+- Saga-Kapitel II+ sind ohne Read-ahead verzögert; Read-ahead-Kapitel bleiben
+  beim Eintritt wählbar.
+- Nur sofort verfügbare globale Power-/Counter-Buffs zählen als Go-Wide-Anthem.
+- Temporäre Anthems laufen im Goldfish am Zugende aus.
+
+### Anlass
+
+`Descendant of Storms` galt trotz Angriffs- und `{1}{W}`-Bedingung als
+sofortiger Maker. `Love Song of Night and Day`, `Political Triumph`,
+`Requisition Raid` und `Charmed Stray` erzeugten falsche globale Anthems;
+temporäre `Charge`-Effekte wurden dauerhaft gestapelt. Der frühere Goldfish-
+Stand war dadurch erneut überhöht.
+
 ## 2.0 – Mengenbewusste Sideboard-Suche 2026-08-04
 
 ### Geändert

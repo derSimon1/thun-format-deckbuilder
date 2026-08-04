@@ -258,7 +258,52 @@ Eine vollständig qualifizierte v2-KGB existiert noch nicht. `baseline: none` be
   Infrastruktur ist korrekter und schneller, aber eine spielerische
   Stabilisierung ist nicht belegt.
 
+## Context-Gated-Effects-Zyklus – lokale Evidenz vor CI
+
+- **Ursache:** Satzweises Oracle-Matching trennte den Reminder-Satz von
+  `Descendant of Storms` von „whenever attacks / pay {1}{W}` und machte ihn
+  sofort. Begrenzte Countertexte von `Love Song`, `Political Triumph`,
+  `Requisition Raid` und `Charmed Stray` galten als globale Anthems;
+  temporäre `Charge`-Buffs wurden im Goldfish dauerhaft gestapelt.
+- **Hypothese:** Fähigkeitskontext über Folgesätze/Bullets, korrekte
+  Read-ahead-Ausnahmen und zugbegrenzte Anthem-Dauer entfernen die falschen
+  Soforteffekte ohne echte ETB-Maker oder globale Buffs zu verlieren.
+- **Änderungen:** zentrale cast-zugängliche Effektsegmente; Saga-/ETB-/Trigger-
+  Kontext in Produktion, Paket, Rollen und Scoring; globale Power-/Counter-
+  Anthem-Invariante; temporärer Anthem-Bonus endet je Zug. Workflow:
+  `Token Go Wide – Context-Gated Effects`.
+- **Gegenbeispiele:** `Love Song` behält seinen Kapitel-II-Token, weil
+  Read-ahead ihn beim Eintritt wählen kann, verliert aber den auf zwei Ziele
+  begrenzten falschen Anthem. `Battle Menu`, `Okoye` und andere echte
+  Cast-/Self-ETB-Maker bleiben sofort. Landfall, Leave-, Attack-/Payment- und
+  Saga-II-ohne-Read-ahead-Fälle sind bedingt.
+- **Lokale Validierung:** 77 gezielte Tests und 349 Gesamttests in 23,19 s
+  grün. Fast bestand in 200,4 s mit Benchmarks `83/93/90/85/80`, fünf
+  Archetypen, sechs Matchups und 0 gemeldeten Regressionen bei
+  `baseline: none`. Arena 60/15, Manaqualität 97 und 100 Hände mit Seed 1701
+  bestanden.
+- **Vorher/Nachher:** Maker/Immediate/Conditional/Death
+  `33/27/1/5 → 30/23/2/5`, Anthem bleibt am Profilminimum 6. Planfähigkeit
+  steigt `70 → 73 %`, Keepability/T2/T3 bleiben `77/94/96 %`. Goldfish fällt
+  ehrlich `19,94 → 13,87`, Killrate `47 → 8 %`, Board `8,46 → 7,57`; Hash
+  wechselt `50184dc7a3d0f998f7feb4b85c9151bac6385ad8d527ff6fc342b8e5fdc97dfa`
+  → `57b806f68f433a63f14c52d1a82acf8236cd279b68cf226cb8ef989c7a042d9c`.
+- **Matchups:** Token Burn/Artifacts/Mill `0/60/100 → 0/0/100 %`; Control
+  gegen Tokens `65 → 100 %`. Burn, Artifacts, Control und Mill behalten ihre
+  eigenen Benchmarks `83/90/85/80`. Die relativen Werte bestätigen eine
+  Token-Regression, nicht die absoluten extremen Prozentzahlen.
+- **Reflexion:** Der Token-Benchmark fällt nur 7 Punkte, während Killrate und
+  Artifact-Matchup massiv fallen; Rollendichte bleibt somit kein ausreichender
+  Qualitätsindikator. Die Änderung ist dennoch nicht rückrollbar, weil jeder
+  entfernte Effekt durch konkreten Oracle-Kontext widerlegt ist. Zusätzliche
+  Opferkosten (`Duty Beyond Death`) bleiben noch unmodelliert und können den
+  neuen Stand weiter überschätzen. Confidence: hoch für Effektkontext und
+  Dauer, niedrig für absolute Matchupwerte.
+- **KGB-Entscheidung vor Push:** Regression festgestellt, keine neue KGB.
+  `baseline: none` bleibt; der Stand verbessert Messwahrheit, nicht belegte
+  Spielstärke.
+
 ## Nächster ausführbarer Schritt
 
-Trigger- und Saga-Text zentral so segmentieren, dass bedingte oder verzögerte
-Tokenproduktion und begrenzte Buffs nicht als sofortige Go-Wide-Effekte gelten.
+Zusätzliche Opferkosten wie bei `Duty Beyond Death` zentral erkennen und im
+Token-Goldfish nur bei vorhandenem, tatsächlich verbrauchtem Board bezahlen.
