@@ -1,5 +1,5 @@
 name: Global Calibration PR
-run-name: Artifacts – Enabler/Payoff Access
+run-name: Matchups – Empirical Calibration Contract
 
 on:
   pull_request:

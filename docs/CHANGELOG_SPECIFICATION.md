@@ -1,5 +1,21 @@
 # Specification Changelog
 
+## 2.3 – 2026-08-04 – Empirical Matchup Calibration Contract
+
+### Geändert
+
+- Reale Matchup-Beobachtungen verwenden ein strikt versioniertes Schema.
+- Jede Beobachtung ist an beide vollständigen Deck-Hashes gebunden.
+- Veraltete Hashes fließen nicht in Fehler- oder Abdeckungswerte ein.
+- Kalibrierung bleibt read-only, bis belastbare reale Evidenz vorliegt.
+- Fehlende Evidenz wird als `NO_EMPIRICAL_DATA` ausgewiesen.
+
+### Anlass
+
+Die deterministischen 0-/100-%-Extreme reagieren stark auf Modellkorrekturen,
+waren aber mangels realer Spiele nicht als Prognosen kalibrierbar. Das neue
+Verfahren verhindert sowohl erfundene Evidenz als auch stilles Reweighting.
+
 ## 2.2 – 2026-08-04 – Artifact Enabler/Payoff Access
 
 ### Geändert

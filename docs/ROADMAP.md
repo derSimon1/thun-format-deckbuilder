@@ -36,6 +36,8 @@
   Stabilisierungssequenz modellieren
 - [x] Artifact-Enabler, Payoffs, Engines und Produktionskapazitäten zentral
   trennen und in Benchmark/Opening Hands/Goldfish vereinheitlichen
+- [x] reale Matchup-Beobachtungen versioniert und an beide Deck-Hashes binden
+- [x] read-only Kalibrierungsartefakt mit ehrlichem Null-Evidenz-Status
 
 ## Stabiler Stand – Run 78
 
@@ -47,19 +49,21 @@
 - Burn-Plan: 3 `Dawnbringer Cleric` hinein; 2 `Descendant of Storms`, 1 `Duty Beyond Death` heraus
 - Mainboard-Hash `133e45be5a4ca94dc6bb8dddeb6c811db9e2889ced915f54c018898441668815`
 
-## Aktueller Zyklus – Artifacts Enabler/Payoff Access
+## Aktueller Zyklus – Empirical Matchup Calibration Contract
 
-1. echte Enabler von Textnennungen und verzögerter Produktion trennen.
-2. Engines und Payoffs über zentrale Rollen erfassen.
-3. sofortige Artifact-Tokens im Goldfish und Diagnoseartefakt ausweisen.
-4. übersteuerte Payoff-Ziele gegen Kurve, Mana und Keepability verwerfen.
+1. [x] strikt versioniertes Beobachtungsschema definieren.
+2. [x] Daten an beide vollständigen Deck-Hashes binden.
+3. [x] umgekehrte Orientierung und veraltete Hashes korrekt behandeln.
+4. [x] Abdeckung und Fehler nur berichten, nicht Simulation reweighten.
+5. [x] Null-Evidenz explizit als `NO_EMPIRICAL_DATA` ausweisen.
 
 ## Prioritäten danach
 
-1. Modellierte Matchups gegen reale Spiele kalibrieren.
-2. Regression-Baseline statt `baseline: none`.
+1. Regression-Baseline statt `baseline: none`.
+2. Mindestens 20 echte hashgleiche Spiele für ein extremes Matchup erfassen.
 
 ## Genau ein nächster ausführbarer Schritt
 
-Ein kleines versioniertes Schema für reale Matchup-Beobachtungen definieren
-und die extremen simulierten Control–Artifacts-/Burn-Werte dagegen kalibrieren.
+Den letzten erfolgreichen `global-report.json` als versionierten
+Regression-Snapshot einchecken und in Fast-Validierung beweisen, dass ein
+unveränderter Folgelauf `baseline: restored` statt `baseline: none` meldet.

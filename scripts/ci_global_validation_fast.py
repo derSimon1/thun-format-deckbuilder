@@ -10,8 +10,13 @@ import ci_global_validation_v2 as v2
 from thun_deckbuilder.card_analyzer import analyze_card
 from thun_deckbuilder.card_database import CardDatabase
 from thun_deckbuilder.matchup_simulator import MatchupSimulator
+from thun_deckbuilder.matchup_calibration import (
+    build_calibration_report,
+    load_observations,
+)
 from thun_deckbuilder.mill_signals import analyze_mill
 from thun_deckbuilder.opening_hand_simulator import OpeningHandSimulator
+from thun_deckbuilder.paths import CONFIG_DIR
 from thun_deckbuilder.tournament_simulator import (
     BestOfThreeReport,
     BestOfThreeSimulator,
@@ -311,6 +316,36 @@ def _write_mill_capacity() -> None:
     )
 
 
+def _write_matchup_calibration() -> None:
+    report_path = validation.ARTIFACT_DIR / "global-report.json"
+    global_report = json.loads(report_path.read_text(encoding="utf-8"))
+    observations = load_observations(CONFIG_DIR / "matchup_observations.json")
+    calibration = build_calibration_report(global_report, observations)
+    (validation.ARTIFACT_DIR / "matchup-calibration.json").write_text(
+        json.dumps(calibration, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    global_report["empirical_matchup_calibration"] = calibration
+    report_path.write_text(
+        json.dumps(global_report, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    summary_path = validation.ARTIFACT_DIR / "global-summary.txt"
+    with summary_path.open("a", encoding="utf-8") as summary:
+        summary.write(
+            "Empirical matchup calibration: "
+            f"{calibration['status']} "
+            f"matched_games={calibration['matched_games']} "
+            f"coverage={calibration['prediction_coverage_pct']}%\n"
+        )
+    print(
+        "Empirical matchup calibration: "
+        f"{calibration['status']} "
+        f"matched_games={calibration['matched_games']} "
+        f"coverage={calibration['prediction_coverage_pct']}%"
+    )
+
+
 def validate_archetype_with_plan_hands(
     database,
     archetype,
@@ -427,6 +462,7 @@ def main() -> None:
     validation.BestOfThreeSimulator = FastBestOfThreeSimulator
     validation._validate_archetype = validate_archetype_with_plan_hands
     validation.main()
+    _write_matchup_calibration()
     _write_mill_capacity()
 
 

@@ -157,6 +157,50 @@ Eine vollständig qualifizierte v2-KGB existiert noch nicht. `baseline: none` be
   Messwahrheit und Reproduzierbarkeit ohne Listenänderung; `baseline: none`
   und fehlende reale Matchupdaten verhindern eine voll qualifizierte KGB.
 
+## Matchups – Empirical Calibration Contract (lokale Evidenz vor CI)
+
+- **Ursache:** Sechs deterministische Fast-Matchups enthalten mehrere
+  0-/100-%-Extreme. Control–Artifacts kippte nach einer korrekten
+  Artifact-Messänderung trotz identischer Kartenliste auf 0/94/6. Es gab
+  weder ein Eingabeschema für reale Spiele noch eine Abgrenzung veralteter
+  Deckversionen.
+- **Hypothese:** Ein strikt versioniertes, an beide Deck-Hashes gebundenes
+  Beobachtungsschema kann reale Evidenz sicher mit aktuellen Prognosen
+  vergleichen, ohne fehlende Daten zu erfinden oder den Simulator vorzeitig
+  umzuwichten.
+- **Änderungen:** leere v1-Datenquelle im Repository; strikte Validierung von
+  Quelle, Datum, Kontext, Ergebniszählern und SHA-256-Hashes; Normalisierung
+  umgekehrter Paarungen; Ausschluss veralteter Hashes; read-only Bericht für
+  Game One, Postboard und Match mit Abdeckung, Mindeststichprobe und
+  gewichtetem absolutem Fehler. Fast schreibt `matchup-calibration.json` und
+  bindet die Diagnose in Global Report sowie Summary ein.
+- **Gegenbeispiele:** falsche Summen, Großbuchstaben-/Kurz-Hashes, unbekannte
+  Kontexte und ungültige Daten werden abgelehnt. Ein korrekter, aber alter
+  Deck-Hash bleibt sichtbar, trägt jedoch weder zu Spielen noch Fehler bei.
+- **Lokale Validierung:** 26 gezielte Matchup-/Kalibrierungstests und 396
+  Gesamttests in 27,27 s grün. Fast bestand in 252,20 s mit fünf Archetypen,
+  sechs Matchups und 0 Regressionen. Das neue Artefakt meldet ehrlich
+  `NO_EMPIRICAL_DATA`, 0 Beobachtungen, 0 Spiele, 0 % Abdeckung und keinen
+  Fehlerwert.
+- **Portfolio-Invarianten:** Benchmarks `83/93/97/92/82`; Hashes, Listen,
+  Keepability und Planfähigkeit aller fünf Archetypen bleiben exakt stabil.
+  Alle Arena-Exporte bleiben 60/15. Die sechs Prognosen einschließlich
+  Control–Artifacts 0/94/6 sind unverändert und jetzt ausdrücklich als
+  unkalibriert erkennbar.
+- **Widerlegte Interpretation:** Das neue System kalibriert noch keine
+  Prognose. Es beweist nur, dass reale Daten später reproduzierbar zugeordnet
+  werden können. Grüne CI und ein valides leeres Schema sind kein Nachweis
+  realistischer Winrates.
+- **Reflexion:** Die Grenze von 20 Spielen ist eine konservative
+  Zuverlässigkeitsmarke, keine statistisch abgeleitete Konfidenzgrenze.
+  Quellenangaben werden syntaktisch, nicht kryptographisch verifiziert;
+  menschliche Eingabefehler bleiben möglich. Ein automatisches Reweighting
+  wäre ohne reale Daten deutlich riskanter als der nächste Infrastrukturpunkt,
+  eine echte Regression-Baseline. Confidence: hoch für Schema/Hashbindung und
+  Null-Evidenz-Ehrlichkeit, null für absolute Matchupgenauigkeit.
+- **KGB-Entscheidung vor Push:** keine neue KGB. Deckqualität und Prognosekraft
+  sind unverändert; `baseline: none` verhindert weiterhin die v2-KGB.
+
 ## Token Go Wide – stabiler Kern
 
 - Run 74: Benchmark 98, 35 Maker, 30 sofortige Maker, 22 Multi-Maker, 7 Anthems, 0 Outlets.

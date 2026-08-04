@@ -375,3 +375,24 @@ und Engine/Payoff.
 Aktivierungstabellen blähten die frühere Planfähigkeit auf 71 % auf, während
 der Goldfish sofortige Tokens ausließ. Unter der einheitlichen Definition ist
 dieselbe Liste zu 48 % planfähig und erzeugt 5,95 statt 4,61 Artefakte.
+
+## D-028 – Empirische Matchup-Evidenz ist versioniert, hashgebunden und read-only
+
+**Datum:** 2026-08-04
+**Status:** akzeptiert
+
+Reale Game-One-, Postboard- und Matchbeobachtungen werden nur aus dem
+versionierten Repository-Schema geladen. Jede Zeile enthält Quelle, Datum,
+Ergebniszähler und die SHA-256-Hashes beider Decks. Nur Hashgleichheit mit dem
+aktuellen Validatorstand erlaubt einen Fehlervergleich; umgekehrte
+Paarorientierung wird normalisiert, veraltete oder nicht simulierte Paarungen
+werden separat gezählt.
+
+Der Bericht misst Abdeckung und gewichteten absoluten Fehler, greift aber
+nicht in Scoring, Builder oder Simulator ein. Weniger als 20 passende Spiele
+gelten als unzureichend; null reale Spiele werden ausdrücklich als
+`NO_EMPIRICAL_DATA` gemeldet.
+
+**Begründung:** Die simulierten Extreme ändern sich durch korrekte Rollen-
+und Durchsatzmodelle, obwohl Decklisten teils identisch bleiben. Ohne externe
+Spieldaten wäre jedes direkte Reweighting eine unbelegte Optimierung.

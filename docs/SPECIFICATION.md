@@ -1,7 +1,9 @@
 # Deckbuilder Development Specification
 
-**Version:** 2.0  
-**Stand:** 2026-08-03  
+**Version:** 2.3
+
+**Stand:** 2026-08-04
+
 **Status:** verbindliche Arbeitsgrundlage
 
 ## 0. Mission
@@ -83,6 +85,15 @@ Deckeintrag erhalten, zählen aber nicht als funktionale Deckrolle.
 Plan-spezifische Präzisionssichten müssen Rollen und die dazugehörigen
 Synergie-Tags gemeinsam verfeinern. Eine entfernte falsche Outlet-Rolle darf
 nicht über ein breites Legacy-Tag weiterhin dynamische Outlet-Boni erhalten.
+
+Empirische Matchup-Beobachtungen müssen einem versionierten, strikt
+validierten Schema folgen und an die vollständigen Hashes beider Decks
+gebunden sein. Nur hashgleiche Beobachtungen dürfen mit der aktuellen
+Simulation verglichen werden; veraltete Daten bleiben als solche sichtbar.
+Kalibrierungsberichte sind zunächst read-only: Sie dürfen weder Deckauswahl
+noch Matchup-Gewichtung automatisch verändern. Ohne reale Beobachtungen muss
+der Bericht ausdrücklich `NO_EMPIRICAL_DATA` statt einer scheinbaren
+Kalibrierung ausweisen.
 
 ## 6. Produktivität, No-Change und Regressionen
 

@@ -46,6 +46,12 @@ Nach der Kontext-/Dauerkorrektur fällt Token gegen Artifacts modelliert von
 gegenläufigen Extreme bestätigen, dass das Matchupmodell relative Schwäche
 anzeigt, aber absolute Prozentwerte weiterhin nicht belastbar sind.
 
+Ein versioniertes, deck-hashgebundenes Beobachtungsschema und ein read-only
+Kalibrierungsbericht sind inzwischen vorhanden. Der aktuelle Status bleibt
+offen: Es liegen null reale Beobachtungen vor, daher meldet der Validator
+`NO_EMPIRICAL_DATA`, 0 Spiele und 0 % Abdeckung. Erst echte protokollierte
+Spiele dürfen Prognosefehler oder Reweighting begründen.
+
 ## KI-006 – Zeitgesteuerte GitHub-Runs sind nicht zuverlässig genug
 
 **Status:** bestätigt  
