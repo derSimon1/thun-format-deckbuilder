@@ -161,3 +161,19 @@ sie benötigt.
 einzigen verfügbaren automatischen Mono-White-Engine verschlechterte die
 Mehrseed-Metriken und bestätigte, dass die Warnung statt der Deckliste falsch
 kalibriert war.
+
+## D-018 – Go Wide benötigt einen frühen Maker-Pfad
+
+**Datum:** 2026-08-04
+**Status:** akzeptiert
+
+Eine Go-Wide-Opening-Hand ist nur planfähig, wenn mindestens ein Token-Maker
+bis Zug 2 tatsächlich castbar ist und bis Zug 3 ein zweiter Maker oder ein
+Payoff zugänglich ist. Mehrere Drei-Mana-Planstücke, die einzeln bis Zug 3
+castbar wären, bilden gemeinsam noch keine ausführbare Sequenz. Ein generischer
+Zug-2-Spielzug ersetzt den frühen Maker nicht.
+
+**Begründung:** Die frühere mengenbasierte Prüfung klassifizierte vier der 100
+Referenzhände als planfähig, obwohl bis Zug 3 höchstens ein Token-Planstück
+ausgespielt werden konnte. Die Spezifikation verlangt frühe Spielbarkeit und
+einen realistischen Zug-1-bis-Zug-3-Pfad gemeinsam.

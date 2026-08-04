@@ -1,5 +1,5 @@
 name: Global Calibration PR
-run-name: Token Go Wide – Plan-Aware Engines
+run-name: Token Go Wide – Early Maker Path
 
 on:
   pull_request:

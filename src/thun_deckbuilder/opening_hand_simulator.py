@@ -609,8 +609,13 @@ def _classify_plan(
                 failures.append("missing_token_maker")
                 failures.append("missing_value_engine")
         else:
+            early_makers = count("maker", castable_by=2)
             payoffs = count("payoff")
-            if makers > 0 and (makers >= 2 or payoffs > 0) and not color_error:
+            if (
+                early_makers > 0
+                and (makers >= 2 or payoffs > 0)
+                and not color_error
+            ):
                 classification = HandPlanClassification.PLAN_CAPABLE
                 reasons.append("maker_plus_go_wide_scaling")
             elif makers > 0 or payoffs > 0:
@@ -619,6 +624,8 @@ def _classify_plan(
             else:
                 failures.append("missing_token_maker")
                 failures.append("missing_go_wide_payoff")
+            if early_makers == 0:
+                failures.append("missing_early_token_maker")
     elif archetype == "artifacts":
         enablers = count("enabler", castable_by=3)
         support = count("engine") + count("payoff")

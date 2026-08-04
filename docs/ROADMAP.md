@@ -16,6 +16,7 @@
 - [x] Root-`AGENTS.md` als dauerhafte Repository-Einstiegsanweisung validieren
 - [x] Quellenspannung strikter `{C}`-Kosten im Candidate Scoring modellieren
 - [x] Engine-Pflicht und Engine-Warnung planabhängig kalibrieren
+- [x] Go-Wide-Planfähigkeit an einen bis Zug 2 castbaren Maker binden
 
 ## Stabiler Stand – Run 78
 
@@ -27,23 +28,22 @@
 - Burn-Plan: 3 `Dawnbringer Cleric` hinein; 2 `Descendant of Storms`, 1 `Duty Beyond Death` heraus
 - Mainboard-Hash `133e45be5a4ca94dc6bb8dddeb6c811db9e2889ced915f54c018898441668815`
 
-## Aktueller Zyklus – Plan-Aware Engines
+## Aktueller Zyklus – Early Maker Path
 
-1. Wiederholbare Engine für Value/Aristocrats als Pflicht erhalten.
-2. Go-Wide-Engine als optionale Resilienzschicht kennzeichnen.
-3. `Cathar's Call` kontrolliert gegen den stabilen Kern prüfen und bei
-   Mehrseed-Regression verwerfen.
-4. Workflow `Token Go Wide – Plan-Aware Engines` und Artefakt auswerten.
+1. Die 23 marginalen Hände nach tatsächlicher Ursache clustern.
+2. Planfähige Hände auf reale T1-bis-T3-Sequenzen gegenprüfen.
+3. Go Wide nur mit bis Zug 2 castbarem Maker als planfähig werten.
+4. Workflow `Token Go Wide – Early Maker Path` und Artefakt auswerten.
 
 ## Prioritäten danach
 
-1. Marginale Opening Hands nach Sequenzproblem clustern.
-2. Opening-Hand-Klassifikation und Builderausgabe abgleichen.
+1. Engine-Pflicht im Opening-Hand-Bericht planabhängig ausweisen.
+2. Opening-Hand-Klassifikation und Builderausgabe weiter abgleichen.
 3. Anthem-/Combatmodell verbessern.
 4. Regression-Baseline statt `baseline: none`.
 
 ## Genau ein nächster ausführbarer Schritt
 
-Die 23 marginalen Token-Starthände nach konkreten, häufigsten
-Sequenzproblemen clustern und nur eine belegte Builder- oder
-Handklassifikationsursache bearbeiten.
+Die planabhängige Engine-Pflicht zentralisieren und im
+`OpeningHandPlanReport` explizit als required/optional ausweisen, ohne den
+rohen Engine-Zugang zu verbergen.

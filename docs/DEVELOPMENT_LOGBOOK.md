@@ -116,8 +116,43 @@ Eine vollständig qualifizierte v2-KGB existiert noch nicht. `baseline: none` be
 - **KGB-Entscheidung vor Push:** keine neue KGB. Messbarkeit wird verbessert,
   die Deckqualität bleibt gleich und `baseline: none` besteht fort.
 
+## Early-Maker-Path-Zyklus – lokale Evidenz vor CI
+
+- **Ursache:** Die 23 marginalen Token-Hände bestanden aus 22 echten
+  Landextremen und einer Zwei-Land-Hand ohne Zug-2-Spiel. Die Gegenprüfung der
+  77 als planfähig gezählten Hände fand zusätzlich vier False Positives: Die
+  Hände 5, 22, 30 und 73 hatten mehrere einzeln bis Zug 3 castbare Planstücke,
+  aber keinen bis Zug 2 castbaren Token-Maker und damit keine ausführbare
+  Maker-zu-Scaling-Sequenz.
+- **Hypothese:** Go Wide ist nur dann planfähig, wenn mindestens ein Maker bis
+  Zug 2 tatsächlich castbar ist und bis Zug 3 ein zweiter Maker oder ein
+  Payoff zugänglich ist. Ein beliebiger T2-Spielzug genügt nicht.
+- **Änderungen:** Die Go-Wide-Klassifikation verwendet `early_makers` und gibt
+  `missing_early_token_maker` als konkrete Ursache aus. Zwei Gegenbeispiele
+  schützen langsame Maker sowie den gültigen T2-Maker-Pfad. Workflow:
+  `Token Go Wide – Early Maker Path`.
+- **Lokale Validierung:** 31 gezielte Tests und 328 Gesamttests in 29,61 s
+  grün; Fast bestand mit Benchmarks `83/98/90/85/80`, sechs Matchups und
+  0 Regressionen. 100 Hände, Seed `1701`, Arena 60/15 und Deck-Hash
+  `133e45be5a4ca94dc6bb8dddeb6c811db9e2889ced915f54c018898441668815`
+  bestätigt. Keepability/T2/T3 bleiben `77/94/96 %`; Planfähigkeit sinkt
+  korrekt `77 → 73 %`, marginal steigt `23 → 27 %`. Alle anderen
+  Vergleichsartefakte sind semantisch identisch.
+- **Fehlerkorrektur im Vorgehen:** Lokales Fast benötigt für den vorhandenen
+  Cache `THUN_REUSE_CARD_DATABASE=1`. Ein versehentlicher Neubau traf zusätzlich
+  auf einen reproduzierbaren Windows-/OneDrive-`replace`-Lock. Der Temp-Build
+  wurde vor exaktem Rename mit `integrity=ok`, 38.542 Karten und 116.487 Prints
+  geprüft; erst der anschließende Reuse-Lauf zählt als Evidenz.
+- **Reflexion:** Die Änderung verbessert Messwahrheit, nicht Deckstärke. Sie
+  modelliert weiterhin keine gezogenen Karten bis Zug 3; als Opening-Seven-
+  Diagnose ist die strengere Sequenzbedingung aber direkt durch die
+  Spezifikation gedeckt. Confidence: hoch.
+- **KGB-Entscheidung vor Push:** keine neue KGB. Der Deckbau bleibt identisch,
+  während vier überoptimistische Klassifikationen korrigiert werden;
+  `baseline: none` besteht fort.
+
 ## Nächster ausführbarer Schritt
 
-Die 23 marginalen Token-Starthände nach konkreten, häufigsten
-Sequenzproblemen clustern und nur eine belegte Builder- oder
-Handklassifikationsursache bearbeiten.
+Die planabhängige Engine-Pflicht zentralisieren und im
+`OpeningHandPlanReport` explizit als required/optional ausweisen, ohne den
+rohen Engine-Zugang zu verbergen.

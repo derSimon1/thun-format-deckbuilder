@@ -194,6 +194,96 @@ def test_early_play_is_not_treated_as_plan_capability():
     assert report.missing_enabler_pct == 100
 
 
+def test_go_wide_needs_a_token_maker_castable_by_turn_two():
+    deck = deck_with_sources(
+        entry(
+            "Generic Two Drop",
+            12,
+            2,
+            type_line="Creature",
+            mana_cost="{1}{W}",
+            colored="W",
+        ),
+        entry(
+            "Slow Maker",
+            12,
+            3,
+            roles=("token_maker",),
+            reasons=("Go Wide: Token-Erzeuger",),
+            mana_cost="{2}{W}",
+            colored="W",
+        ),
+        entry(
+            "Slow Anthem",
+            12,
+            3,
+            roles=("anthem", "token_payoff"),
+            reasons=("Go Wide: Board-Payoff",),
+            mana_cost="{2}{W}",
+            colored="W",
+        ),
+    )
+
+    report = OpeningHandSimulator().simulate_plan(
+        deck,
+        archetype="tokens",
+        plan="go_wide",
+        seed=31,
+    )
+
+    assert report.early_play_turn_two_pct > 0
+    assert report.plan_capable_pct == 0
+    assert any(
+        "missing_early_token_maker" in hand.failure_reasons
+        for hand in report.hands
+    )
+
+
+def test_go_wide_keeps_early_maker_into_scaling_plan_capable():
+    deck = deck_with_sources(
+        entry(
+            "Early Maker",
+            18,
+            2,
+            roles=("token_maker",),
+            reasons=("Go Wide: Token-Erzeuger",),
+            mana_cost="{1}{W}",
+            colored="W",
+        ),
+        entry(
+            "Anthem",
+            9,
+            3,
+            roles=("anthem", "token_payoff"),
+            reasons=("Go Wide: Board-Payoff",),
+            mana_cost="{2}{W}",
+            colored="W",
+        ),
+        entry(
+            "Interaction",
+            9,
+            2,
+            roles=("removal",),
+            mana_cost="{1}{W}",
+            colored="W",
+        ),
+    )
+
+    report = OpeningHandSimulator().simulate_plan(
+        deck,
+        archetype="tokens",
+        plan="go_wide",
+        seed=73,
+    )
+
+    assert report.plan_capable_pct > 0
+    assert all(
+        hand.turn_two_plays
+        for hand in report.hands
+        if hand.classification == HandPlanClassification.PLAN_CAPABLE
+    )
+
+
 @pytest.mark.parametrize(
     ("plan", "entries", "expected_reason"),
     (
