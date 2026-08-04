@@ -123,3 +123,31 @@ def test_token_sideboard_prioritizes_burn_stabilization():
     assert result[0].name == "Life Cleric"
     assert result[0].reasons == ("Sideboard: protection",)
     assert "sideboard_protection" in result[0].roles
+
+
+def test_target_dependent_lifegain_is_not_standalone_protection():
+    cards = (
+        k(
+            "Sanctify",
+            "Destroy target artifact or enchantment. You gain 3 life.",
+            colors=("W",),
+        ),
+        k(
+            "Light of Hope",
+            "Choose one — You gain 4 life; or destroy target enchantment.",
+            colors=("W",),
+        ),
+    )
+
+    result = SideboardBuilder().build(
+        cards,
+        GeneratedDeck((), 24),
+        archetype="tokens",
+        colors=("W",),
+        size=6,
+    )
+    by_name = {entry.name: entry for entry in result}
+
+    assert "sideboard_protection" not in by_name["Sanctify"].roles
+    assert "sideboard_artifact_enchantment_answer" in by_name["Sanctify"].roles
+    assert "sideboard_protection" in by_name["Light of Hope"].roles

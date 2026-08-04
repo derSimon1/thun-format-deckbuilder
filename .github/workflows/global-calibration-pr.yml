@@ -1,5 +1,5 @@
 name: Global Calibration PR
-run-name: Token Go Wide – Transform-Gated Faces
+run-name: Token Go Wide – Threshold-Aware Sideboarding
 
 on:
   pull_request:

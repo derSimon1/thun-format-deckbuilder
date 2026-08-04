@@ -196,3 +196,27 @@ zugänglich.
 Zwei-Mana-Cast als sechs sofortige Tokens und drei permanente Anthem-Effekte
 modelliert. Tatsächlich sucht die Vorderseite nur ein Plains und gibt 2 Leben;
 Tokens und Anthem liegen hinter Craft für `{5}{W}{W}`.
+
+## D-020 – Sideboard-Pakete werden mengen- und zielbewusst bewertet
+
+**Datum:** 2026-08-04
+**Status:** akzeptiert
+
+Der Sideboard-Optimierer prüft pro Kartenname zusammenhängende Mengen von eins
+bis zur verfügbaren Kopienzahl und zum verbleibenden Swap-Budget. Dadurch kann
+er Pakete erkennen, deren erste Einzelkopie wegen Rundung oder einer echten
+Wirkungsschwelle noch keinen positiven Messwert erzeugt. Kandidaten werden
+gegen unterschiedliche Cut-Namen statt mehrfach gegen dieselben expandierten
+Kopien verglichen.
+
+Lebensgewinn, der zwingend an „destroy/exile target“ gekoppelt ist, gilt nicht
+als eigenständige Burn-Stabilisierung. Modale Karten mit einer ohne Ziel
+wählbaren Lebensgewinnoption bleiben Schutz. Ungecachte Kandidatendecks nutzen
+das Sample- und Seed-Budget des Matchup-Laufs.
+
+**Begründung:** Drei `Dawnbringer Cleric` verbessern den isolierten
+Postboard-Wert gemeinsam, während eine Kopie beim gerundeten Ausgangswert 0 %
+bleibt. Die alte Einzelkartensuche konnte diese Schwelle nie überschreiten.
+Eine erste Korrektur boardete zusätzlich `Sanctify` gegen ein Burn-Deck ohne
+Artefakte oder Enchantments ein; dessen Lebensgewinn ist ohne legales Ziel
+nicht verfügbar.

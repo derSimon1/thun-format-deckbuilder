@@ -176,7 +176,17 @@ def _matching_rules(
 
     text = knowledge.analysis.oracle_text.lower()
     phrase_matches = tuple(
-        rule for rule in rules if any(phrase in text for phrase in rule.phrases)
+        rule
+        for rule in rules
+        if any(phrase in text for phrase in rule.phrases)
+        and not (
+            rule is TOKEN_PROTECTION
+            and "choose one" not in text
+            and any(
+                targeted_action in text
+                for targeted_action in ("destroy target", "exile target")
+            )
+        )
     )
     if phrase_matches:
         return phrase_matches

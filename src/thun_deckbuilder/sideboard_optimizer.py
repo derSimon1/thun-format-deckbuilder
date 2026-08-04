@@ -178,6 +178,16 @@ def _compress(entries: list[DeckEntry]) -> tuple[DeckEntry, ...]:
     )
 
 
+def _group_by_name(entries: list[DeckEntry]) -> tuple[tuple[DeckEntry, ...], ...]:
+    """Group expanded entries without losing deterministic search order."""
+
+    names = sorted({entry.name for entry in entries})
+    return tuple(
+        tuple(entry for entry in entries if entry.name == name)
+        for name in names
+    )
+
+
 def optimize_sideboard_plan(
     deck: GeneratedDeck,
     opponent: GeneratedDeck,
@@ -196,7 +206,6 @@ def optimize_sideboard_plan(
     current = deck
     current_win = baseline
     impacts: list[SideboardCardImpact] = []
-    used_names: set[str] = set()
     used_in: list[DeckEntry] = []
     used_out: list[DeckEntry] = []
     available = sorted(
@@ -204,34 +213,64 @@ def optimize_sideboard_plan(
         key=lambda entry: (-_sideboard_value(entry, opponent_archetype), entry.name),
     )
 
-    for step in range(max_swaps):
+    while len(used_in) < max_swaps:
         best = None
         main = _expand(current.mainboard)
-        for incoming in available:
-            if incoming.name in used_names:
-                continue
-            for outgoing in sorted(main, key=lambda entry: _mainboard_cut_key(entry, opponent_archetype))[:8]:
-                trial_main = list(main)
-                trial_main.remove(outgoing)
-                trial_main.append(incoming)
-                trial = replace(current, mainboard=_compress(trial_main), goldfish_report=None)
-                win_pct = simulator.simulate(
-                    trial, opponent, archetype_a=archetype,
-                    archetype_b=opponent_archetype, samples=samples,
-                    seed=seed + step + 1,
-                ).wins_a_pct
-                candidate = (win_pct, incoming.name, outgoing.name, incoming, outgoing, trial)
-                if best is None or candidate[:3] > best[:3]:
-                    best = candidate
+        remaining = max_swaps - len(used_in)
+        incoming_groups = _group_by_name(available)
+        outgoing_groups = sorted(
+            _group_by_name(main),
+            key=lambda group: _mainboard_cut_key(group[0], opponent_archetype),
+        )[:8]
+        for incoming_group in incoming_groups:
+            for outgoing_group in outgoing_groups:
+                max_quantity = min(
+                    len(incoming_group), len(outgoing_group), remaining
+                )
+                for quantity in range(1, max_quantity + 1):
+                    incoming = incoming_group[:quantity]
+                    outgoing = outgoing_group[:quantity]
+                    trial_main = list(main)
+                    for entry in outgoing:
+                        trial_main.remove(entry)
+                    trial_main.extend(incoming)
+                    trial = replace(
+                        current,
+                        mainboard=_compress(trial_main),
+                        goldfish_report=None,
+                    )
+                    win_pct = simulator.simulate(
+                        trial, opponent, archetype_a=archetype,
+                        archetype_b=opponent_archetype, samples=samples,
+                        seed=seed + len(used_in) + 1,
+                    ).wins_a_pct
+                    candidate = (
+                        win_pct,
+                        quantity,
+                        incoming[0].name,
+                        outgoing[0].name,
+                        incoming,
+                        outgoing,
+                        trial,
+                    )
+                    if best is None or candidate[:4] > best[:4]:
+                        best = candidate
         if best is None or best[0] <= current_win:
             break
-        win_pct, _, _, incoming, outgoing, trial = best
-        impacts.append(SideboardCardImpact(incoming.name, outgoing.name, win_pct - current_win))
+        win_pct, _, _, _, incoming, outgoing, trial = best
+        impacts.append(
+            SideboardCardImpact(
+                incoming[0].name,
+                outgoing[0].name,
+                win_pct - current_win,
+            )
+        )
         current_win = win_pct
         current = trial
-        used_names.add(incoming.name)
-        used_in.append(incoming)
-        used_out.append(outgoing)
+        used_in.extend(incoming)
+        used_out.extend(outgoing)
+        used_names = {entry.name for entry in used_in}
+        available = [entry for entry in available if entry.name not in used_names]
 
     plan = SideboardPlan(
         opponent_archetype=opponent_archetype,

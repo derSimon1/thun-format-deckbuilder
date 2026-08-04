@@ -19,6 +19,8 @@
 - [x] Go-Wide-Planfähigkeit an einen bis Zug 2 castbaren Maker binden
 - [x] Engine-Pflicht zentral im Opening-Hand-Bericht kontextualisieren
 - [x] transformationsgesperrte Rückseiteneffekte aus Sofortrollen entfernen
+- [x] Sideboard-Suche über Mehrkopien-Schwellen führen und zielabhängigen
+  Lebensgewinn abgrenzen
 
 ## Stabiler Stand – Run 78
 
@@ -30,21 +32,21 @@
 - Burn-Plan: 3 `Dawnbringer Cleric` hinein; 2 `Descendant of Storms`, 1 `Duty Beyond Death` heraus
 - Mainboard-Hash `133e45be5a4ca94dc6bb8dddeb6c811db9e2889ced915f54c018898441668815`
 
-## Aktueller Zyklus – Transform-Gated Faces
+## Aktueller Zyklus – Threshold-Aware Sideboarding
 
-1. Anthem-/Combatsequenzen am echten Token-Deck prüfen.
-2. Transformationsgesperrte Rückseiten zentral erkennen.
-3. Paket, Produktion, Scoring und präzise Rollen angleichen.
-4. Workflow `Token Go Wide – Transform-Gated Faces` auswerten.
+1. Sechs reale Ersatzpakete über mehrere Seeds verwerfen: kein Burn-Gewinn.
+2. Greedy-Einzelkartenfalle bei drei `Dawnbringer Cleric` korrigieren.
+3. Zielabhängigen Lifegain von selbständigem Schutz trennen.
+4. Workflow `Token Go Wide – Threshold-Aware Sideboarding` auswerten.
 
 ## Prioritäten danach
 
-1. Burn-/Artifact-Ersatzpaket und Sideboard-Cuts stabilisieren.
-2. Weitere verzögerte Tokenproduktion (Trigger/Sagas) prüfen.
-3. Modellierte Matchups gegen reale Spiele kalibrieren.
+1. Weitere verzögerte Tokenproduktion (Trigger/Sagas) prüfen.
+2. Modellierte Matchups gegen reale Spiele kalibrieren.
+3. Burn-/Artifact-Ersatzpaket erst mit präziserer Simulation erneut prüfen.
 4. Regression-Baseline statt `baseline: none`.
 
 ## Genau ein nächster ausführbarer Schritt
 
-Unter der korrigierten Kartenflächen-Semantik genau ein Ersatz-/Sideboard-Paket
-für Burn und Artifacts robust über mehrere Seeds stabilisieren.
+Trigger- und Saga-Text zentral so segmentieren, dass bedingte oder verzögerte
+Tokenproduktion und begrenzte Buffs nicht als sofortige Go-Wide-Effekte gelten.

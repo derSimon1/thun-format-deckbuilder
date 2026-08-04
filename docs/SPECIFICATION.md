@@ -120,6 +120,14 @@ Ein Deck wird mindestens anhand folgender Ebenen bewertet:
 
 Eine hohe Rollenzahl allein ist kein Qualitätsnachweis.
 
+Sideboard-Optimierung muss zusammenhängende Mengen von eins bis zur legal
+verfügbaren Kopienzahl prüfen. Ein Paket darf nicht verworfen werden, nur weil
+seine erste Einzelkopie einen gerundeten Matchupwert noch nicht verbessert.
+Zielabhängiger Lebensgewinn nach „destroy/exile target“ ist kein
+eigenständiger Schutz; ein modaler, ohne Ziel wählbarer Lebensgewinn dagegen
+schon. Nicht gecachte Goldfish-Berichte verwenden das explizite Sample- und
+Seed-Budget des aufrufenden Matchup-Laufs.
+
 Bei mehrflächigen Karten dürfen Effekte einer durch Transformieren, Craft,
 Daybound oder eine besiegte Battle gesperrten Rückseite nicht als beim normalen
 Cast sofort verfügbare Produktion, Engine oder Payoff gewertet werden. Modal

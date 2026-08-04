@@ -108,8 +108,18 @@ class MatchupSimulator:
             raise ValueError("samples must be positive")
 
         goldfish = GoldfishSimulator()
-        report_a = deck_a.goldfish_report or goldfish.simulate(deck_a, archetype=archetype_a)
-        report_b = deck_b.goldfish_report or goldfish.simulate(deck_b, archetype=archetype_b)
+        report_a = deck_a.goldfish_report or goldfish.simulate(
+            deck_a,
+            archetype=archetype_a,
+            samples=samples,
+            seed=seed + 1000,
+        )
+        report_b = deck_b.goldfish_report or goldfish.simulate(
+            deck_b,
+            archetype=archetype_b,
+            samples=samples,
+            seed=seed + 2000,
+        )
 
         progress_a = _base_progress(report_a, archetype_a)
         progress_b = _base_progress(report_b, archetype_b)

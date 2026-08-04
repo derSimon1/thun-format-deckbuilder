@@ -218,7 +218,47 @@ Eine vollständig qualifizierte v2-KGB existiert noch nicht. `baseline: none` be
 - **KGB-Entscheidung vor Push:** Regression festgestellt, keine neue KGB.
   `baseline: none` besteht fort.
 
+## Threshold-Aware-Sideboarding-Zyklus – lokale Evidenz vor CI
+
+- **Ursache:** Der Optimierer prüfte Sideboardkarten nur einzeln, sperrte den
+  Namen danach und beschränkte seine acht Cut-Kandidaten auf expandierte
+  Einzelkopien. Ein `Dawnbringer Cleric` blieb gerundet bei 0 %, drei Kopien
+  verbesserten den isolierten Postboardwert dagegen bis 40 % und waren für die
+  Suche unerreichbar.
+- **Hypothese:** Mengenbewusste Tauschtests finden das echte Schutzpaket und
+  stabilisieren den korrigierten Burn-/Artifact-Stand. Sechs kontrollierte
+  Mainboard-Ersatzpakete wurden zuvor verworfen: Alle blieben gegen Burn bei
+  0 % und senkten Schaden/Killrate; nur `Duty Beyond Death → Release the Dogs`
+  erhöhte das Board `8,45 → 9,90`, aber senkte Killrate `47,3 → 44,7 %`.
+- **Änderungen:** Der Optimierer prüft je Namen Mengen 1..N gegen acht
+  unterschiedliche Cut-Namen; zielabhängiger Lifegain ist kein selbständiger
+  Schutz, modale Lebensgewinnoptionen bleiben es; ungecachte Kandidaten nutzen
+  Matchup-Samples und deterministische Seeds. Workflow:
+  `Token Go Wide – Threshold-Aware Sideboarding`.
+- **Lokale Validierung:** 22 gezielte Tests und 338 Gesamttests in 19,14 s
+  grün. Fast bestand in 201,4 s mit Benchmarks `83/100/90/85/80`, fünf
+  Archetypen, sechs Matchups und 0 Regressionen. Die reale Optimierersuche mit
+  80 Samples sank durch Budgetweitergabe von 247 auf 29 s.
+- **Deck-/Handinvarianten:** Mainboard, Goldfish und Hash bleiben unverändert:
+  Schaden `19,94`, Killrate `47 %`, Board `8,46`, Hash
+  `50184dc7a3d0f998f7feb4b85c9151bac6385ad8d527ff6fc342b8e5fdc97dfa`.
+  Arena 60/15 sowie 100 Hände mit Seed `1701` bestanden; Keepability/Plan
+  `77/70 %`, T2/T3 `94/96 %`.
+- **Matchups:** Der Fast-Plan findet nun drei `Dawnbringer Cleric` statt des
+  leeren Plans. Token-BO3 Burn/Artifacts/Mill bleibt `0/60/100 %`; die
+  Hypothese einer direkten Matchup-Stabilisierung ist damit widerlegt. Die
+  Suchkorrektheit verbessert sich, die Deckstärke nicht.
+- **Reflexion:** Ein isolierter 80-Sample-Lauf kann mit zwei echten
+  Schutz-Playsets 100 % erreichen, während der vollständige BO3-Lauf gegen das
+  ebenfalls geboardete Burn-Deck bei 0 % bleibt. Beide Extreme zeigen die
+  offene Skalierungsgrenze des abstrakten Stabilisierungssignals. Grüne CI ist
+  hier kein realer Spielstärkenachweis. Confidence: hoch für Such- und
+  Zielabhängigkeitsfehler, niedrig für absolute Matchupwerte.
+- **KGB-Entscheidung vor Push:** keine neue KGB. `baseline: none` bleibt; die
+  Infrastruktur ist korrekter und schneller, aber eine spielerische
+  Stabilisierung ist nicht belegt.
+
 ## Nächster ausführbarer Schritt
 
-Unter der korrigierten Kartenflächen-Semantik genau ein Ersatz-/Sideboard-Paket
-für Burn und Artifacts robust über mehrere Seeds stabilisieren.
+Trigger- und Saga-Text zentral so segmentieren, dass bedingte oder verzögerte
+Tokenproduktion und begrenzte Buffs nicht als sofortige Go-Wide-Effekte gelten.

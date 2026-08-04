@@ -1,5 +1,24 @@
 # Specification Changelog
 
+## 2.0 – Mengenbewusste Sideboard-Suche 2026-08-04
+
+### Geändert
+
+- Sideboard-Kandidaten werden auch als zusammenhängende Mehrkopienpakete
+  geprüft, wenn eine Einzelkopie noch keine messbare Verbesserung erreicht.
+- Zielabhängiger Lebensgewinn wird von selbständig nutzbarer Stabilisierung
+  getrennt; echte modale Lebensgewinnoptionen bleiben Schutz.
+- Ungecachte Kandidatendecks übernehmen Sample-Budget und deterministischen
+  Seed aus der Matchup-Simulation.
+
+### Anlass
+
+Der Greedy-Optimierer lehnte drei gemeinsam wirksame `Dawnbringer Cleric` ab,
+weil die erste Kopie den auf ganze Prozent gerundeten Burn-Wert nicht anhob.
+Nach der Mengenkorrektur versuchte er zunächst zusätzlich zielabhängigen
+Lebensgewinn wie `Sanctify` ohne legales gegnerisches Ziel; die präzisere
+Klassifikation verhindert dieses Modell-Gaming.
+
 ## 2.0 – Kartenflächen-Präzisierung 2026-08-04
 
 ### Geändert

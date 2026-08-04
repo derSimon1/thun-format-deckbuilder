@@ -35,6 +35,12 @@ Run `30792560878` auf Commit `31f6c1e053976435481c07ab2098430bc2a45471` dient al
 
 Token-Matchups zeigten unter anderem 0 % gegen Burn und 100 % gegen Mill. Das kann echte Schwächen anzeigen, muss aber gegen Simulationsvereinfachungen und echte Clubtests geprüft werden.
 
+Die mengenbewusste Sideboard-Suche findet inzwischen echte Dreierpakete, kann
+aber mit sechs selbständig nutzbaren Schutzkarten intern weiterhin an die
+0-/100-%-Grenzen geraten. Diese Werte sind Modellgrenzen und keine realen
+Matchprognosen; Stabilisierungseffekt und Draw-/Cast-Wahrscheinlichkeit müssen
+gegen reale Spiele kalibriert werden.
+
 ## KI-006 – Zeitgesteuerte GitHub-Runs sind nicht zuverlässig genug
 
 **Status:** bestätigt  

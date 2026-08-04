@@ -153,3 +153,31 @@ def test_explicit_postboard_protection_improves_burn_matchup_only():
     artifacts_stabilized = simulator.simulate(stabilized, artifacts, archetype_a="tokens", archetype_b="artifacts")
     assert burn_stabilized.wins_a_pct > burn_plain.wins_a_pct
     assert artifacts_stabilized.average_score_a == artifacts_plain.average_score_a
+
+
+def test_uncached_goldfish_uses_matchup_sample_budget_and_stable_seeds(monkeypatch):
+    calls = []
+
+    def capture(self, candidate, *, archetype, samples, turns=5, seed):
+        calls.append((archetype, samples, seed))
+        return report(archetype, damage=14.0)
+
+    monkeypatch.setattr(
+        "thun_deckbuilder.matchup_simulator.GoldfishSimulator.simulate",
+        capture,
+    )
+    uncached = GeneratedDeck(
+        mainboard=(entry("Threat", 36, 1, "Creature"),),
+        lands=24,
+    )
+
+    MatchupSimulator().simulate(
+        uncached,
+        uncached,
+        archetype_a="tokens",
+        archetype_b="burn",
+        samples=73,
+        seed=41,
+    )
+
+    assert calls == [("tokens", 73, 1041), ("burn", 73, 2041)]
