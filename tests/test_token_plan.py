@@ -61,6 +61,12 @@ def test_detects_go_wide_from_multiple_makers_and_anthem():
     assert report.score_for(TokenPlan.GO_WIDE) > report.score_for(TokenPlan.VALUE)
 
 
+def test_engine_requirement_is_defined_by_the_token_plan():
+    assert not TokenPlan.GO_WIDE.requires_engine
+    assert TokenPlan.VALUE.requires_engine
+    assert TokenPlan.ARISTOCRATS.requires_engine
+
+
 def test_detects_value_tokens_only_with_reachable_automatic_engines():
     report = detect_token_plan(
         (

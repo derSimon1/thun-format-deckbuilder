@@ -154,7 +154,9 @@ zuverlässigen Makern und realistischem Team-Scaling.
 
 Die Engine Density wird für alle Pläne weiterhin numerisch ausgewiesen. Eine
 fehlende Engine erzeugt aber nur dann eine Mangelwarnung, wenn der gewählte Plan
-sie benötigt.
+sie benötigt. `TokenPlan.requires_engine` ist die zentrale Definition; auch der
+Opening-Hand-Bericht weist denselben Kontext explizit aus, während er den rohen
+Engine-Zugang weiterhin misst.
 
 **Begründung:** Die frühere universelle Warnung stellte 0 % Engine Density bei
 100 % Go-Wide-Commitment als Widerspruch dar. Ein kontrollierter Einbau der

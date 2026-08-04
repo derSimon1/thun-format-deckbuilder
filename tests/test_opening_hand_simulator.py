@@ -399,6 +399,7 @@ def test_token_plans_require_their_defining_packages(
     )
 
     assert report.plan_capable_pct > 0
+    assert report.engine_required == (plan != "go_wide")
     assert any(
         expected_reason in hand.reasons
         for hand in report.hands
@@ -545,6 +546,7 @@ def test_non_token_archetypes_have_plan_capable_fixture_hands(
 
     assert report.plan_capable_pct > 0
     assert report.samples == 100
+    assert report.engine_required is None
 
 
 def test_color_mismatch_is_reported_separately_from_land_count():

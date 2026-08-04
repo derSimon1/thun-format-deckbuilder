@@ -14,6 +14,7 @@ from thun_deckbuilder.mana_requirement import (
     can_pay_mana_requirements,
     mana_symbol_requirements,
 )
+from thun_deckbuilder.token_plan import TokenPlan
 
 
 CardSample = tuple[str, float, bool]
@@ -79,6 +80,7 @@ class OpeningHandPlanHand:
 class OpeningHandPlanReport:
     archetype: str
     plan: str
+    engine_required: bool | None
     samples: int
     seed: int
     deck_hash: str
@@ -885,6 +887,11 @@ class OpeningHandSimulator:
         return OpeningHandPlanReport(
             archetype=normalized_archetype,
             plan=normalized_plan,
+            engine_required=(
+                TokenPlan(normalized_plan).requires_engine
+                if normalized_archetype == "tokens"
+                else None
+            ),
             samples=samples,
             seed=seed,
             deck_hash=_deck_hash(deck),

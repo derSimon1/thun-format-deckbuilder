@@ -151,8 +151,35 @@ Eine vollständig qualifizierte v2-KGB existiert noch nicht. `baseline: none` be
   während vier überoptimistische Klassifikationen korrigiert werden;
   `baseline: none` besteht fort.
 
+## Engine-Requirement-Context-Zyklus – lokale Evidenz vor CI
+
+- **Ursache:** Nach D-017 bestimmte `engine_density` die planabhängige Pflicht
+  noch über eine private Funktion. Der Opening-Hand-Bericht zeigte zwar
+  `missing_engine_pct=28`, ließ aber offen, ob dies für Go Wide ein Mangel oder
+  nur ein rohes Zugangsmerkmal ist.
+- **Hypothese:** Eine zentrale `TokenPlan.requires_engine`-Invariante verhindert
+  Drift und macht required/optional explizit, ohne die beobachtete Engine-
+  Zugangsquote zu verstecken oder Klassifikationen zu verändern.
+- **Änderungen:** `TokenPlan` besitzt die Invariante; Engine Density konsumiert
+  sie; `OpeningHandPlanReport.engine_required` ist für Token-Pläne boolesch und
+  für Nicht-Token-Archetypen `null`. Workflow:
+  `Token Go Wide – Engine Requirement Context`.
+- **Lokale Validierung:** 36 gezielte Tests und 329 Gesamttests in 45,03 s
+  grün; Fast, sechs Matchups und Token-Diagnose bestanden. Benchmarks bleiben
+  `83/98/90/85/80`, 0 Regressionen, Arena 60/15, 100 Hände mit Seed `1701`,
+  Planfähigkeit `73 %`, `missing_engine_pct=28`, Deck-Hash
+  `133e45be5a4ca94dc6bb8dddeb6c811db9e2889ced915f54c018898441668815`.
+  Nach Entfernen des neuen Kontextfelds ist das Opening-Hand-JSON semantisch
+  identisch zum Vorlauf; alle übrigen Vergleichsartefakte sind ebenfalls
+  identisch.
+- **Reflexion:** Das neue Feld verbessert Interpretierbarkeit, nicht die
+  Prognosekraft. `28 %` bleibt bewusst sichtbar, weil optionale Resilienz
+  beobachtbar sein darf; es darf nur nicht als Pflichtdefizit gelesen werden.
+  Confidence: hoch.
+- **KGB-Entscheidung vor Push:** keine neue KGB. Keine Deck- oder
+  Qualitätsmetrik verbessert sich; `baseline: none` besteht fort.
+
 ## Nächster ausführbarer Schritt
 
-Die planabhängige Engine-Pflicht zentralisieren und im
-`OpeningHandPlanReport` explizit als required/optional ausweisen, ohne den
-rohen Engine-Zugang zu verbergen.
+Das Anthem-/Combatmodell anhand konkreter Token-Sequenzen prüfen und nur einen
+belegten Timing- oder Board-Scaling-Fehler korrigieren.

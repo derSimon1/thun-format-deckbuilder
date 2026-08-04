@@ -24,6 +24,12 @@ class TokenPlan(StrEnum):
             TokenPlan.ARISTOCRATS: "Aristocrats",
         }[self]
 
+    @property
+    def requires_engine(self) -> bool:
+        """Return whether a repeatable engine is required for this plan."""
+
+        return self is not TokenPlan.GO_WIDE
+
 
 @dataclass(frozen=True)
 class TokenCardSignals:

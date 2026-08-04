@@ -1,5 +1,5 @@
 name: Global Calibration PR
-run-name: Token Go Wide – Early Maker Path
+run-name: Token Go Wide – Engine Requirement Context
 
 on:
   pull_request:

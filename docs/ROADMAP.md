@@ -17,6 +17,7 @@
 - [x] Quellenspannung strikter `{C}`-Kosten im Candidate Scoring modellieren
 - [x] Engine-Pflicht und Engine-Warnung planabhängig kalibrieren
 - [x] Go-Wide-Planfähigkeit an einen bis Zug 2 castbaren Maker binden
+- [x] Engine-Pflicht zentral im Opening-Hand-Bericht kontextualisieren
 
 ## Stabiler Stand – Run 78
 
@@ -28,22 +29,21 @@
 - Burn-Plan: 3 `Dawnbringer Cleric` hinein; 2 `Descendant of Storms`, 1 `Duty Beyond Death` heraus
 - Mainboard-Hash `133e45be5a4ca94dc6bb8dddeb6c811db9e2889ced915f54c018898441668815`
 
-## Aktueller Zyklus – Early Maker Path
+## Aktueller Zyklus – Engine Requirement Context
 
-1. Die 23 marginalen Hände nach tatsächlicher Ursache clustern.
-2. Planfähige Hände auf reale T1-bis-T3-Sequenzen gegenprüfen.
-3. Go Wide nur mit bis Zug 2 castbarem Maker als planfähig werten.
-4. Workflow `Token Go Wide – Early Maker Path` und Artefakt auswerten.
+1. Engine-Pflicht als Eigenschaft des Token-Plans zentralisieren.
+2. Engine Density auf dieselbe Definition umstellen.
+3. Required/optional im Opening-Hand-Bericht explizit machen.
+4. Workflow `Token Go Wide – Engine Requirement Context` auswerten.
 
 ## Prioritäten danach
 
-1. Engine-Pflicht im Opening-Hand-Bericht planabhängig ausweisen.
+1. Anthem-/Combatmodell anhand konkreter Sequenzen prüfen.
 2. Opening-Hand-Klassifikation und Builderausgabe weiter abgleichen.
-3. Anthem-/Combatmodell verbessern.
+3. Modellierte Matchups gegen reale Spiele kalibrieren.
 4. Regression-Baseline statt `baseline: none`.
 
 ## Genau ein nächster ausführbarer Schritt
 
-Die planabhängige Engine-Pflicht zentralisieren und im
-`OpeningHandPlanReport` explizit als required/optional ausweisen, ohne den
-rohen Engine-Zugang zu verbergen.
+Das Anthem-/Combatmodell anhand konkreter Token-Sequenzen prüfen und nur einen
+belegten Timing- oder Board-Scaling-Fehler korrigieren.

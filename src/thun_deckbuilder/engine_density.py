@@ -39,12 +39,6 @@ def _supports_engine_plan(card: CardKnowledge, plan: TokenPlan) -> bool:
     )
 
 
-def _engine_is_required(plan: TokenPlan) -> bool:
-    """Return whether the selected plan needs a repeatable engine to function."""
-
-    return plan is not TokenPlan.GO_WIDE
-
-
 def evaluate_token_engine_density(
     entries: Iterable[DeckEntry],
     cards: Iterable[CardKnowledge],
@@ -77,7 +71,7 @@ def evaluate_token_engine_density(
     density = 0.0 if spell_copies == 0 else engine_copies / spell_copies
     distinct = len(set(engine_names))
     warnings: list[str] = []
-    engine_required = _engine_is_required(plan)
+    engine_required = plan.requires_engine
     if engine_copies == 0 and engine_required:
         warnings.append(
             f"Keine wiederholbare Engine für {plan.label} im Deck erkannt."
