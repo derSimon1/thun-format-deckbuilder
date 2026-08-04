@@ -246,3 +246,24 @@ nicht sofort global. Temporäre Team-Buffs enden im Goldfish mit dem Zug.
 Countertexte galten als globale Anthems, und temporäre `Charge`-Effekte wurden
 über alle Folgezüge akkumuliert. Read-ahead bei `Love Song of Night and Day`
 ist dagegen eine echte Ausnahme: Kapitel II kann beim Eintritt gewählt werden.
+
+## D-022 – Zusätzliche Cast-Kosten sind Simulationsmetadaten
+
+**Datum:** 2026-08-04
+**Status:** akzeptiert
+
+Zusätzliche Kreaturen-Opferkosten werden einmal aus dem cast-zugänglichen
+Oracle-Text abgeleitet und als maschinenlesbarer Marker bis zum finalen
+Deckeintrag transportiert. Der Marker ist keine funktionale Deckrolle. Der
+Goldfish darf die Karte nur mit genügend vorhandenen Körpern wirken und
+verbraucht diese vor Anwendung des Karteneffekts; noch nicht angriffsbereite
+Körper werden zuerst geopfert.
+
+SQLite-Gesundheitsprüfungen schließen ihre Verbindung explizit, bevor ein
+atomarer Datenbankersatz versucht wird. Ein Transaktions-Kontext allein gilt
+nicht als Ressourcenfreigabe.
+
+**Begründung:** `Duty Beyond Death` war auf leerem Board wirkbar und ließ den
+eigentlich geopferten Körper weiter angreifen. Beim anschließenden realen
+Fast-Lauf blockierte außerdem die Gesundheitsprüfung unter Windows ihren
+eigenen Datenbankersatz, weil `sqlite3.Connection.__exit__` nicht schließt.

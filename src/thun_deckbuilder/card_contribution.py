@@ -12,6 +12,7 @@ from thun_deckbuilder.synergy_tag import SynergyTag, normalize_synergy_tag
 
 _COLOR_SYMBOL = re.compile(r"\{([WUBRG])(?:/[^}]*)?\}", re.IGNORECASE)
 _METADATA_ROLE_PREFIXES = (
+    "cast_additional_creature_sacrifice_",
     "token_output_",
     "token_production_",
     "token_activation_mana_",
@@ -75,7 +76,8 @@ def contribution_from_knowledge(knowledge: CardKnowledge) -> CardContribution:
     Machine-readable simulation metadata remains on the resulting ``DeckEntry``
     because the composition engine copies all knowledge roles into the final
     entry. It is deliberately excluded from ``CardContribution`` so dynamic
-    markers such as ``token_output_2`` or ``token_activation_mana_4`` cannot
+    markers such as ``token_output_2``, ``token_activation_mana_4``, or cast
+    cost metadata cannot
     become structural deck roles.
     """
 

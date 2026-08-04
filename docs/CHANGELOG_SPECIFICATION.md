@@ -1,5 +1,22 @@
 # Specification Changelog
 
+## 2.0 – Zusätzliche Cast-Kosten 2026-08-04
+
+### Geändert
+
+- Zusätzliche Kreaturen-Opferkosten werden als Castability-Anforderung
+  behandelt.
+- Der Goldfish verlangt das entsprechende Board und verbraucht die geopferten
+  Körper vor Anwendung des Effekts.
+- Kostenmarker bleiben Simulationsmetadaten und werden nicht als funktionale
+  Deckrollen normalisiert.
+
+### Anlass
+
+`Duty Beyond Death` konnte bislang auf leerem Board gewirkt werden und behielt
+den geopferten Körper in der Schadens- und Boardrechnung. Dadurch war die
+Simulation gegenüber der realen Karte zu optimistisch.
+
 ## 2.0 – Kontextgebundene Token- und Anthem-Effekte 2026-08-04
 
 ### Geändert

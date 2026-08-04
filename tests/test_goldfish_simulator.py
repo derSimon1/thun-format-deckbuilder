@@ -153,6 +153,45 @@ def test_temporary_anthem_does_not_stack_across_turns():
     assert persistent_report.average_damage > temporary_report.average_damage
 
 
+def test_additional_sacrifice_cost_requires_and_consumes_a_body():
+    costly_anthem = entry(
+        "Costly Anthem",
+        18,
+        1,
+        roles=("anthem", "cast_additional_creature_sacrifice_1"),
+        reasons=("Dauerhafter Team-Bonus",),
+    )
+    no_bodies = GeneratedDeck(mainboard=(costly_anthem,), lands=42)
+    makers = entry(
+        "Maker",
+        18,
+        1,
+        roles=("token_maker", "token_production_immediate", "token_output_1"),
+    )
+    costly = GeneratedDeck(mainboard=(makers, costly_anthem), lands=24)
+    free = GeneratedDeck(
+        mainboard=(
+            makers,
+            entry(
+                "Free Anthem",
+                18,
+                1,
+                roles=("anthem",),
+                reasons=("Dauerhafter Team-Bonus",),
+            ),
+        ),
+        lands=24,
+    )
+
+    simulator = GoldfishSimulator()
+    blocked = simulator.simulate(no_bodies, archetype="tokens", samples=400)
+    costly_report = simulator.simulate(costly, archetype="tokens", samples=400)
+    free_report = simulator.simulate(free, archetype="tokens", samples=400)
+
+    assert blocked.average_spells_cast == 0
+    assert costly_report.average_token_board_size < free_report.average_token_board_size
+
+
 def precise_roles(output: int, mode: str, *extra: str) -> tuple[str, ...]:
     return (
         "token_maker",

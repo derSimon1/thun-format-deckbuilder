@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import replace
 
+from thun_deckbuilder.card_analyzer import additional_creature_sacrifice_cost
 from thun_deckbuilder.card_role import CardRole
 from thun_deckbuilder.deck_generator import GeneratedDeck
 from thun_deckbuilder.engine_density import evaluate_token_engine_density
@@ -96,6 +97,9 @@ def _with_precise_token_roles(knowledge: CardKnowledge) -> CardKnowledge:
         )
     if signals.anthem or signals.evasion_payoff:
         roles.add(CardRole.TOKEN_PAYOFF.value)
+    sacrifice_cost = additional_creature_sacrifice_cost(knowledge.analysis)
+    if sacrifice_cost:
+        roles.add(f"cast_additional_creature_sacrifice_{sacrifice_cost}")
 
     return replace(knowledge, roles=frozenset(roles))
 

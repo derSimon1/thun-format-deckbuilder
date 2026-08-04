@@ -33,6 +33,7 @@ class _TokenSpellEffect:
     anthem_bonus: float = 0.0
     temporary_anthem_bonus: float = 0.0
     payoff_bonus: float = 0.0
+    sacrifice_creatures: int = 0
 
     @property
     def priority(self) -> float:
@@ -43,6 +44,7 @@ class _TokenSpellEffect:
             + self.anthem_bonus * 3.0
             + self.temporary_anthem_bonus * 1.5
             + self.payoff_bonus * 4.0
+            - self.sacrifice_creatures
         )
 
 
@@ -90,6 +92,14 @@ def _token_spell_effect(entry: DeckEntry) -> _TokenSpellEffect:
         or "temporary team bonus" in reason.lower()
         for reason in entry.reasons
     )
+    sacrifice_creatures = 0
+    for role in roles:
+        match = re.fullmatch(
+            r"cast_additional_creature_sacrifice_(\d+)", role
+        )
+        if match:
+            sacrifice_creatures = int(match.group(1))
+            break
 
     return _TokenSpellEffect(
         body=1.0 if "creature" in signals else 0.0,
@@ -102,6 +112,7 @@ def _token_spell_effect(entry: DeckEntry) -> _TokenSpellEffect:
             0.5 if "anthem" in signals and temporary_anthem else 0.0
         ),
         payoff_bonus=0.15 if "token_payoff" in signals else 0.0,
+        sacrifice_creatures=sacrifice_creatures,
     )
 
 
@@ -223,6 +234,12 @@ class GoldfishSimulator:
                         if cost <= mana and not (
                             archetype == "tokens" and value <= 0
                         ):
+                            if archetype == "tokens":
+                                effect = _token_spell_effect(entry)
+                                if effect.sacrifice_creatures > (
+                                    ready_tokens + pending_tokens
+                                ):
+                                    continue
                             candidates.append(
                                 (value / cost, value, -cost, index, cost, metric, entry)
                             )
@@ -235,6 +252,11 @@ class GoldfishSimulator:
 
                     if archetype == "tokens":
                         effect = _token_spell_effect(entry)
+                        remaining_sacrifice = float(effect.sacrifice_creatures)
+                        from_pending = min(pending_tokens, remaining_sacrifice)
+                        pending_tokens -= from_pending
+                        remaining_sacrifice -= from_pending
+                        ready_tokens -= min(ready_tokens, remaining_sacrifice)
                         pending_tokens += effect.body + effect.immediate_tokens
                         if effect.repeatable_tokens:
                             active_token_engines.append(effect.repeatable_tokens)

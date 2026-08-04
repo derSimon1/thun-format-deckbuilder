@@ -1,5 +1,5 @@
 name: Global Calibration PR
-run-name: Token Go Wide – Context-Gated Effects
+run-name: Token Go Wide – Additional Sacrifice Costs
 
 on:
   pull_request:

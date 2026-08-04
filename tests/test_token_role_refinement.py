@@ -121,6 +121,7 @@ def test_one_shot_sacrifice_loses_outlet_role():
     )
     assert "sacrifice" not in refined.roles
     assert "sacrifice_outlet" not in refined.roles
+    assert "cast_additional_creature_sacrifice_1" in refined.roles
 
 
 def test_real_outlet_and_death_payoff_receive_precise_roles():

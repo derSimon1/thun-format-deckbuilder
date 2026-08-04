@@ -303,7 +303,57 @@ Eine vollständig qualifizierte v2-KGB existiert noch nicht. `baseline: none` be
   `baseline: none` bleibt; der Stand verbessert Messwahrheit, nicht belegte
   Spielstärke.
 
+## Additional-Sacrifice-Costs-Zyklus – lokale Evidenz vor CI
+
+- **Ursache:** `Duty Beyond Death` konnte allein mit Mana auf leerem Board
+  gewirkt werden; ein vorhandener Opferkörper blieb in Board und Schaden. Der
+  erste reale Fast-Lauf deckte zusätzlich eine Windows-Dateisperre auf, weil
+  die SQLite-Gesundheitsprüfung ihren Read-Handle vor `replace` nicht schloss.
+- **Hypothese:** zentrale Erkennung, durchgängige Kostenmetadaten und echter
+  Boardverbrauch entfernen beide falschen Zusicherungen, ohne Deckauswahl oder
+  Nicht-Token-Archetypen zu verändern. Workflow:
+  `Token Go Wide – Additional Sacrifice Costs`.
+- **Änderungen:** Parser für ausdrücklich zusätzliche Kreaturen-Opferkosten;
+  `cast_additional_creature_sacrifice_N` am finalen Deckeintrag, aber nicht im
+  funktionalen Rollensystem; Cast-Gate und Opferzahlung im Goldfish. Die
+  Datenbankprüfung nutzt ein explizit schließendes SQLite-Handle.
+- **Gegenbeispiele:** aktivierte Opferkosten und gegnerische/erzwungene
+  Opfereffekte werden nicht als Cast-Kosten markiert. Eine kostenlose
+  Vergleichskarte bleibt auf leerem Board wirkbar; eine kostenpflichtige nicht.
+- **Lokale Evidenz:** 48 gezielte Tests und 353 Gesamttests in 37,45 s grün.
+  Fast bestand in 213,1 s mit
+  Benchmarks `83/93/90/85/80`, fünf Archetypen, sechs Matchups und 0 gemeldeten
+  Regressionen bei `baseline: none`. Arena 60/15 und 100 Hände mit Seed 1701
+  bestanden; Keepability/Plan/T2/T3 bleiben `77/73/94/96 %`.
+- **Vorher/Nachher:** Mainboard und Dichten bleiben gleich. Der Hash wechselt
+  wegen der neuen Kostenmetadaten von
+  `57b806f68f433a63f14c52d1a82acf8236cd279b68cf226cb8ef989c7a042d9c` auf
+  `30fd51cb579022c0ea647639b7ab0b5076ec71d56a7628988c68e5c0a46ffa5d`.
+  Goldfish Schaden/Killrate/Board ändern sich `13,87/8 %/7,57` auf
+  `13,95/9 %/7,55`; die kleinen gegenläufigen Stichprobendeltas widerlegen
+  eine direkte Stärkeinterpretation, der belegte Boardverbrauch sinkt jedoch.
+- **Matchups:** Token-BO3 Burn/Artifacts/Mill bleibt `0/0/100 %`; die vier
+  übrigen Benchmarks bleiben `83/90/85/80`. Keine spielerische Verbesserung
+  ist belegt.
+- **Reflexion:** Der Parser deckt die übliche englische Template-Form ab, aber
+  keine beliebig variablen oder typbeschränkten Opferkosten. Dass die
+  Goldfish-Killrate trotz kleinerem Board um einen Punkt steigt, zeigt
+  Stichprobenrauschen und Prioritätswechsel; grüne CI ist kein
+  Spielstärkenachweis. Eine direkte Candidate-Strafe könnte zu streng sein,
+  wenn frühe Maker das Opfer zuverlässig liefern. Confidence: hoch für Parser,
+  Marker, Cast-Gate, Verbrauch und Windows-Handle; niedrig für absolute
+  Matchupwerte.
+- **Folgeschrittvergleich:** Ressourcenzugängliche Candidate-Wertung hat hohe
+  direkte Token-Relevanz bei mittlerem Risiko. Weitere generische
+  typbeschränkte Kosten haben breitere Deckung, aber aktuell weniger belegten
+  Einfluss. Reale Matchup-Kalibrierung hätte höchsten Nutzen, benötigt jedoch
+  noch externe Spieldaten. Daher wird zuerst nur die Auswahlwirkung von `Duty`
+  gegen kostenfreie Alternativen gemessen.
+- **KGB-Entscheidung vor Push:** keine neue KGB. `baseline: none` bleibt; die
+  Änderung verbessert Regel- und Prozesswahrheit, nicht belegte Deckstärke.
+
 ## Nächster ausführbarer Schritt
 
-Zusätzliche Opferkosten wie bei `Duty Beyond Death` zentral erkennen und im
-Token-Goldfish nur bei vorhandenem, tatsächlich verbrauchtem Board bezahlen.
+Die Auswahl von `Duty Beyond Death` gegen cast-kostenfreie Alternativen mit
+einer reproduzierbaren Ressourcenzugänglichkeitsmetrik bewerten; nur bei
+belegtem globalem Qualitätsgewinn die Candidate-Wertung ändern.

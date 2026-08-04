@@ -7,6 +7,7 @@ import shutil
 import sqlite3
 from collections import Counter
 from collections.abc import Iterator
+from contextlib import closing
 from dataclasses import asdict, is_dataclass, replace
 from itertools import combinations
 from pathlib import Path
@@ -171,7 +172,7 @@ def _database_usable(path: Path) -> bool:
     if not path.is_file():
         return False
     try:
-        with sqlite3.connect(path) as connection:
+        with closing(sqlite3.connect(path)) as connection:
             tables = {
                 str(row[0])
                 for row in connection.execute(

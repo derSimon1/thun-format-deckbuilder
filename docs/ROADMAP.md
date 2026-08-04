@@ -23,6 +23,10 @@
   Lebensgewinn abgrenzen
 - [x] Trigger-, Saga-, Modal- und Anthem-Kontext bis in Goldfish-Dauersemantik
   vereinheitlichen
+- [x] zusätzliche Kreaturen-Opferkosten zentral erkennen und im Goldfish
+  Verfügbarkeit sowie Boardverbrauch modellieren
+- [x] SQLite-Integritätsprüfung vor atomarem Datenbankersatz unter Windows
+  schließen
 
 ## Stabiler Stand – Run 78
 
@@ -34,21 +38,25 @@
 - Burn-Plan: 3 `Dawnbringer Cleric` hinein; 2 `Descendant of Storms`, 1 `Duty Beyond Death` heraus
 - Mainboard-Hash `133e45be5a4ca94dc6bb8dddeb6c811db9e2889ced915f54c018898441668815`
 
-## Aktueller Zyklus – Context-Gated Effects
+## Aktueller Zyklus – Additional Sacrifice Costs
 
-1. Triggerkontext über Folgesätze und modale Bullets bewahren.
-2. Read-ahead von verzögerten Saga-Kapiteln unterscheiden.
-3. begrenzte/aktivierte Buffs aus globalen Anthems entfernen.
-4. temporäre Anthems im Goldfish am Zugende auslaufen lassen.
+1. zusätzliche Kreaturen-Opferkosten aus Oracle-Text erkennen.
+2. Kostenmetadaten vom funktionalen Rollensystem trennen und bis zum finalen
+   Deckeintrag erhalten.
+3. Cast nur mit ausreichendem Board erlauben und die geopferten Körper
+   tatsächlich verbrauchen.
+4. SQLite-Gesundheitsprüfung vor dem Windows-Dateiersatz sicher schließen.
 
 ## Prioritäten danach
 
-1. Zusätzliche Cast-Kosten und Boardverbrauch im Token-Goldfish modellieren.
-2. Bedingte/dead-on-board Kandidaten unter korrekter Semantik neu gewichten.
+1. Kandidaten mit zusätzlichen Boardkosten anhand der realen
+   Ressourcenzugänglichkeit neu gewichten.
+2. Bedingte/dead-on-board Kandidaten unter korrekter Semantik vergleichen.
 3. Modellierte Matchups gegen reale Spiele kalibrieren.
 4. Regression-Baseline statt `baseline: none`.
 
 ## Genau ein nächster ausführbarer Schritt
 
-Zusätzliche Opferkosten wie bei `Duty Beyond Death` zentral erkennen und im
-Token-Goldfish nur bei vorhandenem, tatsächlich verbrauchtem Board bezahlen.
+Die Auswahl von `Duty Beyond Death` gegen cast-kostenfreie Alternativen mit
+einer reproduzierbaren Ressourcenzugänglichkeitsmetrik bewerten; nur bei
+belegtem globalem Qualitätsgewinn die Candidate-Wertung ändern.

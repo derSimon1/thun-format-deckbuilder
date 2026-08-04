@@ -37,6 +37,15 @@ _TRANSFORM_GATES = (
     "transform this",
 )
 
+_NUMBER_WORDS = {
+    "a": 1,
+    "an": 1,
+    "one": 1,
+    "two": 2,
+    "three": 3,
+    "four": 4,
+}
+
 
 def cast_accessible_oracle_text(analysis: CardAnalysis) -> str:
     """Return rules text available without first transforming the front face.
@@ -87,6 +96,22 @@ def cast_accessible_effect_segments(analysis: CardAnalysis) -> tuple[str, ...]:
         choice_context = ""
         segments.append(segment)
     return tuple(segments)
+
+
+def additional_creature_sacrifice_cost(analysis: CardAnalysis) -> int:
+    """Return the minimum creature count required as an additional cast cost."""
+
+    for segment in cast_accessible_effect_segments(analysis):
+        match = re.search(
+            r"as an additional cost[^.\n]*?sacrifice "
+            r"(a|an|one|two|three|four|\d+)(?: or more)? creatures?",
+            segment,
+        )
+        if match is None:
+            continue
+        raw = match.group(1)
+        return _NUMBER_WORDS.get(raw, int(raw) if raw.isdigit() else 1)
+    return 0
 
 
 def saga_chapter_is_delayed(segment: str, full_text: str) -> bool:

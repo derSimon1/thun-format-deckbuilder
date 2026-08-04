@@ -74,6 +74,12 @@ Ein vollständiger Zyklus besteht aus:
 12. Logbook und Roadmap aktualisieren und genau einen nächsten ausführbaren Schritt bestimmen.
 13. Entscheiden, ob eine neue Known Good Baseline entstanden ist.
 
+Zusätzliche Cast-Kosten sind Teil der Castability-Invariante. Eine Karte darf
+in einer Simulation nur gewirkt werden, wenn neben Mana auch die verlangten
+Boardressourcen vorhanden sind; bezahlte Ressourcen werden vor Anwendung des
+Karteneffekts verbraucht. Maschinenlesbare Kostenmarker bleiben am finalen
+Deckeintrag erhalten, zählen aber nicht als funktionale Deckrolle.
+
 ## 6. Produktivität, No-Change und Regressionen
 
 Ein Zyklus darf ohne Codeänderung enden, wenn eine Sicherheitsbedingung greift oder keine belegte Verbesserung möglich ist. Dann sind zwingend zu dokumentieren:

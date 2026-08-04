@@ -68,6 +68,18 @@ def test_full_pool_selects_and_fulfils_reliable_go_wide_package():
     assert _role_copies(deck, "anthem") >= 3
 
 
+def test_full_pool_preserves_additional_sacrifice_cost_metadata():
+    with CardDatabase(DATABASE_FILE) as database:
+        deck = generate_deck(
+            database=database,
+            archetype="tokens",
+            colors=["W"],
+        )
+
+    duty = next(entry for entry in deck.mainboard if entry.name == "Duty Beyond Death")
+    assert "cast_additional_creature_sacrifice_1" in duty.roles
+
+
 def test_generic_builder_generates_token_deck():
     with CardDatabase() as database:
         deck = generate_deck(

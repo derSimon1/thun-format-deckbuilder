@@ -1,4 +1,5 @@
 from thun_deckbuilder.card_analyzer import (
+    additional_creature_sacrifice_cost,
     analyze_card,
     cast_accessible_oracle_text,
     detect_features,
@@ -184,3 +185,34 @@ def test_modal_back_face_remains_cast_accessible():
     )
 
     assert cast_accessible_oracle_text(analysis) == analysis.oracle_text
+
+
+def test_detects_only_additional_creature_sacrifice_cast_costs():
+    additional = analyze_card(
+        {
+            "name": "Cost",
+            "type_line": "Instant",
+            "oracle_text": (
+                "As an additional cost to cast this spell, sacrifice a "
+                "creature. Creatures you control gain indestructible."
+            ),
+        }
+    )
+    activated = analyze_card(
+        {
+            "name": "Outlet",
+            "type_line": "Creature",
+            "oracle_text": "Sacrifice a creature: Scry 1.",
+        }
+    )
+    effect = analyze_card(
+        {
+            "name": "Edict",
+            "type_line": "Sorcery",
+            "oracle_text": "Each player sacrifices a creature.",
+        }
+    )
+
+    assert additional_creature_sacrifice_cost(additional) == 1
+    assert additional_creature_sacrifice_cost(activated) == 0
+    assert additional_creature_sacrifice_cost(effect) == 0
