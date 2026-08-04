@@ -71,6 +71,14 @@ def _signals(entry: DeckEntry) -> frozenset[str]:
     return frozenset(found)
 
 
+def _metadata_number(entry: DeckEntry, prefix: str) -> int:
+    for role in entry.roles:
+        match = re.fullmatch(rf"{re.escape(prefix)}(\d+)", str(role))
+        if match:
+            return int(match.group(1))
+    return 0
+
+
 def _token_spell_effect(entry: DeckEntry) -> _TokenSpellEffect:
     roles = {role.lower() for role in entry.roles}
     signals = _signals(entry)
@@ -150,7 +158,12 @@ def _spell_value(entry: DeckEntry, archetype: str) -> tuple[int, float, str]:
     signals = _signals(entry)
     mana = max(1, int(entry.mana_value))
     if archetype == "burn":
-        value = 3.0 if "burn" in signals else (1.5 if "creature" in signals else 0.5)
+        marked_damage = _metadata_number(entry, "burn_damage_")
+        value = (
+            float(marked_damage)
+            if marked_damage
+            else (3.0 if "burn" in signals else (1.5 if "creature" in signals else 0.5))
+        )
         return mana, value, "damage"
     if archetype == "mill":
         value = 5.0 if "mill" in signals else 0.5
@@ -234,6 +247,19 @@ class GoldfishSimulator:
                         if cost <= mana and not (
                             archetype == "tokens" and value <= 0
                         ):
+                            if archetype == "burn":
+                                sacrifice = _metadata_number(
+                                    entry,
+                                    "cast_additional_creature_sacrifice_",
+                                )
+                                if sacrifice > len(creatures):
+                                    continue
+                                exact_life = _metadata_number(
+                                    entry,
+                                    "cast_target_life_exact_",
+                                )
+                                if exact_life and abs((20.0 - damage) - exact_life) > 1e-9:
+                                    continue
                             if archetype == "tokens":
                                 effect = _token_spell_effect(entry)
                                 if effect.sacrifice_creatures > (
@@ -266,6 +292,13 @@ class GoldfishSimulator:
                         continue
 
                     if metric == "damage":
+                        if archetype == "burn":
+                            sacrifice = _metadata_number(
+                                entry,
+                                "cast_additional_creature_sacrifice_",
+                            )
+                            for _ in range(min(sacrifice, len(creatures))):
+                                creatures.remove(min(creatures))
                         damage += value
                         if "creature" in _signals(entry):
                             creatures.append(max(1.0, value))

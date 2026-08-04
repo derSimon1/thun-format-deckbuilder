@@ -11,6 +11,7 @@ from thun_deckbuilder.card_analyzer import (
     cast_accessible_effect_segments,
     cast_immediate_team_buff_segments,
     cast_accessible_oracle_text,
+    has_activated_sacrifice_outlet,
 )
 from thun_deckbuilder.deck_generator import GeneratedDeck
 
@@ -45,27 +46,6 @@ def _creates_creature_token(sentence: str) -> bool:
     if "creature token" in sentence:
         return True
     return "token that's a copy" in sentence and "creature" in sentence
-
-
-def _sacrifice_outlet(text: str) -> bool:
-    """Recognize reusable creature-sacrifice activated abilities.
-
-    Oracle activated abilities place their cost before a colon. Additional cast
-    costs and forced one-shot sacrifices do not, and therefore must not turn a
-    card into an Aristocrats outlet.
-    """
-
-    for match in re.finditer(r"([^.:\n]{0,180}):", text):
-        cost = match.group(1).lower()
-        if not re.search(
-            r"sacrifice (?:a|another|one|two|three|four|\d+) creatures?",
-            cost,
-        ):
-            continue
-        if "as an additional cost" in cost:
-            continue
-        return True
-    return False
 
 
 def analyze_token_package(analysis: CardAnalysis) -> TokenPackageSignals:
@@ -112,7 +92,10 @@ def analyze_token_package(analysis: CardAnalysis) -> TokenPackageSignals:
     )
 
     sacrifice_text = "sacrifice" in text
-    sacrifice_outlet = _sacrifice_outlet(text)
+    sacrifice_outlet = has_activated_sacrifice_outlet(
+        analysis,
+        permanent_type="creature",
+    )
     self_death_value = any(
         "dies" in sentence
         and any(marker in sentence for marker in ("when this", "whenever this"))

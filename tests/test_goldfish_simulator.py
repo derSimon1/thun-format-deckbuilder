@@ -41,6 +41,53 @@ def test_fast_burn_deck_deals_more_damage_than_slow_burn_deck():
     assert fast_report.average_spells_cast > slow_report.average_spells_cast
 
 
+def test_burn_additional_sacrifice_cost_requires_and_consumes_a_creature():
+    costly = entry(
+        "Costly Burn",
+        18,
+        1,
+        roles=("burn", "cast_additional_creature_sacrifice_1"),
+    )
+    blocked = GeneratedDeck(mainboard=(costly,), lands=42)
+    fodder = entry("Fodder", 18, 1, type_line="Creature", roles=("aggro_creature",))
+    paid = GeneratedDeck(mainboard=(fodder, costly), lands=24)
+    free = GeneratedDeck(
+        mainboard=(fodder, entry("Free Burn", 18, 1, roles=("burn",))),
+        lands=24,
+    )
+
+    simulator = GoldfishSimulator()
+    blocked_report = simulator.simulate(blocked, archetype="burn", samples=400)
+    paid_report = simulator.simulate(paid, archetype="burn", samples=400)
+    free_report = simulator.simulate(free, archetype="burn", samples=400)
+
+    assert blocked_report.average_spells_cast == 0
+    assert paid_report.average_damage < free_report.average_damage
+
+
+def test_exact_life_burn_is_not_cast_outside_its_window():
+    deck = GeneratedDeck(
+        mainboard=(
+            entry(
+                "Narrow Finisher",
+                36,
+                4,
+                roles=(
+                    "burn",
+                    "burn_damage_10",
+                    "cast_target_life_exact_10",
+                ),
+            ),
+        ),
+        lands=24,
+    )
+
+    report = GoldfishSimulator().simulate(deck, archetype="burn", samples=400)
+
+    assert report.average_spells_cast == 0
+    assert report.average_damage == 0
+
+
 def test_mill_report_tracks_cards_milled_instead_of_damage():
     deck = GeneratedDeck(
         mainboard=(entry("Mind Grind", 36, 2, roles=("mill",)),),

@@ -1,5 +1,20 @@
 # Specification Changelog
 
+## 2.0 – Burn-Cast-Bedingungen 2026-08-04
+
+### Geändert
+
+- Aktivierte Opfer-Outlets werden von zusätzlichen Opfer-Cast-Kosten getrennt.
+- Zusätzliche Kreaturenopfer werden in Auswahl und Goldfish bezahlt.
+- Exakte Ziel-Lebenspunkte begrenzen sowohl Scoring als auch simulierten Cast.
+- Cast-Bedingungen werden zentral als Metadaten an Deckeinträge weitergegeben.
+
+### Anlass
+
+Der Builder und Goldfish behandelten `Heartfire` als wiederverwendbares Outlet
+und als ohne Körper wirkbar. `Hidetsugu's Second Rite` galt unabhängig vom
+gegnerischen Lebenspunktestand als verlässlicher Zehn-Schaden-Zauber.
+
 ## 2.0 – Token-spezifische Outlet-Synergien 2026-08-04
 
 ### Geändert

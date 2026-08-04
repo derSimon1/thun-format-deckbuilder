@@ -7,6 +7,7 @@ from thun_deckbuilder.candidate_eligibility import CandidateEligibility
 from thun_deckbuilder.candidate_evaluator import CandidateEvaluator
 from thun_deckbuilder.candidate_score import CandidateScore
 from thun_deckbuilder.card_contribution import CardContribution, contribution_from_knowledge
+from thun_deckbuilder.card_analyzer import simulation_metadata_roles
 from thun_deckbuilder.deck_generator import DeckEntry, parse_mana_cost
 from thun_deckbuilder.deck_needs import DeckNeedsAnalyzer
 from thun_deckbuilder.deck_quality import DeckQualityAnalyzer, DeckQualityReport
@@ -55,7 +56,14 @@ def _entry(
         type_line=analysis.type_line,
         score=score.total,
         reasons=tuple(component.reason for component in score.components),
-        roles=tuple(sorted(str(role) for role in candidate.knowledge.roles)),
+        roles=tuple(
+            sorted(
+                {
+                    *(str(role) for role in candidate.knowledge.roles),
+                    *simulation_metadata_roles(analysis),
+                }
+            )
+        ),
     )
 
 

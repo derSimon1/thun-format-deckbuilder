@@ -3,6 +3,9 @@ from thun_deckbuilder.card_analyzer import (
     analyze_card,
     cast_accessible_oracle_text,
     detect_features,
+    exact_target_life_gate,
+    has_activated_sacrifice_outlet,
+    simulation_metadata_roles,
 )
 
 
@@ -216,3 +219,25 @@ def test_detects_only_additional_creature_sacrifice_cast_costs():
     assert additional_creature_sacrifice_cost(additional) == 1
     assert additional_creature_sacrifice_cost(activated) == 0
     assert additional_creature_sacrifice_cost(effect) == 0
+    assert not has_activated_sacrifice_outlet(additional)
+    assert has_activated_sacrifice_outlet(activated, permanent_type="creature")
+    assert not has_activated_sacrifice_outlet(effect)
+
+
+def test_exact_life_gate_becomes_simulation_metadata() -> None:
+    analysis = analyze_card(
+        {
+            "name": "Narrow Finisher",
+            "type_line": "Instant",
+            "oracle_text": (
+                "If target player has exactly 10 life, Narrow Finisher "
+                "deals 10 damage to that player."
+            ),
+        }
+    )
+
+    assert exact_target_life_gate(analysis) == 10
+    assert simulation_metadata_roles(analysis) == (
+        "cast_target_life_exact_10",
+        "burn_damage_10",
+    )

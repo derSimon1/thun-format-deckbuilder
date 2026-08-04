@@ -114,6 +114,65 @@ def additional_creature_sacrifice_cost(analysis: CardAnalysis) -> int:
     return 0
 
 
+def has_activated_sacrifice_outlet(
+    analysis: CardAnalysis,
+    *,
+    permanent_type: str | None = None,
+) -> bool:
+    """Return whether a cast-accessible activated cost sacrifices material."""
+
+    required_type = permanent_type.lower() if permanent_type else None
+    for segment in cast_accessible_effect_segments(analysis):
+        for match in re.finditer(r"([^.\n:]{0,180}):", segment):
+            cost = match.group(1).lower()
+            sacrificed = re.search(
+                r"sacrifice (?:a|an|another|one|two|three|four|\d+) "
+                r"(creatures?|artifacts?|permanents?)",
+                cost,
+            )
+            if sacrificed is None or "as an additional cost" in cost:
+                continue
+            kind = sacrificed.group(1).removesuffix("s")
+            if required_type is None or kind == required_type:
+                return True
+    return False
+
+
+def exact_target_life_gate(analysis: CardAnalysis) -> int | None:
+    """Return an exact target-life cast gate when Oracle text specifies one."""
+
+    match = re.search(
+        r"if target (?:player|opponent) has exactly (\d+) life",
+        cast_accessible_oracle_text(analysis).lower(),
+    )
+    return int(match.group(1)) if match else None
+
+
+def simulation_metadata_roles(analysis: CardAnalysis) -> tuple[str, ...]:
+    """Return machine-readable cast and effect metadata for deck entries."""
+
+    roles: list[str] = []
+    sacrifice_cost = additional_creature_sacrifice_cost(analysis)
+    if sacrifice_cost:
+        roles.append(f"cast_additional_creature_sacrifice_{sacrifice_cost}")
+    life_gate = exact_target_life_gate(analysis)
+    if life_gate is not None:
+        roles.append(f"cast_target_life_exact_{life_gate}")
+        damage = max(
+            (
+                int(value)
+                for value in re.findall(
+                    r"(?:deals?|deal) (\d+) damage",
+                    cast_accessible_oracle_text(analysis).lower(),
+                )
+            ),
+            default=0,
+        )
+        if damage:
+            roles.append(f"burn_damage_{damage}")
+    return tuple(roles)
+
+
 def saga_chapter_is_delayed(segment: str, full_text: str) -> bool:
     match = re.match(r"^(i|ii|iii|iv|v|vi)\s*[—-]", segment)
     if match is None or "read ahead" in full_text:

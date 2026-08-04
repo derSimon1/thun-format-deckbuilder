@@ -28,6 +28,8 @@
 - [x] SQLite-Integritätsprüfung vor atomarem Datenbankersatz unter Windows
   schließen
 - [x] Token-spezifische Outlet-Rollen und -Synergien gemeinsam präzisieren
+- [x] globale Outlet-Tags, Opfer-Cast-Kosten und exakte Burn-Lebensfenster
+  gemeinsam modellieren
 
 ## Stabiler Stand – Run 78
 
@@ -39,22 +41,21 @@
 - Burn-Plan: 3 `Dawnbringer Cleric` hinein; 2 `Descendant of Storms`, 1 `Duty Beyond Death` heraus
 - Mainboard-Hash `133e45be5a4ca94dc6bb8dddeb6c811db9e2889ced915f54c018898441668815`
 
-## Aktueller Zyklus – Outlet Synergy Precision
+## Aktueller Zyklus – Burn Cast Condition Semantics
 
-1. falschen Legacy-Outletbonus aus dem `Duty`-Auswahltrace entfernen.
-2. Rollen und Synergie-Tags in derselben Token-Präzisionssicht verfeinern.
-3. selbstopferndes Equipment von echten Kreaturen-Outlets unterscheiden.
-4. breite globale Änderung gegen Benchmarks und Goldfish gegenprüfen.
+1. zusätzliche Cast-Kosten von aktivierten Opfer-Outlets trennen.
+2. Opfermaterial und exakte Lebenspunktfenster im Burn-Goldfish erzwingen.
+3. bedingten Burn ohne Benchmark-Gaming bewerten.
+4. Champion und Challenger unter derselben Semantik vergleichen.
 
 ## Prioritäten danach
 
-1. globales Outlet-Tagging zusammen mit eng bedingtem Burn korrekt modellieren.
-2. Bedingte/dead-on-board Kandidaten unter korrekter Semantik vergleichen.
+1. Mill-Engine-Erkennung gegen echte wiederholbare Quellen präzisieren.
+2. Control-Stabilisierung und Wincondition-Zugang modellieren.
 3. Modellierte Matchups gegen reale Spiele kalibrieren.
 4. Regression-Baseline statt `baseline: none`.
 
 ## Genau ein nächster ausführbarer Schritt
 
-Das globale Outlet-Tagging nur gemeinsam mit der Bewertung und Simulation von
-„genau 10 Leben“-Burn korrigieren; die Änderung darf den Burn-Goldfish nicht
-durch Benchmark-Gaming verschlechtern.
+Mill-Karten, die nur einmalig Karten abwerfen, von echten Engines trennen und
+Champion/Challenger anhand Mill-out, 100 Händen und aller Referenzen messen.

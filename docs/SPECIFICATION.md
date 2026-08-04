@@ -178,6 +178,9 @@ Maschinenlesbare Rohdaten oder eine kompakte Zusammenfassung werden unter `artif
 ## 10. Archetypabhängige Mindestlogik
 
 - **Burn:** frühe Pressure- oder Burn-Dichte und realistische Schadenssequenz.
+  Zusätzliche Opfer-Cast-Kosten benötigen und verbrauchen das Material;
+  Schaden mit einem exakten Ziel-Lebenspunktefenster zählt nur in diesem
+  Fenster. Eine Cast-Kostenklausel ist kein wiederverwendbares Outlet.
 - **Tokens – Go Wide:** frühe Maker plus realistisches Payoff- oder Scaling-Fenster.
 - **Tokens – Value Tokens:** frühe Token-Erzeugung plus wiederholbare Value-Engine.
 - **Tokens – Aristocrats:** Material plus Outlet plus Death-/Drain-/Sacrifice-Payoff.

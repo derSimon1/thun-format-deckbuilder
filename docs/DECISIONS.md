@@ -283,3 +283,24 @@ genügt nicht.
 Auswahltrace aber weiterhin den vollen Fodder-Bonus. Nach Entfernung dieses
 Tags wurde `Citizen's Crowbar` durch das zu breite Kostenfenster als Outlet
 eingestuft, obwohl es nur sich selbst opfert.
+
+## D-024 – Cast-Bedingungen sind zentrale Simulationsmetadaten
+
+**Datum:** 2026-08-04
+**Status:** akzeptiert
+
+Nur eine aktivierte Fähigkeit mit einem expliziten Opfer im Kostenteil vor dem
+Doppelpunkt gilt als wiederverwendbares Opfer-Outlet. Eine zusätzliche
+Opfer-Cast-Kostenklausel ist stattdessen eine Castability-Anforderung und
+verbraucht das Material. Exakte Ziel-Lebenspunkte werden als enges Cast-Fenster
+transportiert; der zugehörige Schaden darf nur in diesem Fenster entstehen.
+
+Die Metadaten werden einmal aus cast-zugänglichem Oracle-Text abgeleitet und
+auf den finalen Deckeintrag übertragen. Scoring und Goldfish verwenden dieselbe
+Definition. Das Burn-Scoring berechnet geopfertes Material als zusätzlichen
+Opportunitätspreis und gibt eng gegatetem Schaden nur reduzierten Auswahlwert.
+
+**Begründung:** `Heartfire` wurde zugleich als Outlet und als ohne Board
+wirkbarer Vier-Schaden-Zauber behandelt; `Hidetsugu's Second Rite` erhielt
+vollen Zehn-Schaden-Wert ohne das Fenster bei exakt 10 Leben. Beide Annahmen
+erzeugten falsche Synergien, illegale Sequenzen und aufgeblähte Goldfish-Werte.

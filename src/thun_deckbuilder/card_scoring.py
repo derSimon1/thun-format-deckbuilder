@@ -3,7 +3,11 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 
-from thun_deckbuilder.card_analyzer import CardAnalysis
+from thun_deckbuilder.card_analyzer import (
+    CardAnalysis,
+    additional_creature_sacrifice_cost,
+    exact_target_life_gate,
+)
 
 
 _DAMAGE_PATTERN = re.compile(r"(?:deals?|deal)\s+(\d+)\s+damage")
@@ -71,9 +75,14 @@ def score_burn_card(analysis: CardAnalysis) -> ScoreBreakdown:
 
     damage = _fixed_damage(text)
     if damage:
-        score += float(damage)
+        life_gate = exact_target_life_gate(analysis)
+        credited_damage = float(damage)
+        if life_gate is not None:
+            credited_damage *= 0.25
+            reasons.append(f"Enges Lebenspunkt-Gate: exakt {life_gate}")
+        score += credited_damage
         reasons.append(f"{damage} Schaden")
-        efficiency = damage / max(mana_value, 1.0)
+        efficiency = credited_damage / max(mana_value, 1.0)
         if hits_any_target or hits_player:
             if efficiency >= 2.5:
                 score += 2.5
@@ -118,6 +127,12 @@ def score_burn_card(analysis: CardAnalysis) -> ScoreBreakdown:
     if conditional_hits:
         score -= min(3.0, 1.5 * conditional_hits)
         reasons.append("Bedingter oder zusätzlicher Aufwand")
+    sacrificed_creatures = additional_creature_sacrifice_cost(analysis)
+    if sacrificed_creatures:
+        score -= 2.5 * sacrificed_creatures
+        reasons.append(
+            f"Verbraucht {sacrificed_creatures} Kreatur als Zauberkosten"
+        )
     if "damage to you" in text:
         score -= 2.0
         reasons.append("Eigenschaden")

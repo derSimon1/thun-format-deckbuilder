@@ -6,6 +6,37 @@ Frühere Detailstände bleiben über die Git-Historie erhalten.
 
 Eine vollständig qualifizierte v2-KGB existiert noch nicht. `baseline: none` besteht fort.
 
+## Burn – Cast Condition Semantics (lokale Evidenz vor CI)
+
+- **Ursache:** Der globale Synergieparser behandelte eine zusätzliche
+  Opfer-Cast-Kostenklausel als wiederverwendbares Outlet. Der Burn-Goldfish
+  wirkte solche Karten ohne Körper und bewertete `Hidetsugu's Second Rite` wie
+  verlässlichen Zehn-Schaden-Burn, obwohl das Ziel exakt 10 Leben haben muss.
+- **Hypothese:** Eine zentrale Trennung von aktivierten Outlet-Kosten,
+  zusätzlichen Cast-Kosten und exakten Lebenspunktfenstern verhindert falsche
+  Synergien und illegale Sequenzen. Der Kreaturenverbrauch muss außerdem in
+  Bewertung und Simulation als Opportunitätskosten sichtbar sein.
+- **Änderungen:** gemeinsame Outlet-Erkennung für globale und Token-Sicht;
+  maschinenlesbare Cast-Metadaten auf finalen Deckeinträgen; Burn-Scoring und
+  Goldfish beachten Opferkosten und exakte Lebenspunktfenster.
+- **Tests:** 66 gezielte Tests und 360 Gesamttests grün; Fast-Validierung
+  `PASS`; finale CI steht noch aus.
+- **Fairer Championvergleich:** Der eingefrorene Champion erzielt unter der
+  neuen Semantik 42,72 Schaden / 95 % Kills. Der Challenger erzielt 41,61 /
+  96 %, enthält keine Heartfires und hält Benchmark, Keepability,
+  Planfähigkeit und T2/T3 bei 83, 78 %, 78 % und 98/98 %.
+- **Portfolio-Invarianten:** Tokens, Control und Mill sind listen- und
+  hashstabil bei 93/85/80. Artifacts steigt 90 → 91 und 70 → 71 %
+  Planfähigkeit; der reine Artefaktzähler sinkt 5,05 → 4,61, weil echte
+  Payoffs statt falsch outlet-gestützter Opferkarten gewählt werden.
+- **Alternative Erklärung/Risiko:** Die absolute Burn- und Matchup-Simulation
+  bleibt heuristisch. Der Killratengewinn bei geringerem Durchschnittsschaden
+  spricht für weniger Overkill, ist aber ohne reale Arena-A/B-Spiele kein
+  Nachweis höherer Spielstärke.
+- **KGB-Entscheidung vor Push:** keine neue KGB. Der Zyklus behebt eine
+  Regel- und Messkorrektheit; `baseline: none` bleibt bis CI und realer
+  Kalibrierung bestehen.
+
 ## Token Go Wide – stabiler Kern
 
 - Run 74: Benchmark 98, 35 Maker, 30 sofortige Maker, 22 Multi-Maker, 7 Anthems, 0 Outlets.
