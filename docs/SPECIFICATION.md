@@ -185,7 +185,11 @@ Maschinenlesbare Rohdaten oder eine kompakte Zusammenfassung werden unter `artif
 - **Tokens – Value Tokens:** frühe Token-Erzeugung plus wiederholbare Value-Engine.
 - **Tokens – Aristocrats:** Material plus Outlet plus Death-/Drain-/Sacrifice-Payoff.
 - **Artifacts:** früher Enabler plus Synergie-Piece, Engine oder Payoff.
-- **Control:** relevante frühe Interaktion gegen den konkreten gegnerischen Plan, anschließende Stabilisierung, Kartenvorteil und belastbare Wincondition.
+- **Control:** relevante frühe Interaktion gegen den konkreten gegnerischen
+  Plan, anschließende Stabilisierung, echter Netto-Kartenvorteil und belastbare
+  Wincondition. Cycling und reine Kartenauswahl sind kein Kartenvorteil;
+  eigene Blink-/Friedhofseffekte sind keine gegnerischen Antworten. Enge
+  Ziel- oder Zustandsbedingungen werden als bedingt ausgewiesen.
 - **Mill:** frühe Mill-Engine oder wiederholbare Mill-Quelle plus Schutz,
   Interaktion oder Tempo. Eine permanente Typzeile allein begründet keine
   Engine: Einmaleffekt und wiederholbarer Durchsatz werden getrennt erfasst;

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from thun_deckbuilder.card_analyzer import CardAnalysis
 from thun_deckbuilder.card_scoring import ScoreBreakdown
+from thun_deckbuilder.control_signals import analyze_control
 
 
 def score_control_card(analysis: CardAnalysis) -> ScoreBreakdown:
@@ -12,49 +13,21 @@ def score_control_card(analysis: CardAnalysis) -> ScoreBreakdown:
     text = analysis.oracle_text.lower()
     mana_value = max(analysis.mana_value, 0.0)
 
-    is_counter = "counter target" in text
-    is_targeted_removal = any(
+    signals = analyze_control(analysis)
+    is_counter = signals.reliable_answer and "counter target" in text
+    is_targeted_removal = signals.reliable_answer and any(
         phrase in text
         for phrase in (
-            "destroy target",
-            "exile target",
+            "destroy target creature",
+            "exile target creature",
             "return target creature",
             "target creature gets -",
         )
     )
-    is_sweeper = any(
-        phrase in text
-        for phrase in (
-            "destroy all creatures",
-            "exile all creatures",
-            "all creatures get -",
-            "each creature gets -",
-            "return all creatures",
-        )
-    )
-    is_card_advantage = "draw two" in text or "draw three" in text or (
-        "draw a card" in text
-        and any(
-            phrase in text
-            for phrase in (
-                "whenever",
-                "at the beginning",
-                "enters",
-                "for each",
-            )
-        )
-    )
-    is_selection = any(phrase in text for phrase in ("surveil", "scry", "look at the top"))
-    is_finisher = (
-        analysis.is_creature and 5 <= mana_value <= 7
-    ) or analysis.is_planeswalker or any(
-        phrase in text
-        for phrase in (
-            "create a token at the beginning",
-            "whenever you draw",
-            "whenever an opponent",
-        )
-    )
+    is_sweeper = signals.sweeper
+    is_card_advantage = signals.card_advantage
+    is_selection = signals.selection
+    is_finisher = signals.finisher
 
     if is_counter:
         score += 7.0
@@ -75,6 +48,10 @@ def score_control_card(analysis: CardAnalysis) -> ScoreBreakdown:
         elif mana_value >= 4:
             score -= 1.5
             reasons.append("Teures Removal")
+
+    if signals.conditional_answer and not signals.reliable_answer:
+        score += 1.0
+        reasons.append("Bedingte Control-Antwort")
 
     if is_sweeper:
         score += 8.0

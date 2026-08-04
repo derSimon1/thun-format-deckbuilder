@@ -388,8 +388,11 @@ def _signals(card: _PlanCard, archetype: str, plan: str) -> dict[str, bool]:
         payoff = mill
         finisher = finisher or mill
     elif archetype == "control":
+        interaction = "control_answer" in roles
+        engine = "control_card_advantage" in roles
+        finisher = "control_finisher" in roles
         enabler = interaction
-        payoff = "board_wipe" in roles or engine
+        payoff = "control_sweeper" in roles or engine
     else:
         core = any(
             phrase in text for phrase in CORE_PHRASES.get(archetype, ())

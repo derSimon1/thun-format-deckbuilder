@@ -2,7 +2,11 @@ from dataclasses import replace
 
 from thun_deckbuilder.deck_generator import DeckEntry, GeneratedDeck, ManaCost
 from thun_deckbuilder.goldfish_simulator import GoldfishReport
-from thun_deckbuilder.matchup_simulator import MatchupSimulator, _lethal_race_progress
+from thun_deckbuilder.matchup_simulator import (
+    MatchupSimulator,
+    _lethal_race_progress,
+    _threat_density,
+)
 
 
 def entry(name, quantity, mv, type_line, *, roles=(), reasons=()):
@@ -118,6 +122,27 @@ def test_kill_consistency_breaks_equal_average_damage_tie():
         archetype_b="tokens",
     )
     assert result.wins_a_pct > result.wins_b_pct
+
+
+def test_control_planeswalker_finisher_counts_as_a_resilient_threat():
+    creature = GeneratedDeck(
+        mainboard=(entry("Creature Finisher", 3, 5, "Creature"),),
+        lands=24,
+    )
+    planeswalker = GeneratedDeck(
+        mainboard=(
+            entry(
+                "Walker Finisher",
+                3,
+                5,
+                "Legendary Planeswalker",
+                roles=("control_finisher",),
+            ),
+        ),
+        lands=24,
+    )
+
+    assert _threat_density(planeswalker) == _threat_density(creature)
 
 
 def test_explicit_postboard_protection_improves_burn_matchup_only():

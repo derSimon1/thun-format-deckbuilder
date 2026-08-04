@@ -328,3 +328,27 @@ prozentuales Anwachsen bereits gemillter Karten entfallen.
 Engine gezählt. Drei `Persistent Petitioners` simulierten je zwölf Karten,
 obwohl die betreffende Aktivierung vier Advisors als Kosten verlangt. Beides
 verzerrte Auswahl, Planfähigkeit und Goldfish.
+
+## D-026 – Control-Qualität ist eine Sequenz aus Antwort, Vorteil und Abschluss
+
+**Datum:** 2026-08-04
+**Status:** akzeptiert
+
+Control verwendet eine strategiegebundene, zentrale Kartensicht. Eine
+verlässliche Antwort muss im cast-zugänglichen Effektsegment einen gegnerischen
+Plan tatsächlich unterbrechen; eigene Blink-/Friedhofseffekte und enge
+Zustandsbedingungen sind keine universellen Antworten. Cycling und
+Kartenauswahl sind kein echter Kartenvorteil. Ein Deck benötigt außerdem eine
+belastbare Wincondition; Planeswalker werden dabei wie andere Finisher als
+Bedrohung erfasst.
+
+Profil, Candidate Scoring, Opening-Hand-Plan, Matchup-Simulation und
+Diagnoseartefakt verwenden dieselben Control-Rollen. Die präzise Sicht bleibt
+auf die Control-Strategie beschränkt, damit andere Archetypen ihre eigene
+Rollensemantik und Auswahl nicht unbeabsichtigt ändern.
+
+**Begründung:** Der frühere Champion meldete 71 % planfähige Hände, erreichte
+unter der korrigierten Definition aber nur 33 %. Er zählte unter anderem
+Siren's Ruse, Friedhofsexil, bedingte Schadens-Removal und Selection als
+vollwertige Stabilisierung. Gleichzeitig ignorierte die Matchup-Heuristik
+Planeswalker-Winconditions.

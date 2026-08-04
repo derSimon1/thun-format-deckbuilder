@@ -57,7 +57,32 @@ def test_reasonable_large_threat_is_marked_as_control_finisher():
 
 def test_control_profile_reserves_three_finishers():
     finisher = next(
-        target for target in CONTROL_PROFILE.role_targets if target.role == "finisher"
+        target
+        for target in CONTROL_PROFILE.role_targets
+        if target.role == "control_finisher"
     )
     assert finisher.minimum == 3
     assert finisher.target == 3
+
+
+def test_conditional_or_friendly_target_is_not_reliable_control_removal():
+    conditional = score_control_card(
+        _card(
+            "Conditional",
+            1,
+            "Instant",
+            "Destroy target creature that was dealt damage this turn. Draw a card.",
+        )
+    )
+    friendly = score_control_card(
+        _card(
+            "Friendly Blink",
+            2,
+            "Instant",
+            "Exile target creature you control, then return it to the battlefield.",
+        )
+    )
+
+    assert "Bedingte Control-Antwort" in conditional.reasons
+    assert "Control removal" not in conditional.reasons
+    assert "Control removal" not in friendly.reasons

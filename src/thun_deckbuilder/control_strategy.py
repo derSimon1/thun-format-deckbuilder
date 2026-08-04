@@ -1,7 +1,10 @@
 from __future__ import annotations
 
+from dataclasses import replace
+
 from thun_deckbuilder.calibrated_strategies import CalibratedStrategy
 from thun_deckbuilder.control_scoring import score_control_card
+from thun_deckbuilder.control_signals import analyze_control
 from thun_deckbuilder.deck_profile import CurveTarget, DeckProfile, RoleTarget
 from thun_deckbuilder.knowledge_base import CardKnowledge
 from thun_deckbuilder.sideboard_builder import (
@@ -17,9 +20,11 @@ CONTROL_PROFILE = DeckProfile(
     name="Dimir Control",
     lands=25,
     role_targets=(
+        RoleTarget("control_answer", minimum=12, target=14),
+        RoleTarget("control_card_advantage", minimum=4, target=6),
+        RoleTarget("control_finisher", minimum=3, target=3),
         RoleTarget("removal", minimum=0, target=9),
         RoleTarget("card_draw", minimum=0, target=7),
-        RoleTarget("finisher", minimum=3, target=3),
     ),
     curve_targets=(
         CurveTarget(1, 4),
@@ -88,11 +93,10 @@ def _control_eligible(knowledge: CardKnowledge, colors: tuple[str, ...]) -> bool
             "look at the top",
         )
     )
-    finisher = (
-        analysis.is_planeswalker
-        or (analysis.is_creature and 5 <= analysis.mana_value <= 7)
+    control_roles = knowledge.roles.intersection(
+        {"control_answer", "control_card_advantage", "control_finisher"}
     )
-    return functional or finisher
+    return functional or bool(control_roles)
 
 
 class ControlStrategy(CalibratedStrategy):
@@ -103,3 +107,19 @@ class ControlStrategy(CalibratedStrategy):
             eligibility=_control_eligible,
             required_colors=frozenset({"U", "B"}),
         )
+
+    def _knowledge_cards(self, knowledge_base) -> tuple[CardKnowledge, ...]:
+        refined: list[CardKnowledge] = []
+        for knowledge in knowledge_base.cards:
+            signals = analyze_control(knowledge.analysis)
+            roles = set(knowledge.roles)
+            if signals.reliable_answer:
+                roles.add("control_answer")
+            if signals.card_advantage:
+                roles.add("control_card_advantage")
+            if signals.finisher:
+                roles.add("control_finisher")
+            if signals.sweeper:
+                roles.add("control_sweeper")
+            refined.append(replace(knowledge, roles=frozenset(roles)))
+        return tuple(refined)

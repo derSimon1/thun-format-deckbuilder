@@ -32,6 +32,8 @@
   gemeinsam modellieren
 - [x] Mill-Einmalquellen, wiederholbare Engines und simulierten Durchsatz
   zentral trennen
+- [x] Control-Antworten, echten Kartenvorteil und Winconditions als zentrale
+  Stabilisierungssequenz modellieren
 
 ## Stabiler Stand – Run 78
 
@@ -43,21 +45,20 @@
 - Burn-Plan: 3 `Dawnbringer Cleric` hinein; 2 `Descendant of Storms`, 1 `Duty Beyond Death` heraus
 - Mainboard-Hash `133e45be5a4ca94dc6bb8dddeb6c811db9e2889ced915f54c018898441668815`
 
-## Aktueller Zyklus – Mill Engine Throughput Precision
+## Aktueller Zyklus – Control Stabilization Sequence
 
-1. Einmalquellen von wiederholbaren Mill-Engines trennen.
-2. Quellen- und Engine-Dichten als Mill-Kernrollen absichern.
-3. tatsächlichen Durchsatz statt pauschaler Fünf-Karten-Werte simulieren.
-4. Kapazität und 100-Hände-Planfähigkeit im Artefakt ausweisen.
+1. Verlässliche Antworten von bedingter Verzögerung trennen.
+2. echten Kartenvorteil von Cycling und Selection abgrenzen.
+3. Winconditions in Profil, Handplan und Matchups einheitlich erfassen.
+4. Control-Sequenz im Artefakt ausweisen und vier Referenzlisten stabil halten.
 
 ## Prioritäten danach
 
-1. Control-Stabilisierung und Wincondition-Zugang modellieren.
-2. Artifacts-Payoff-Zugang gegen reine Artefaktmenge abwägen.
-3. Modellierte Matchups gegen reale Spiele kalibrieren.
-4. Regression-Baseline statt `baseline: none`.
+1. Artifacts-Payoff-Zugang gegen reine Artefaktmenge abwägen.
+2. Modellierte Matchups gegen reale Spiele kalibrieren.
+3. Regression-Baseline statt `baseline: none`.
 
 ## Genau ein nächster ausführbarer Schritt
 
-Control-Winconditions und Kartenvorteil nach früher Interaktion als echte
-Stabilisierungssequenz messen, ohne reine Verzögerung als Planerfolg zu werten.
+Artifact-Kandidaten nach frühem Enabler plus erreichbarem Engine- oder
+Payoff-Zugang bewerten, statt reine Artefaktmenge als Planerfolg zu werten.

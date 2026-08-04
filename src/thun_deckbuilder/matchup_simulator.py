@@ -51,6 +51,8 @@ def _threat_density(deck: GeneratedDeck) -> float:
         if "creature" in entry.type_line.lower()
         or "shrine" in entry.type_line.lower()
         or "artifact" in entry.type_line.lower()
+        or "planeswalker" in entry.type_line.lower()
+        or "control_finisher" in entry.roles
     )
     return count / max(1, sum(item.quantity for item in deck.mainboard))
 

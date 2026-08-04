@@ -1,5 +1,20 @@
 # Specification Changelog
 
+## 2.1 – 2026-08-04 – Control Stabilization Sequence
+
+### Geändert
+
+- Control-Kartenvorteil bezeichnet Netto-Vorteil statt Cycling oder Selection.
+- Antworten unterscheiden verlässliche gegnerische Interaktion von engen
+  Bedingungen sowie eigenen Blink-/Friedhofseffekten.
+- Eine belastbare Wincondition ist Teil der Control-Planfähigkeit;
+  Planeswalker-Finisher zählen als Bedrohungen.
+
+### Anlass
+
+Der bisherige Control-Champion meldete durch breite Rollen 71 % planfähige
+Hände, erreichte unter einheitlicher präziser Semantik jedoch nur 33 %.
+
 ## 2.0 – Mill-Engine-Durchsatz 2026-08-04
 
 ### Geändert

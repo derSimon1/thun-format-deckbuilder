@@ -71,6 +71,45 @@ Eine vollständig qualifizierte v2-KGB existiert noch nicht. `baseline: none` be
   fachlich besser, aber `baseline: none`, CI und reale Arena-Evidenz verhindern
   eine voll qualifizierte KGB.
 
+## Control – Stabilization Sequence (lokale Evidenz vor CI)
+
+- **Ursache:** Die breite Rollenlogik zählte Cycling, Looting und bedingte
+  Removal-Texte als vollwertigen Kartenvorteil beziehungsweise verlässliche
+  Antwort. Eigene Blink- und Friedhofseffekte galten ebenfalls als Removal;
+  Planeswalker wurden im Matchup-Modell nicht als Wincondition erfasst.
+- **Hypothese:** Zentrale, effektsegmentbasierte Control-Signale für
+  verlässliche/bedingte Antworten, echten Kartenvorteil, Sweeper und
+  Winconditions verbessern die Sequenz Interaktion → Stabilisierung → Abschluss,
+  ohne die vier anderen Strategien umzubauen.
+- **Änderungen:** Control verwendet eine strategieeigene präzise Kartenansicht;
+  Profil, Candidate Scoring, Opening Hands, Matchup-Threat-Density und das neue
+  Diagnoseartefakt teilen dieselben Rollen. Cycling/Selection ersetzt nur eine
+  Karte, enge Ziel- und Zustandsbedingungen bleiben bedingt, und
+  Planeswalker-Finisher zählen als echte Bedrohungen.
+- **Lokale Validierung:** 38 gezielte Tests, 372 Gesamttests in 29,16 s und
+  Fast `PASS`. Benchmarks Burn/Tokens/Artifacts/Mill bleiben 83/93/91/82 und
+  ihre Deck-Hashes bleiben exakt stabil; Control steigt 85 → 92. Alle fünf
+  Arena-Exporte sind 60/15.
+- **Fairer Championvergleich:** Der alte Champion hatte unter der alten,
+  aufgeblähten Definition 71 % Planfähigkeit, unter derselben neuen Semantik
+  aber nur 33 %. Der Challenger erreicht 69 %, Keepability 74 %, T2/T3
+  78/84 %, 32 Antwort-, 9 Kartenvorteil- und 3 Finisher-Kopien. Sein
+  Goldfish wirkt 4,83 statt 4,91 Zauber; die Verbesserung ist daher keine
+  bloße Aktivitätssteigerung.
+- **Matchups:** Control gegen Burn/Tokens/Artifacts liegt im deterministischen
+  Fast-Modell bei 0/100/68 % (13 % Remis gegen Artifacts). Diese Extremwerte
+  sind relative Diagnosen, keine belastbaren Arena-Winrates; insbesondere
+  bleibt das Burn-Matchup ungelöst.
+- **Alternative Erklärung/Risiko:** Enge frühe Antworten wie `Foul Play` und
+  `Easy Prey` sind im generischen Control-Profil als frühe Interaktion
+  brauchbar, aber nicht gegen jeden gegnerischen Plan. Sweeper-Dichte bleibt
+  null, und die Matchup-Heuristik bildet Stack-Timing sowie Kartentausch nicht
+  vollständig ab. Confidence: hoch für die beseitigten Fehlklassifikationen,
+  mittel für die Sequenzmetrik, niedrig für absolute Matchupwerte.
+- **KGB-Entscheidung vor Push:** keine neue KGB. Die Mess- und
+  Auswahlkorrektheit ist lokal belegt; `baseline: none` sowie fehlende reale
+  Spieldaten verhindern eine voll qualifizierte KGB.
+
 ## Token Go Wide – stabiler Kern
 
 - Run 74: Benchmark 98, 35 Maker, 30 sofortige Maker, 22 Multi-Maker, 7 Anthems, 0 Outlets.

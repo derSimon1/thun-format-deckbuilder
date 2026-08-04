@@ -198,6 +198,38 @@ def _mill_deck_diagnostics(deck) -> dict[str, object]:
     }
 
 
+def _control_deck_diagnostics(deck) -> dict[str, object]:
+    cards = [
+        {
+            "name": entry.name,
+            "quantity": entry.quantity,
+            "mana_value": entry.mana_value,
+            "answer": "control_answer" in entry.roles,
+            "card_advantage": "control_card_advantage" in entry.roles,
+            "finisher": "control_finisher" in entry.roles,
+            "sweeper": "control_sweeper" in entry.roles,
+            "roles": list(entry.roles),
+            "reasons": list(entry.reasons),
+        }
+        for entry in deck.mainboard
+    ]
+    return {
+        "answer_copies": sum(
+            card["quantity"] for card in cards if card["answer"]
+        ),
+        "card_advantage_copies": sum(
+            card["quantity"] for card in cards if card["card_advantage"]
+        ),
+        "finisher_copies": sum(
+            card["quantity"] for card in cards if card["finisher"]
+        ),
+        "sweeper_copies": sum(
+            card["quantity"] for card in cards if card["sweeper"]
+        ),
+        "cards": cards,
+    }
+
+
 def _write_mill_capacity() -> None:
     cards: list[dict[str, object]] = []
     allowed_colors = {"U", "B"}
@@ -283,6 +315,13 @@ def validate_archetype_with_plan_hands(
             json.dumps(mill_payload, indent=2, sort_keys=True) + "\n",
             encoding="utf-8",
         )
+    if archetype == "control":
+        control_payload = _control_deck_diagnostics(deck)
+        metrics["control_diagnostics"] = control_payload
+        (prefix / "control-sequence.json").write_text(
+            json.dumps(control_payload, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
     (prefix / f"{archetype}-validation.json").write_text(
         json.dumps(metrics, indent=2, sort_keys=True) + "\n",
         encoding="utf-8",
@@ -310,6 +349,15 @@ def validate_archetype_with_plan_hands(
                 f"sources:{metrics['mill_diagnostics']['source_copies']} "
                 f"engines:{metrics['mill_diagnostics']['engine_copies']} "
                 f"distinct:{metrics['mill_diagnostics']['distinct_sources']}\n"
+            )
+        if archetype == "control":
+            output.write(
+                "control_diagnostics="
+                f"answers:{metrics['control_diagnostics']['answer_copies']} "
+                "card_advantage:"
+                f"{metrics['control_diagnostics']['card_advantage_copies']} "
+                f"finishers:{metrics['control_diagnostics']['finisher_copies']} "
+                f"sweepers:{metrics['control_diagnostics']['sweeper_copies']}\n"
             )
     return deck, metrics
 

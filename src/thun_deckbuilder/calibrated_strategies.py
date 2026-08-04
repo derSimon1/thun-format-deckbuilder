@@ -123,6 +123,12 @@ class CalibratedStrategy:
         self.eligibility = eligibility
         self.required_colors = required_colors
 
+    def _knowledge_cards(
+        self,
+        knowledge_base: KnowledgeBase,
+    ) -> tuple[CardKnowledge, ...]:
+        return knowledge_base.cards
+
     def _build_candidate(
         self,
         knowledge_base: KnowledgeBase,
@@ -130,8 +136,9 @@ class CalibratedStrategy:
         lands: int,
     ) -> LandCountCandidate[tuple]:
         profile = replace(self.profile, lands=lands)
+        cards = self._knowledge_cards(knowledge_base)
         result = build_composition(
-            knowledge_base.cards,
+            cards,
             profile=profile,
             deck_size=request.deck_size,
             max_copies=request.max_copies,
@@ -140,7 +147,7 @@ class CalibratedStrategy:
         )
         optimized_entries = optimize_entries(
             result.entries,
-            knowledge_base.cards,
+            cards,
             archetype=request.archetype,
             colors=request.colors,
             scorer=self.scorer,
@@ -190,7 +197,7 @@ class CalibratedStrategy:
             opening_hand_report=chosen.report,
         )
         sideboard = SideboardBuilder().build(
-            knowledge_base.cards,
+            self._knowledge_cards(knowledge_base),
             deck,
             archetype=request.archetype,
             colors=request.colors,
