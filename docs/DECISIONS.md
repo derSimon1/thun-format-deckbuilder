@@ -179,3 +179,20 @@ Zug-2-Spielzug ersetzt den frühen Maker nicht.
 Referenzhände als planfähig, obwohl bis Zug 3 höchstens ein Token-Planstück
 ausgespielt werden konnte. Die Spezifikation verlangt frühe Spielbarkeit und
 einen realistischen Zug-1-bis-Zug-3-Pfad gemeinsam.
+
+## D-019 – Transformationsgesperrte Rückseiten sind nicht sofort verfügbar
+
+**Datum:** 2026-08-04
+**Status:** akzeptiert
+
+Oracle-Text einer Rückseite, die erst durch Transformieren, Craft, Daybound
+oder das Besiegen einer Battle erreichbar wird, zählt nicht als Effekt des
+normalen Vorderseiten-Casts. Die gemeinsame Kartenanalyse stellt dafür
+`cast_accessible_oracle_text` bereit; Token-Paket, Produktionsmodus und
+Candidate Scoring verwenden dieselbe Sicht. Modal castbare Rückseiten bleiben
+zugänglich.
+
+**Begründung:** Drei `Clay-Fired Bricks // Cosmium Kiln` wurden beim
+Zwei-Mana-Cast als sechs sofortige Tokens und drei permanente Anthem-Effekte
+modelliert. Tatsächlich sucht die Vorderseite nur ein Plains und gibt 2 Leben;
+Tokens und Anthem liegen hinter Craft für `{5}{W}{W}`.

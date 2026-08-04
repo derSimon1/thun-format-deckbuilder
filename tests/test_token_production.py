@@ -50,6 +50,22 @@ def test_immediate_two_token_spell_has_exact_minimum_output():
     ) == {"token_output_2", "token_production_immediate"}
 
 
+def test_transform_gated_back_face_is_not_immediate_production():
+    analysis = analyze_card(
+        raw_card(
+            "Front // Back",
+            "Craft with artifact {5}{W}{W}. Return this card transformed. // "
+            "When this artifact enters, create two 1/1 creature tokens.",
+            type_line="Artifact // Artifact",
+        )
+    )
+
+    profile = analyze_token_production(analysis)
+
+    assert profile.mode == "none"
+    assert token_production_roles(analysis) == ()
+
+
 def test_named_self_death_trigger_is_not_immediate_output():
     profile = analyze_token_production(
         card(

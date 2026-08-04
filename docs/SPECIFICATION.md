@@ -120,6 +120,11 @@ Ein Deck wird mindestens anhand folgender Ebenen bewertet:
 
 Eine hohe Rollenzahl allein ist kein Qualitätsnachweis.
 
+Bei mehrflächigen Karten dürfen Effekte einer durch Transformieren, Craft,
+Daybound oder eine besiegte Battle gesperrten Rückseite nicht als beim normalen
+Cast sofort verfügbare Produktion, Engine oder Payoff gewertet werden. Modal
+castbare Flächen wie Adventures und Rooms bleiben davon getrennt.
+
 ## 9. Verbindliche Starthand- und Sequenzanalyse
 
 Für jede erzeugte oder als aktuelle Referenz verwendete Deckliste sind genau 100 reproduzierbare Sieben-Karten-Starthände mit dokumentiertem festem Zufallsseed zu analysieren.

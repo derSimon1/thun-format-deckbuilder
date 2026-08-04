@@ -18,6 +18,7 @@
 - [x] Engine-Pflicht und Engine-Warnung planabhängig kalibrieren
 - [x] Go-Wide-Planfähigkeit an einen bis Zug 2 castbaren Maker binden
 - [x] Engine-Pflicht zentral im Opening-Hand-Bericht kontextualisieren
+- [x] transformationsgesperrte Rückseiteneffekte aus Sofortrollen entfernen
 
 ## Stabiler Stand – Run 78
 
@@ -29,21 +30,21 @@
 - Burn-Plan: 3 `Dawnbringer Cleric` hinein; 2 `Descendant of Storms`, 1 `Duty Beyond Death` heraus
 - Mainboard-Hash `133e45be5a4ca94dc6bb8dddeb6c811db9e2889ced915f54c018898441668815`
 
-## Aktueller Zyklus – Engine Requirement Context
+## Aktueller Zyklus – Transform-Gated Faces
 
-1. Engine-Pflicht als Eigenschaft des Token-Plans zentralisieren.
-2. Engine Density auf dieselbe Definition umstellen.
-3. Required/optional im Opening-Hand-Bericht explizit machen.
-4. Workflow `Token Go Wide – Engine Requirement Context` auswerten.
+1. Anthem-/Combatsequenzen am echten Token-Deck prüfen.
+2. Transformationsgesperrte Rückseiten zentral erkennen.
+3. Paket, Produktion, Scoring und präzise Rollen angleichen.
+4. Workflow `Token Go Wide – Transform-Gated Faces` auswerten.
 
 ## Prioritäten danach
 
-1. Anthem-/Combatmodell anhand konkreter Sequenzen prüfen.
-2. Opening-Hand-Klassifikation und Builderausgabe weiter abgleichen.
+1. Burn-/Artifact-Ersatzpaket und Sideboard-Cuts stabilisieren.
+2. Weitere verzögerte Tokenproduktion (Trigger/Sagas) prüfen.
 3. Modellierte Matchups gegen reale Spiele kalibrieren.
 4. Regression-Baseline statt `baseline: none`.
 
 ## Genau ein nächster ausführbarer Schritt
 
-Das Anthem-/Combatmodell anhand konkreter Token-Sequenzen prüfen und nur einen
-belegten Timing- oder Board-Scaling-Fehler korrigieren.
+Unter der korrigierten Kartenflächen-Semantik genau ein Ersatz-/Sideboard-Paket
+für Burn und Artifacts robust über mehrere Seeds stabilisieren.

@@ -61,6 +61,24 @@ def test_immediate_multi_token_card_gains_reliable_go_wide_roles():
     assert _is_reasonable_token_card(refined)
 
 
+def test_transform_gated_back_face_loses_broad_token_and_anthem_roles():
+    refined = _with_precise_token_roles(
+        knowledge(
+            "Front // Back",
+            "Craft with artifact {5}{W}{W}. Return this card transformed. // "
+            "When this artifact enters, create two 1/1 creature tokens. "
+            "Creatures you control get +1/+1.",
+            ("token_maker", "token_payoff", "anthem"),
+            type_line="Artifact // Artifact",
+        )
+    )
+
+    assert "token_maker" not in refined.roles
+    assert "token_payoff" not in refined.roles
+    assert "anthem" not in refined.roles
+    assert not _is_reasonable_token_card(refined)
+
+
 def test_activated_maker_is_not_an_automatic_or_immediate_maker():
     refined = _with_precise_token_roles(
         knowledge(

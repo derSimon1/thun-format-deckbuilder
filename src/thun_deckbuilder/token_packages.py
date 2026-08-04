@@ -5,7 +5,11 @@ from collections import Counter
 from dataclasses import dataclass
 from typing import Mapping
 
-from thun_deckbuilder.card_analyzer import CardAnalysis, analyze_card
+from thun_deckbuilder.card_analyzer import (
+    CardAnalysis,
+    analyze_card,
+    cast_accessible_oracle_text,
+)
 from thun_deckbuilder.deck_generator import GeneratedDeck
 
 
@@ -76,7 +80,7 @@ def analyze_token_package(analysis: CardAnalysis) -> TokenPackageSignals:
     value so those broad words cannot fabricate an Aristocrats package.
     """
 
-    text = analysis.oracle_text.lower()
+    text = cast_accessible_oracle_text(analysis).lower()
     sentences = _sentences(text)
     token_sentences = tuple(
         sentence

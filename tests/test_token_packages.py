@@ -58,6 +58,23 @@ def test_creature_tokens_are_material_and_multiple_output_is_detected():
     assert not signals.creates_noncreature_tokens
 
 
+def test_transform_gated_back_face_is_not_an_immediate_token_package():
+    signals = analyze_token_package(
+        analyze_card(
+            raw_card(
+                "Front // Back",
+                "Craft with artifact {5}{W}{W}. Return this card transformed. // "
+                "When this artifact enters, create two 1/1 creature tokens. "
+                "Creatures you control get +1/+1.",
+                type_line="Artifact // Artifact",
+            )
+        )
+    )
+
+    assert not signals.creates_creature_tokens
+    assert not signals.anthem
+
+
 def test_activated_creature_sacrifice_is_an_outlet_even_if_it_makes_food():
     signals = analyze_token_package(
         analysis("{T}, Sacrifice a creature: Create a Food token.")

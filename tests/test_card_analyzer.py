@@ -1,5 +1,6 @@
 from thun_deckbuilder.card_analyzer import (
     analyze_card,
+    cast_accessible_oracle_text,
     detect_features,
 )
 
@@ -150,3 +151,36 @@ def test_analyze_card_includes_features():
 
     assert "damage" in analysis.features
     assert isinstance(analysis.features, frozenset)
+
+
+def test_transform_gated_back_face_is_not_cast_accessible():
+    analysis = analyze_card(
+        {
+            "name": "Front // Back",
+            "mana_value": 2,
+            "type_line": "Artifact // Artifact",
+            "oracle_text": (
+                "Craft with artifact {5}{W}{W}. "
+                "Return this card transformed. // "
+                "When this artifact enters, create two creature tokens. "
+                "Creatures you control get +1/+1."
+            ),
+        }
+    )
+
+    assert cast_accessible_oracle_text(analysis) == (
+        "Craft with artifact {5}{W}{W}. Return this card transformed."
+    )
+
+
+def test_modal_back_face_remains_cast_accessible():
+    analysis = analyze_card(
+        {
+            "name": "Creature // Adventure",
+            "mana_value": 4,
+            "type_line": "Creature // Sorcery — Adventure",
+            "oracle_text": "Vigilance // Create a 2/2 creature token.",
+        }
+    )
+
+    assert cast_accessible_oracle_text(analysis) == analysis.oracle_text

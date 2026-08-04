@@ -179,7 +179,46 @@ Eine vollständig qualifizierte v2-KGB existiert noch nicht. `baseline: none` be
 - **KGB-Entscheidung vor Push:** keine neue KGB. Keine Deck- oder
   Qualitätsmetrik verbessert sich; `baseline: none` besteht fort.
 
+## Transform-Gated-Faces-Zyklus – lokale Evidenz vor CI
+
+- **Ursache:** Der Anthem-/Combat-Audit zeigte, dass drei
+  `Clay-Fired Bricks // Cosmium Kiln` beim Cast für zwei Mana sofort als je
+  zwei Tokens plus permanentes Anthem simuliert wurden. Beide Effekte gehören
+  zur Rückseite, die erst nach Craft für `{5}{W}{W}` erreichbar ist.
+- **Hypothese:** Eine allgemeine cast-zugängliche Oracle-Sicht entfernt
+  transformationsgesperrte Rückseiteneffekte aus Produktion, Paket und Scoring,
+  ohne modal castbare Adventures oder Rooms abzuschneiden.
+- **Änderungen:** `cast_accessible_oracle_text` erkennt Transform-, Craft-,
+  Daybound- und Battle-Gates; Token-Paket, Produktion und Scoring konsumieren
+  die Funktion; präzise Token-Rollen entfernen verbleibende breite
+  Anthem-Labels. Workflow: `Token Go Wide – Transform-Gated Faces`.
+- **Lokale Validierung:** 65 gezielte Tests und 335 Gesamttests in 44,85 s
+  grün; Fast bestand mit Benchmarks `83/100/90/85/80`, sechs Matchups und
+  0 Validator-Regressionen. Arena 60/15 und 100 Hände mit Seed `1701`
+  bestanden; Keepability/T2/T3 bleiben `77/94/96 %`, Planfähigkeit
+  `73 → 70 %`. Deck-Hash
+  `133e45be5a4ca94dc6bb8dddeb6c811db9e2889ced915f54c018898441668815 → 50184dc7a3d0f998f7feb4b85c9151bac6385ad8d527ff6fc342b8e5fdc97dfa`.
+- **Vorher/Nachher:** Die drei Bricks verlassen die Liste; unter anderem kommen
+  drei `Hunted Witness`. Maker/Immediate/Multi/Anthem ändern sich
+  `35/30/22/7 → 33/27/18/6`, bleiben aber über den Profilminima. Goldfish
+  fällt ehrlich `24,94 → 19,94` Schaden, `66 → 47 %` Killrate und
+  `9,10 → 8,46` Board; der alte Wert war durch nicht erreichbare
+  Rückseiteneffekte aufgebläht.
+- **Regression/Rückkehrpfad:** Burn-BO3 fällt modelliert `48 → 0 %`,
+  Artifacts `98 → 60 %`, Mill bleibt `100 %`. Der Stand ist eine notwendige
+  Messkorrektur, aber keine spielerisch belastbare Baseline. Als nächster
+  abgeschlossener Zyklus werden Ersatzpaket und Sideboard-Cuts unter der
+  korrigierten Semantik stabilisiert; die alte False-Positive-Semantik ist kein
+  zulässiger Rollback.
+- **Reflexion:** Der Token-Benchmark steigt auf 100, obwohl die realistischere
+  Goldfish-Leistung sinkt. Das belegt erneut, dass Rollendichte allein keine
+  Deckqualität ist. Weitere mehrflächige Modalformen bleiben eine bekannte
+  Modellgrenze. Confidence: hoch für den Bricks-Fehler, mittel für die neue
+  Deckstärke.
+- **KGB-Entscheidung vor Push:** Regression festgestellt, keine neue KGB.
+  `baseline: none` besteht fort.
+
 ## Nächster ausführbarer Schritt
 
-Das Anthem-/Combatmodell anhand konkreter Token-Sequenzen prüfen und nur einen
-belegten Timing- oder Board-Scaling-Fehler korrigieren.
+Unter der korrigierten Kartenflächen-Semantik genau ein Ersatz-/Sideboard-Paket
+für Burn und Artifacts robust über mehrere Seeds stabilisieren.

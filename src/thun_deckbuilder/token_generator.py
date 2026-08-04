@@ -33,6 +33,8 @@ def _with_precise_token_roles(knowledge: CardKnowledge) -> CardKnowledge:
 
     if not signals.creates_creature_tokens:
         roles.discard(CardRole.TOKEN_MAKER.value)
+    if not signals.anthem:
+        roles.discard(CardRole.ANTHEM.value)
     if not signals.sacrifice_outlet:
         roles.discard(CardRole.SACRIFICE.value)
     if not any(

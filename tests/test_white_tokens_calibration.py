@@ -78,6 +78,29 @@ def test_persistent_anthem_beats_temporary_pump():
     assert persistent.score > temporary.score
 
 
+def test_transform_gated_back_face_does_not_score_as_cast_time_output():
+    gated = analyze_card(
+        {
+            "name": "Front // Back",
+            "mana_value": 2,
+            "mana_cost": "{1}{W}",
+            "colors": ["W"],
+            "color_identity": ["W"],
+            "type_line": "Artifact // Artifact",
+            "oracle_text": (
+                "Craft with artifact {5}{W}{W}. Return this card transformed. // "
+                "When this artifact enters, create two 1/1 creature tokens. "
+                "Creatures you control get +1/+1."
+            ),
+        }
+    )
+
+    result = score_token_card(gated)
+
+    assert not any("Token" in reason for reason in result.reasons)
+    assert not any("Team-Bonus" in reason for reason in result.reasons)
+
+
 def test_board_wipe_is_not_eligible_for_go_wide_tokens():
     card = knowledge("Destroy all creatures.", ("removal", "board_wipe"), mana_value=4)
     assert not _is_reasonable_token_card(card)

@@ -5,7 +5,11 @@ from collections import Counter
 from dataclasses import asdict, dataclass
 from typing import Iterable, Mapping
 
-from thun_deckbuilder.card_analyzer import CardAnalysis, analyze_card
+from thun_deckbuilder.card_analyzer import (
+    CardAnalysis,
+    analyze_card,
+    cast_accessible_oracle_text,
+)
 from thun_deckbuilder.token_packages import analyze_token_package
 
 
@@ -127,7 +131,7 @@ def analyze_token_production(analysis: CardAnalysis) -> TokenProductionProfile:
 
     sentences = tuple(
         sentence
-        for sentence in _sentences(analysis.oracle_text)
+        for sentence in _sentences(cast_accessible_oracle_text(analysis))
         if _is_creature_token_sentence(sentence)
     )
     if not sentences:

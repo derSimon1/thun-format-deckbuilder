@@ -28,6 +28,34 @@ class CardAnalysis:
     features: frozenset[str]
 
 
+_TRANSFORM_GATES = (
+    "cast it transformed",
+    "craft with",
+    "daybound",
+    "return this card transformed",
+    "transform this",
+)
+
+
+def cast_accessible_oracle_text(analysis: CardAnalysis) -> str:
+    """Return rules text available without first transforming the front face.
+
+    The card database preserves multi-face boundaries with `` // ``. Modal
+    faces such as Adventures and Rooms remain available because either half can
+    be cast. A back face gated by transform, craft, daybound, or a defeated
+    battle is not active when the front face is cast and must not be treated as
+    an immediate effect.
+    """
+
+    faces = analysis.oracle_text.split(" // ")
+    if len(faces) < 2:
+        return analysis.oracle_text
+    front = faces[0]
+    if any(marker in front.lower() for marker in _TRANSFORM_GATES):
+        return front
+    return analysis.oracle_text
+
+
 def _parse_number(value: Any) -> float | None:
     if value is None:
         return None

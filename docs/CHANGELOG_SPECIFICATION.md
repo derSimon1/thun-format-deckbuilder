@@ -1,5 +1,21 @@
 # Specification Changelog
 
+## 2.0 – Kartenflächen-Präzisierung 2026-08-04
+
+### Geändert
+
+- Transform-, Craft-, Daybound- und Battle-gebundene Rückseiteneffekte zählen
+  nicht als beim normalen Cast sofort verfügbare Produktion, Engine oder
+  Payoff.
+- Modal castbare Flächen wie Adventures und Rooms bleiben zugänglich.
+
+### Anlass
+
+Die Vorderseite von `Clay-Fired Bricks // Cosmium Kiln` wurde für zwei Mana
+fälschlich als sofortige Zwei-Token-Produktion plus permanentes Anthem
+simuliert, obwohl beide Effekte erst nach Craft für `{5}{W}{W}` auf der
+Rückseite verfügbar sind.
+
 ## Prompt 2.1 – 2026-08-03
 
 Operationalisierung des Development Systems für effizientere Drei-Stunden-Läufe. Die Spezifikation bleibt Version 2.0; der ausführende Prompt wurde auf 2.1 erhöht.

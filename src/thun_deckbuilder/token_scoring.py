@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import re
 
-from thun_deckbuilder.card_analyzer import CardAnalysis
+from thun_deckbuilder.card_analyzer import CardAnalysis, cast_accessible_oracle_text
 from thun_deckbuilder.card_scoring import ScoreBreakdown
 from thun_deckbuilder.token_plan import TokenPlan, token_card_signals
 
@@ -88,7 +88,7 @@ def score_token_card(
 
     score = 0.0
     reasons: list[str] = []
-    text = analysis.oracle_text.lower()
+    text = cast_accessible_oracle_text(analysis).lower()
     mana_value = analysis.mana_value
 
     curve_scores = {0: 2.0, 1: 5.0, 2: 5.0, 3: 3.5, 4: 1.5, 5: 0.0}
