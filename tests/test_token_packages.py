@@ -125,6 +125,18 @@ def test_additional_cost_is_not_a_repeatable_outlet():
     assert not signals.sacrifice_outlet
 
 
+def test_self_sacrificing_equipment_is_not_a_creature_outlet():
+    signals = analyze_token_package(
+        analysis(
+            "Equipped creature gets +1/+1 and has vigilance. "
+            "{W}, {T}, Sacrifice Citizen's Crowbar: Destroy target artifact."
+        )
+    )
+
+    assert signals.sacrifice_text
+    assert not signals.sacrifice_outlet
+
+
 def test_self_death_value_is_not_an_aristocrats_death_payoff():
     signals = analyze_token_package(
         analysis(

@@ -14,6 +14,7 @@ def knowledge(
     *,
     type_line="Artifact",
     mana_value=2,
+    synergies: tuple[str, ...] = (),
 ):
     raw = {
         "name": name,
@@ -28,7 +29,7 @@ def knowledge(
         card=raw,
         analysis=analyze_card(raw),
         roles=frozenset(roles),
-        synergies=frozenset(),
+        synergies=frozenset(synergies),
     )
 
 
@@ -117,11 +118,13 @@ def test_one_shot_sacrifice_loses_outlet_role():
             "As an additional cost to cast this spell, sacrifice a creature. Draw two cards.",
             ("sacrifice", "card_draw"),
             type_line="Sorcery",
+            synergies=("sacrifice_outlet",),
         )
     )
     assert "sacrifice" not in refined.roles
     assert "sacrifice_outlet" not in refined.roles
     assert "cast_additional_creature_sacrifice_1" in refined.roles
+    assert "sacrifice_outlet" not in refined.synergies
 
 
 def test_real_outlet_and_death_payoff_receive_precise_roles():
@@ -131,6 +134,7 @@ def test_real_outlet_and_death_payoff_receive_precise_roles():
             "Sacrifice another creature: Scry 1.",
             ("sacrifice",),
             type_line="Creature — Cleric",
+            synergies=("sacrifice_outlet",),
         )
     )
     payoff = _with_precise_token_roles(
@@ -142,6 +146,7 @@ def test_real_outlet_and_death_payoff_receive_precise_roles():
         )
     )
     assert {"sacrifice", "sacrifice_outlet"}.issubset(outlet.roles)
+    assert "sacrifice_outlet" in outlet.synergies
     assert {"death_payoff", "drain_payoff", "token_payoff"}.issubset(
         payoff.roles
     )

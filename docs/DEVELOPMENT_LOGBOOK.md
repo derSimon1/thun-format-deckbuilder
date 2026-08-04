@@ -352,8 +352,42 @@ Eine vollständig qualifizierte v2-KGB existiert noch nicht. `baseline: none` be
 - **KGB-Entscheidung vor Push:** keine neue KGB. `baseline: none` bleibt; die
   Änderung verbessert Regel- und Prozesswahrheit, nicht belegte Deckstärke.
 
+## Outlet-Synergy-Precision-Zyklus – lokale Evidenz vor CI
+
+- **Ursache:** `Duty Beyond Death` verlor im Token-Präzisionspfad seine falsche
+  Outlet-Rolle, behielt aber das breite `sacrifice_outlet`-Synergie-Tag. Jede
+  Kopie erhielt dadurch im Auswahltrace bis zu `+8` Fodder-Bonus.
+- **Hypothese:** Rollen und Synergien gemeinsam zu verfeinern entfernt die
+  Überbewertung und lässt den Builder eine kostenfreie Anthem-Alternative
+  wählen. Workflow: `Token Go Wide – Outlet Synergy Precision`.
+- **Änderungen:** Token-spezifisches Outlet-Tag folgt derselben präzisen
+  Definition wie die Rolle; die Aktivierung muss ausdrücklich eine Kreatur
+  opfern. `Citizen's Crowbar`, das nur sich selbst opfert, ist ein getestetes
+  Gegenbeispiel; echte Kreaturen-Outlets behalten Rolle und Tag.
+- **Lokale Validierung:** 29 gezielte Tests und 354 Gesamttests in 36,70 s
+  grün. Fast bestand mit Benchmarks `83/93/90/85/80`, fünf Archetypen, sechs
+  Matchups und 0 Regressionen. Arena 60/15 und 100 Hände mit Seed 1701
+  bestanden; Keepability/Plan/T2/T3 bleiben `77/73/94/96 %`.
+- **Vorher/Nachher:** Der falsche `+8`-Trace verschwindet, aber die Hypothese
+  einer Listenänderung ist widerlegt: Anthem-Mindestdichte wählt weiterhin drei
+  `Duty`. Mainboard, Hash
+  `30fd51cb579022c0ea647639b7ab0b5076ec71d56a7628988c68e5c0a46ffa5d`,
+  Goldfish `13,95/9 %/7,55` und Token-BO3 `0/0/100 %` bleiben unverändert.
+- **Verworfener Ansatz:** Ein globaler Outlet-Tag-Fix hob den Burn-Benchmark
+  scheinbar `83→100` und Artifacts `90→91`, senkte Burn-Goldfish jedoch
+  `45,99/98 %→42,41/96 %` und veränderte beide Listen stark. Der identische
+  Artefaktvergleich entlarvte Benchmark-Gaming durch eng bedingtes
+  `Hidetsugu's Second Rite`; der breite Fix wurde nicht übernommen.
+- **Reflexion:** Der Zyklus verbessert Trace-Wahrheit, nicht Deckstärke. Das
+  unveränderte Deck zeigt, dass die Pflichtdichte den falschen Bonus
+  überstimmt. Ein global korrekter Tag-Fix bleibt sinnvoll, darf aber nicht
+  ohne korrektes Modell für eng bedingten Burn landen. Confidence: hoch für
+  Token-Tag und Crowbar-Gegenbeispiel; niedrig für absolute Matchupwerte.
+- **KGB-Entscheidung vor Push:** keine neue KGB. `baseline: none` bleibt; kein
+  Deck- oder Qualitätsdelta ist belegt.
+
 ## Nächster ausführbarer Schritt
 
-Die Auswahl von `Duty Beyond Death` gegen cast-kostenfreie Alternativen mit
-einer reproduzierbaren Ressourcenzugänglichkeitsmetrik bewerten; nur bei
-belegtem globalem Qualitätsgewinn die Candidate-Wertung ändern.
+Das globale Outlet-Tagging nur gemeinsam mit der Bewertung und Simulation von
+„genau 10 Leben“-Burn korrigieren; die Änderung darf den Burn-Goldfish nicht
+durch Benchmark-Gaming verschlechtern.

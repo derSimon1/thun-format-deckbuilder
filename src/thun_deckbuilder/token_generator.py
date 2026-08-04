@@ -8,6 +8,7 @@ from thun_deckbuilder.deck_generator import GeneratedDeck
 from thun_deckbuilder.engine_density import evaluate_token_engine_density
 from thun_deckbuilder.knowledge_base import CardKnowledge, KnowledgeBase
 from thun_deckbuilder.strategy_commitment import evaluate_token_commitment
+from thun_deckbuilder.synergy_tag import SynergyTag
 from thun_deckbuilder.token_packages import analyze_token_package
 from thun_deckbuilder.token_plan import TokenPlan, detect_token_plan
 from thun_deckbuilder.token_production import (
@@ -31,6 +32,7 @@ def _with_precise_token_roles(knowledge: CardKnowledge) -> CardKnowledge:
     signals = analyze_token_package(knowledge.analysis)
     production = analyze_token_production(knowledge.analysis)
     roles = {str(role) for role in knowledge.roles}
+    synergies = {str(tag) for tag in knowledge.synergies}
 
     if not signals.creates_creature_tokens:
         roles.discard(CardRole.TOKEN_MAKER.value)
@@ -38,6 +40,7 @@ def _with_precise_token_roles(knowledge: CardKnowledge) -> CardKnowledge:
         roles.discard(CardRole.ANTHEM.value)
     if not signals.sacrifice_outlet:
         roles.discard(CardRole.SACRIFICE.value)
+        synergies.discard(SynergyTag.SACRIFICE_OUTLET.value)
     if not any(
         (
             signals.anthem,
@@ -74,6 +77,7 @@ def _with_precise_token_roles(knowledge: CardKnowledge) -> CardKnowledge:
                 CardRole.SACRIFICE_OUTLET.value,
             }
         )
+        synergies.add(SynergyTag.SACRIFICE_OUTLET.value)
     if signals.death_payoff:
         roles.update(
             {
@@ -101,7 +105,11 @@ def _with_precise_token_roles(knowledge: CardKnowledge) -> CardKnowledge:
     if sacrifice_cost:
         roles.add(f"cast_additional_creature_sacrifice_{sacrifice_cost}")
 
-    return replace(knowledge, roles=frozenset(roles))
+    return replace(
+        knowledge,
+        roles=frozenset(roles),
+        synergies=frozenset(synergies),
+    )
 
 
 def _base_token_candidate(knowledge: CardKnowledge) -> bool:

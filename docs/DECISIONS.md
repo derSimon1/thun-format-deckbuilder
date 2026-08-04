@@ -267,3 +267,19 @@ nicht als Ressourcenfreigabe.
 eigentlich geopferten Körper weiter angreifen. Beim anschließenden realen
 Fast-Lauf blockierte außerdem die Gesundheitsprüfung unter Windows ihren
 eigenen Datenbankersatz, weil `sqlite3.Connection.__exit__` nicht schließt.
+
+## D-023 – Token-Präzisionssichten verfeinern Rollen und Synergien gemeinsam
+
+**Datum:** 2026-08-04
+**Status:** akzeptiert
+
+Die Token-spezifische Kartenansicht entfernt oder ergänzt präzise
+Opferoutlet-Rollen und `sacrifice_outlet`-Synergie-Tags gemeinsam. Als
+Kreaturen-Outelt gilt nur eine aktivierte Fähigkeit, deren Kosten ausdrücklich
+eine Kreatur opfern; ein Wort „creature“ in einem benachbarten Ausrüstungssatz
+genügt nicht.
+
+**Begründung:** `Duty Beyond Death` hatte keine Outlet-Rolle mehr, erhielt im
+Auswahltrace aber weiterhin den vollen Fodder-Bonus. Nach Entfernung dieses
+Tags wurde `Citizen's Crowbar` durch das zu breite Kostenfenster als Outlet
+eingestuft, obwohl es nur sich selbst opfert.

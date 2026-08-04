@@ -1,5 +1,21 @@
 # Specification Changelog
 
+## 2.0 – Token-spezifische Outlet-Synergien 2026-08-04
+
+### Geändert
+
+- Die präzise Token-Sicht verfeinert Outlet-Rollen und Outlet-Synergie-Tags
+  gemeinsam.
+- Nur eine Aktivierung, die ausdrücklich eine Kreatur opfert, gilt im
+  Token-Plan als Kreaturen-Opferoutlet.
+
+### Anlass
+
+`Duty Beyond Death` verlor bereits seine falsche Outlet-Rolle, erhielt über
+das breite Legacy-Tag aber weiterhin je Auswahl bis zu acht Synergiepunkte.
+Nach dessen Entfernung wurde `Citizen's Crowbar` wegen eines benachbarten
+Wortes „creature“ fälschlich als Kreaturen-Outelt gewählt.
+
 ## 2.0 – Zusätzliche Cast-Kosten 2026-08-04
 
 ### Geändert

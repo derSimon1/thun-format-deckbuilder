@@ -57,7 +57,10 @@ def _sacrifice_outlet(text: str) -> bool:
 
     for match in re.finditer(r"([^.:\n]{0,180}):", text):
         cost = match.group(1).lower()
-        if "sacrifice" not in cost or "creature" not in cost:
+        if not re.search(
+            r"sacrifice (?:a|another|one|two|three|four|\d+) creatures?",
+            cost,
+        ):
             continue
         if "as an additional cost" in cost:
             continue

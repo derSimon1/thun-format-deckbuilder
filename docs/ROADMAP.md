@@ -27,6 +27,7 @@
   Verfügbarkeit sowie Boardverbrauch modellieren
 - [x] SQLite-Integritätsprüfung vor atomarem Datenbankersatz unter Windows
   schließen
+- [x] Token-spezifische Outlet-Rollen und -Synergien gemeinsam präzisieren
 
 ## Stabiler Stand – Run 78
 
@@ -38,25 +39,22 @@
 - Burn-Plan: 3 `Dawnbringer Cleric` hinein; 2 `Descendant of Storms`, 1 `Duty Beyond Death` heraus
 - Mainboard-Hash `133e45be5a4ca94dc6bb8dddeb6c811db9e2889ced915f54c018898441668815`
 
-## Aktueller Zyklus – Additional Sacrifice Costs
+## Aktueller Zyklus – Outlet Synergy Precision
 
-1. zusätzliche Kreaturen-Opferkosten aus Oracle-Text erkennen.
-2. Kostenmetadaten vom funktionalen Rollensystem trennen und bis zum finalen
-   Deckeintrag erhalten.
-3. Cast nur mit ausreichendem Board erlauben und die geopferten Körper
-   tatsächlich verbrauchen.
-4. SQLite-Gesundheitsprüfung vor dem Windows-Dateiersatz sicher schließen.
+1. falschen Legacy-Outletbonus aus dem `Duty`-Auswahltrace entfernen.
+2. Rollen und Synergie-Tags in derselben Token-Präzisionssicht verfeinern.
+3. selbstopferndes Equipment von echten Kreaturen-Outlets unterscheiden.
+4. breite globale Änderung gegen Benchmarks und Goldfish gegenprüfen.
 
 ## Prioritäten danach
 
-1. Kandidaten mit zusätzlichen Boardkosten anhand der realen
-   Ressourcenzugänglichkeit neu gewichten.
+1. globales Outlet-Tagging zusammen mit eng bedingtem Burn korrekt modellieren.
 2. Bedingte/dead-on-board Kandidaten unter korrekter Semantik vergleichen.
 3. Modellierte Matchups gegen reale Spiele kalibrieren.
 4. Regression-Baseline statt `baseline: none`.
 
 ## Genau ein nächster ausführbarer Schritt
 
-Die Auswahl von `Duty Beyond Death` gegen cast-kostenfreie Alternativen mit
-einer reproduzierbaren Ressourcenzugänglichkeitsmetrik bewerten; nur bei
-belegtem globalem Qualitätsgewinn die Candidate-Wertung ändern.
+Das globale Outlet-Tagging nur gemeinsam mit der Bewertung und Simulation von
+„genau 10 Leben“-Burn korrigieren; die Änderung darf den Burn-Goldfish nicht
+durch Benchmark-Gaming verschlechtern.

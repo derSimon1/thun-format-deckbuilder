@@ -80,6 +80,10 @@ Boardressourcen vorhanden sind; bezahlte Ressourcen werden vor Anwendung des
 Karteneffekts verbraucht. Maschinenlesbare Kostenmarker bleiben am finalen
 Deckeintrag erhalten, zählen aber nicht als funktionale Deckrolle.
 
+Plan-spezifische Präzisionssichten müssen Rollen und die dazugehörigen
+Synergie-Tags gemeinsam verfeinern. Eine entfernte falsche Outlet-Rolle darf
+nicht über ein breites Legacy-Tag weiterhin dynamische Outlet-Boni erhalten.
+
 ## 6. Produktivität, No-Change und Regressionen
 
 Ein Zyklus darf ohne Codeänderung enden, wenn eine Sicherheitsbedingung greift oder keine belegte Verbesserung möglich ist. Dann sind zwingend zu dokumentieren:

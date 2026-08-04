@@ -78,6 +78,15 @@ def test_full_pool_preserves_additional_sacrifice_cost_metadata():
 
     duty = next(entry for entry in deck.mainboard if entry.name == "Duty Beyond Death")
     assert "cast_additional_creature_sacrifice_1" in duty.roles
+    duty_traces = [
+        trace for trace in deck.selections if trace.card_name == "Duty Beyond Death"
+    ]
+    assert duty_traces
+    assert all(
+        "Sacrifice outlet is enabled" not in component.reason
+        for trace in duty_traces
+        for component in trace.score.components
+    )
 
 
 def test_generic_builder_generates_token_deck():

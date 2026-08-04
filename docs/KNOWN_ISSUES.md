@@ -87,3 +87,16 @@ Der v2-Validator wird auf Burn, Tokens, Artifacts, Control und Mill umgestellt. 
 **Priorität:** mittel
 
 Runs 42 und 43 zeigen für Mill 0 % planfähige und 100 % marginale Hände. Das kann auf zu wenige erkannte Mill-Enabler in der erzeugten Liste, unzureichende Oracle-Text-Weitergabe oder eine zu strenge Mill-Heuristik zurückgehen. Keine Schwellenwerte ändern, bevor die Ursache anhand der Rohhände belegt ist.
+
+## KI-012 – Globales Outlet-Tagging verdeckt eng bedingten Burn
+
+**Status:** offen
+**Priorität:** hoch
+
+Die globale Legacy-Erkennung markiert zusätzliche Opferkosten weiterhin als
+`sacrifice_outlet`. Ein versuchsweiser globaler Präzisionsfix änderte Burn von
+Benchmark 83 auf 100, senkte aber Goldfish-Schaden/Killrate von 45,99/98 % auf
+42,41/96 %, weil unter anderem `Hidetsugu's Second Rite` überbewertet wurde.
+Die globale Korrektur darf erst zusammen mit einer realistischen Bewertung und
+Simulation des „genau 10 Leben“-Gates erfolgen; der Benchmarkanstieg allein ist
+kein Qualitätsnachweis.
