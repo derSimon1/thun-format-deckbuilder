@@ -434,6 +434,30 @@ def test_aristocrats_material_without_outlet_or_payoff_is_not_plan_capable():
     )
 
 
+def test_artifact_card_cannot_be_its_own_entire_two_piece_package():
+    self_counting = GeneratedDeck(
+        mainboard=(
+            entry(
+                "Self-Counting Relic",
+                36,
+                1,
+                type_line="Artifact",
+                roles=("artifact_enabler", "artifact_engine"),
+                mana_cost="{1}",
+            ),
+        ),
+        lands=24,
+    )
+
+    report = OpeningHandSimulator().simulate_plan(
+        self_counting,
+        archetype="artifacts",
+        seed=11,
+    )
+
+    assert report.plan_capable_pct == 0
+
+
 @pytest.mark.parametrize(
     ("archetype", "entries", "colors"),
     (
@@ -445,6 +469,7 @@ def test_aristocrats_material_without_outlet_or_payoff_is_not_plan_capable():
                     18,
                     1,
                     type_line="Artifact",
+                    roles=("artifact_enabler",),
                     reasons=("Günstiger Artifact Enabler",),
                     mana_cost="{1}",
                 ),
@@ -452,6 +477,7 @@ def test_aristocrats_material_without_outlet_or_payoff_is_not_plan_capable():
                     "Affinity Payoff",
                     9,
                     3,
+                    roles=("artifact_payoff",),
                     reasons=("Affinity payoff",),
                     mana_cost="{2}{U}",
                     colored="U",

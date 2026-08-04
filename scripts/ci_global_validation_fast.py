@@ -230,6 +230,47 @@ def _control_deck_diagnostics(deck) -> dict[str, object]:
     }
 
 
+def _artifact_deck_diagnostics(deck) -> dict[str, object]:
+    def metadata(entry, prefix: str) -> int:
+        for role in entry.roles:
+            match = re.fullmatch(rf"{re.escape(prefix)}(\d+)", str(role))
+            if match:
+                return int(match.group(1))
+        return 0
+
+    cards = [
+        {
+            "name": entry.name,
+            "quantity": entry.quantity,
+            "mana_value": entry.mana_value,
+            "enabler": "artifact_enabler" in entry.roles,
+            "payoff": "artifact_payoff" in entry.roles,
+            "engine": "artifact_engine" in entry.roles,
+            "immediate_artifacts": metadata(entry, "artifact_immediate_"),
+            "conditional_artifacts": metadata(entry, "artifact_conditional_"),
+            "repeatable_artifacts": metadata(entry, "artifact_repeatable_"),
+            "roles": list(entry.roles),
+            "reasons": list(entry.reasons),
+        }
+        for entry in deck.mainboard
+    ]
+    return {
+        "enabler_copies": sum(card["quantity"] for card in cards if card["enabler"]),
+        "payoff_copies": sum(card["quantity"] for card in cards if card["payoff"]),
+        "engine_copies": sum(card["quantity"] for card in cards if card["engine"]),
+        "immediate_capacity": sum(
+            card["quantity"] * card["immediate_artifacts"] for card in cards
+        ),
+        "conditional_capacity": sum(
+            card["quantity"] * card["conditional_artifacts"] for card in cards
+        ),
+        "repeatable_capacity": sum(
+            card["quantity"] * card["repeatable_artifacts"] for card in cards
+        ),
+        "cards": cards,
+    }
+
+
 def _write_mill_capacity() -> None:
     cards: list[dict[str, object]] = []
     allowed_colors = {"U", "B"}
@@ -322,6 +363,13 @@ def validate_archetype_with_plan_hands(
             json.dumps(control_payload, indent=2, sort_keys=True) + "\n",
             encoding="utf-8",
         )
+    if archetype == "artifacts":
+        artifact_payload = _artifact_deck_diagnostics(deck)
+        metrics["artifact_diagnostics"] = artifact_payload
+        (prefix / "artifact-access.json").write_text(
+            json.dumps(artifact_payload, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
     (prefix / f"{archetype}-validation.json").write_text(
         json.dumps(metrics, indent=2, sort_keys=True) + "\n",
         encoding="utf-8",
@@ -358,6 +406,16 @@ def validate_archetype_with_plan_hands(
                 f"{metrics['control_diagnostics']['card_advantage_copies']} "
                 f"finishers:{metrics['control_diagnostics']['finisher_copies']} "
                 f"sweepers:{metrics['control_diagnostics']['sweeper_copies']}\n"
+            )
+        if archetype == "artifacts":
+            output.write(
+                "artifact_diagnostics="
+                f"enablers:{metrics['artifact_diagnostics']['enabler_copies']} "
+                f"payoffs:{metrics['artifact_diagnostics']['payoff_copies']} "
+                f"engines:{metrics['artifact_diagnostics']['engine_copies']} "
+                f"immediate:{metrics['artifact_diagnostics']['immediate_capacity']} "
+                f"conditional:{metrics['artifact_diagnostics']['conditional_capacity']} "
+                f"repeatable:{metrics['artifact_diagnostics']['repeatable_capacity']}\n"
             )
     return deck, metrics
 

@@ -8,6 +8,7 @@ from thun_deckbuilder.candidate_evaluator import CandidateEvaluator
 from thun_deckbuilder.candidate_score import CandidateScore
 from thun_deckbuilder.card_contribution import CardContribution, contribution_from_knowledge
 from thun_deckbuilder.card_analyzer import simulation_metadata_roles
+from thun_deckbuilder.artifact_signals import artifact_metadata_roles
 from thun_deckbuilder.deck_generator import DeckEntry, parse_mana_cost
 from thun_deckbuilder.deck_needs import DeckNeedsAnalyzer
 from thun_deckbuilder.deck_quality import DeckQualityAnalyzer, DeckQualityReport
@@ -51,6 +52,18 @@ def _entry(
 ) -> DeckEntry:
     analysis = candidate.knowledge.analysis
     mana_cost = parse_mana_cost(str(candidate.knowledge.card.get("mana_cost", "")))
+    artifact_metadata = (
+        artifact_metadata_roles(analysis)
+        if candidate.knowledge.roles.intersection(
+            {
+                "artifact_enabler",
+                "artifact_engine",
+                "artifact_payoff",
+                "artifact_producer",
+            }
+        )
+        else ()
+    )
     return DeckEntry(
         name=analysis.name,
         quantity=quantity,
@@ -65,6 +78,7 @@ def _entry(
                     *(str(role) for role in candidate.knowledge.roles),
                     *simulation_metadata_roles(analysis),
                     *mill_simulation_metadata_roles(analysis),
+                    *artifact_metadata,
                 }
             )
         ),

@@ -352,3 +352,26 @@ unter der korrigierten Definition aber nur 33 %. Er zählte unter anderem
 Siren's Ruse, Friedhofsexil, bedingte Schadens-Removal und Selection als
 vollwertige Stabilisierung. Gleichzeitig ignorierte die Matchup-Heuristik
 Planeswalker-Winconditions.
+
+## D-027 – Artifact-Zugang folgt cast-zugänglichen Rollen und Kapazitäten
+
+**Datum:** 2026-08-04
+**Status:** akzeptiert
+
+Ein Artifact-Enabler ist ein beim normalen Cast entstehendes
+Artifact-Permanent: die castbare Vorderseite selbst oder ein sofort erzeugter
+Artifact-Token. Bedingte, aktivierte, Death- und wiederholbare Produktion wird
+separat ausgewiesen. Ein Payoff muss Artifact-Dichte allgemein verwerten;
+namensgebundene Skalierung und bloße Textnennungen genügen nicht. Engine ist
+eine wiederholbare Produktions- oder Payoff-Fähigkeit.
+
+Candidate Eligibility, Scoring, Optimizer, Benchmark, Opening-Hand-Plan,
+Goldfish und CI-Diagnose verwenden dieselben zentralen Rollen. Numerische
+Kapazitäten werden erst am finalen Deckeintrag als Simulationsmetadaten
+ergänzt. Ein Opening-Hand-Paket benötigt zwei verschiedene Karten für Enabler
+und Engine/Payoff.
+
+**Begründung:** Textnennungen, Artifact-Rückseiten, Reminder-Text und
+Aktivierungstabellen blähten die frühere Planfähigkeit auf 71 % auf, während
+der Goldfish sofortige Tokens ausließ. Unter der einheitlichen Definition ist
+dieselbe Liste zu 48 % planfähig und erzeugt 5,95 statt 4,61 Artefakte.

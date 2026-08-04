@@ -149,6 +149,35 @@ def test_artifact_and_shrine_reports_track_board_progress():
     assert shrine_report.average_shrines_in_play > 0
 
 
+def test_artifact_goldfish_counts_immediate_token_metadata():
+    plain = GeneratedDeck(
+        mainboard=(entry("Relic", 36, 1, type_line="Artifact"),),
+        lands=24,
+    )
+    investigate = GeneratedDeck(
+        mainboard=(
+            entry(
+                "Investigating Relic",
+                36,
+                1,
+                type_line="Artifact",
+                roles=("artifact_immediate_2",),
+            ),
+        ),
+        lands=24,
+    )
+
+    simulator = GoldfishSimulator()
+    plain_report = simulator.simulate(plain, archetype="artifacts", samples=300)
+    investigate_report = simulator.simulate(
+        investigate, archetype="artifacts", samples=300
+    )
+
+    assert investigate_report.average_artifacts_in_play > (
+        plain_report.average_artifacts_in_play
+    )
+
+
 def test_token_payoffs_without_a_board_do_not_create_damage():
     deck = GeneratedDeck(
         mainboard=(entry("Empty Anthem", 36, 1, roles=("anthem",)),),

@@ -4,6 +4,10 @@ from dataclasses import replace
 from typing import Callable
 
 from thun_deckbuilder.card_analyzer import CardAnalysis
+from thun_deckbuilder.artifact_signals import (
+    analyze_artifact,
+    artifact_functional_roles,
+)
 from thun_deckbuilder.card_scoring import (
     ScoreBreakdown,
     score_artifact_card,
@@ -78,10 +82,15 @@ def _within_colors(analysis: CardAnalysis, colors: tuple[str, ...]) -> bool:
 
 def _artifact_eligible(knowledge: CardKnowledge, colors: tuple[str, ...]) -> bool:
     analysis = knowledge.analysis
-    text = analysis.oracle_text.lower()
     if analysis.is_land or not _within_colors(analysis, colors):
         return False
-    return analysis.is_artifact or "artifact" in text or score_artifact_card(analysis).score >= 4
+    signals = analyze_artifact(analysis)
+    return (
+        signals.enabler
+        or signals.payoff
+        or signals.engine
+        or signals.conditional_artifacts > 0
+    )
 
 
 def _shrine_eligible(knowledge: CardKnowledge, colors: tuple[str, ...]) -> bool:
@@ -219,6 +228,17 @@ class ArtifactStrategy(CalibratedStrategy):
             profile=ARTIFACT_PROFILE,
             scorer=score_artifact_card,
             eligibility=_artifact_eligible,
+        )
+
+    def _knowledge_cards(self, knowledge_base) -> tuple[CardKnowledge, ...]:
+        return tuple(
+            replace(
+                knowledge,
+                roles=frozenset(
+                    {*knowledge.roles, *artifact_functional_roles(knowledge.analysis)}
+                ),
+            )
+            for knowledge in knowledge_base.cards
         )
 
 

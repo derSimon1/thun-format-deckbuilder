@@ -184,7 +184,11 @@ Maschinenlesbare Rohdaten oder eine kompakte Zusammenfassung werden unter `artif
 - **Tokens – Go Wide:** frühe Maker plus realistisches Payoff- oder Scaling-Fenster.
 - **Tokens – Value Tokens:** frühe Token-Erzeugung plus wiederholbare Value-Engine.
 - **Tokens – Aristocrats:** Material plus Outlet plus Death-/Drain-/Sacrifice-Payoff.
-- **Artifacts:** früher Enabler plus Synergie-Piece, Engine oder Payoff.
+- **Artifacts:** früh castbarer Enabler plus eine andere erreichbare Engine
+  oder ein Payoff. Enabler sind castbare Artifact-Permanents oder sofort
+  erzeugte Artifact-Tokens; bedingte, aktivierte, Death- und wiederholbare
+  Produktion wird getrennt ausgewiesen. Namensgebundene Skalierung und bloße
+  Textnennungen sind keine allgemeinen Artifact-Payoffs.
 - **Control:** relevante frühe Interaktion gegen den konkreten gegnerischen
   Plan, anschließende Stabilisierung, echter Netto-Kartenvorteil und belastbare
   Wincondition. Cycling und reine Kartenauswahl sind kein Kartenvorteil;

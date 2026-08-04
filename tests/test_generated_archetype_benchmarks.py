@@ -17,10 +17,16 @@ def entry(name, qty, mv, type_line, roles=(), reasons=()):
 def test_artifact_benchmark_counts_artifact_density():
     deck = GeneratedDeck(
         mainboard=(
-            entry("Cheap Artifact", 24, 1, "Artifact"),
-            entry("Draw Engine", 5, 2, "Artifact Creature", ("card_draw",)),
+            entry("Cheap Artifact", 24, 1, "Artifact", ("artifact_enabler",)),
+            entry(
+                "Draw Engine",
+                5,
+                2,
+                "Artifact Creature",
+                ("artifact_enabler", "card_draw"),
+            ),
             entry("Removal", 5, 2, "Instant", ("removal",)),
-            entry("Payoff", 4, 3, "Creature", reasons=("Affinity-Payoff",)),
+            entry("Payoff", 4, 3, "Creature", ("artifact_payoff",)),
         ),
         lands=22,
     )
@@ -30,6 +36,19 @@ def test_artifact_benchmark_counts_artifact_density():
     assert report.signature_items[0].key == "artifact_cards"
     assert report.signature_items[0].actual == 29
     assert report.land_item.score == 100
+
+
+def test_artifact_benchmark_ignores_legacy_reason_without_central_role():
+    deck = GeneratedDeck(
+        mainboard=(
+            entry("Legacy Text Only", 6, 2, "Creature", reasons=("Affinity-Payoff",)),
+        ),
+        lands=22,
+    )
+
+    report = BenchmarkAnalyzer().analyze(deck, "artifacts")
+
+    assert report.signature_items[1].actual == 0
 
 
 def test_control_benchmark_counts_answers_and_finishers():

@@ -35,7 +35,12 @@ def _knowledge(
 
 def test_calibrated_profiles_do_not_force_generic_support():
     for profile in (ARTIFACT_PROFILE, SHRINE_PROFILE):
-        assert all(target.minimum == 0 for target in profile.role_targets)
+        generic_minimums = (
+            target.minimum
+            for target in profile.role_targets
+            if str(target.role) in {"card_draw", "removal", "ramp"}
+        )
+        assert all(minimum == 0 for minimum in generic_minimums)
     generic_mill_support = {
         str(target.role): target.minimum
         for target in MILL_PROFILE.role_targets

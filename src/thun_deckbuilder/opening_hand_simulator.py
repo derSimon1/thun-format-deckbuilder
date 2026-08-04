@@ -135,9 +135,7 @@ def _is_core(entry, archetype: str) -> bool:
     name = entry.name.lower()
     reasons = " ".join(entry.reasons).lower()
     if archetype == "artifacts":
-        return "artifact" in entry.type_line.lower() or any(
-            phrase in reasons for phrase in CORE_PHRASES[archetype]
-        )
+        return "artifact_enabler" in entry.roles
     return any(
         phrase in name or phrase in reasons
         for phrase in CORE_PHRASES.get(archetype, ())
@@ -362,24 +360,9 @@ def _signals(card: _PlanCard, archetype: str, plan: str) -> dict[str, bool]:
             payoff = token_payoff
         finisher = finisher or (payoff and card.mana_value >= 3)
     elif archetype == "artifacts":
-        artifact = (
-            "artifact" in card.type_line.lower()
-            or "artifact" in text
-            or "artefakt" in text
-        )
-        enabler = artifact and card.mana_value <= 2
-        payoff = any(
-            phrase in text
-            for phrase in (
-                "affinity",
-                "improvise",
-                "metalcraft",
-                "artifactfall",
-                "artefakt-synergie",
-                "payoff",
-            )
-        ) or "finisher" in roles
-        engine = engine or (artifact and repeatable)
+        enabler = "artifact_enabler" in roles and card.mana_value <= 3
+        payoff = "artifact_payoff" in roles
+        engine = "artifact_engine" in roles
         finisher = finisher or payoff
     elif archetype == "mill":
         mill = "mill_source" in roles
@@ -627,7 +610,22 @@ def _classify_plan(
     elif archetype == "artifacts":
         enablers = count("enabler", castable_by=3)
         support = count("engine") + count("payoff")
-        if enablers > 0 and support > 0 and not color_error:
+        enabler_cards = tuple(
+            card
+            for card in spells
+            if signals[id(card)]["enabler"] and id(card) in castable_t3_ids
+        )
+        support_cards = tuple(
+            card
+            for card in spells
+            if signals[id(card)]["engine"] or signals[id(card)]["payoff"]
+        )
+        complete_package = any(
+            enabler is not support_card
+            for enabler in enabler_cards
+            for support_card in support_cards
+        )
+        if complete_package and not color_error:
             classification = HandPlanClassification.PLAN_CAPABLE
             reasons.append("artifact_enabler_plus_synergy")
         elif enablers > 0 or support > 0:

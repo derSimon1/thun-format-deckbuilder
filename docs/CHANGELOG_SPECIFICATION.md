@@ -1,5 +1,21 @@
 # Specification Changelog
 
+## 2.2 – 2026-08-04 – Artifact Enabler/Payoff Access
+
+### Geändert
+
+- Artifact-Enabler beruhen auf castbaren Permanents oder sofortigen Tokens.
+- bedingte, wiederholbare und Death-Produktion erhält getrennte Kapazitäten.
+- Artifact-Payoffs und Engines sind zentrale Rollen für Auswahl, Benchmark,
+  Opening Hands, Goldfish und Diagnose.
+- Ein Opening-Hand-Paket benötigt verschiedene Enabler- und Supportkarten.
+
+### Anlass
+
+Textnennungen, Rückseiten, Reminder-Text und Aktivierungstabellen erhöhten die
+gemeldete Planfähigkeit fälschlich; sofort erzeugte Tokens fehlten dagegen im
+Goldfish.
+
 ## 2.1 – 2026-08-04 – Control Stabilization Sequence
 
 ### Geändert

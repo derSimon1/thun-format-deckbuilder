@@ -110,6 +110,53 @@ Eine vollständig qualifizierte v2-KGB existiert noch nicht. `baseline: none` be
   Auswahlkorrektheit ist lokal belegt; `baseline: none` sowie fehlende reale
   Spieldaten verhindern eine voll qualifizierte KGB.
 
+## Artifacts – Enabler/Payoff Access (lokale Evidenz vor CI)
+
+- **Ursache:** Opening Hands behandelten jede Erwähnung von „artifact“ als
+  Enabler und alte Scoring-Begründungen als Payoff. Der Goldfish zählte nur
+  gewirkte Artifact-Karten, nicht sofort erzeugte Tokens. Transformierte
+  Rückseiten, Reminder-Text, d20-Tabellen und der Kartenname `Improvised
+  Weaponry` erzeugten weitere False Positives.
+- **Hypothese:** Eine zentrale, cast-zugängliche Definition für Enabler,
+  bedingte/sofortige Produktion, Engines und Payoffs vereinheitlicht Candidate
+  Eligibility, Scoring, Optimizer, Benchmark, Opening Hands und Goldfish.
+- **Änderungen:** zentrale Artifact-Signale und maschinenlesbare
+  Sofort-/Bedingt-/Wiederholkapazitäten; Artifact-Benchmark verwendet Rollen
+  statt Begründungstext; zwei verschiedene Karten müssen Enabler und
+  Engine/Payoff eines Opening-Hand-Plans bilden; neues `artifact-access.json`.
+- **Gegenbeispiele:** `Destroy target artifact` ist kein Enabler;
+  Death-Treasure ist nicht sofort; `Powerstone Shard` ist nur namensgebundene
+  Skalierung; `Improvised Weaponry` hat nicht die Mechanik Improvise;
+  `Invasion of Kaladesh` ist beim Front-Cast kein Artifact-Permanent;
+  `Spiked Pit Trap` erbt die Aktivierungs-/Selbstopferbedingung seiner
+  d20-Tabelle; Investigate-Reminder erzeugt keinen zweiten Clue.
+- **Lokale Validierung:** 78 gezielte Tests, 385 Gesamttests in 26,59 s und
+  Fast `PASS`. Benchmarks Burn/Tokens/Control/Mill bleiben 83/93/92/82 und
+  ihre Deck-Hashes bleiben exakt stabil; Artifact wird unter zentralen Rollen
+  91 → 97. Alle fünf Arena-Exporte sind 60/15.
+- **Fairer Championvergleich:** Die erzeugte 60/15-Liste ist namens- und
+  mengenidentisch. Der Hash wechselt wegen neuer Rollen-/Kapazitätsmarker von
+  `662c4e05e2895c37d526e25d09a107c10d94c4758d94ed7bb13b7ba639c4ee00`
+  auf `d492b7e085ad9240545e2d311cf52037a0f9d4a398d844ece226b73dcd77daa1`.
+  Keepability/T2/T3 sind fair 71/95/96 %, Manaqualität 97.
+- **Messkorrektur:** Planfähigkeit fällt ehrlich 71 → 48 %, weil sechs echte
+  Payoffs statt Textnennungen gezählt werden. Der Goldfish steigt 4,61 → 5,95
+  Artefakte, weil sofortige Tokens jetzt zählen. Diagnose: 27 Enabler,
+  6 Payoffs, 10 Engines; Kapazitäten sofort/bedingt/wiederholbar 33/18/7.
+- **Verworfene Ansätze:** Harte 9- beziehungsweise 6-Payoff-Ziele erhöhten
+  die faire Planfähigkeit bis 68 %, senkten aber Benchmark bis 75,
+  Keepability bis 64 % und verschlechterten Farbe/Kurve. Optionale
+  Composition-Ziele erreichten nur 34–48 %. Keine dieser Listen wurde
+  übernommen.
+- **Matchups/Risiko:** Tokens gegen Artifacts bleibt 0/100 %. Control gegen
+  Artifacts kippt durch die höhere wahrheitsgemäße Boardmessung von
+  68/18/13 auf 0/94/6 %. Das belegt hohe Sensitivität der abstrakten
+  Matchup-Heuristik, nicht eine reale Spielstärkenänderung. Confidence: hoch
+  für Rollen und Kapazitäten, niedrig für absolute Matchupwerte.
+- **KGB-Entscheidung vor Push:** keine neue KGB. Der Zyklus verbessert
+  Messwahrheit und Reproduzierbarkeit ohne Listenänderung; `baseline: none`
+  und fehlende reale Matchupdaten verhindern eine voll qualifizierte KGB.
+
 ## Token Go Wide – stabiler Kern
 
 - Run 74: Benchmark 98, 35 Maker, 30 sofortige Maker, 22 Multi-Maker, 7 Anthems, 0 Outlets.

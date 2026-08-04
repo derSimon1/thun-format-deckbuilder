@@ -65,18 +65,11 @@ BENCHMARKS: dict[str, BenchmarkProfile] = {
         curve_targets=(("1", 10), ("2", 14), ("3", 9), ("4+", 5)),
         lands=22,
         signature_targets=(
-            SignatureTarget("artifact_cards", 28, type_phrases=("artifact",)),
+            SignatureTarget("artifact_cards", 28, roles=("artifact_enabler",)),
             SignatureTarget(
                 "artifact_payoffs",
                 6,
-                reason_phrases=(
-                    "Affinity-Payoff",
-                    "Improvise-Payoff",
-                    "Metalcraft-Payoff",
-                    "Artifactfall-Payoff",
-                    "Artefakt-Skalierung",
-                    "Artefakt-Anthem",
-                ),
+                roles=("artifact_payoff",),
             ),
         ),
     ),

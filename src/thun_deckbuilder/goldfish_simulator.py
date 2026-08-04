@@ -174,7 +174,8 @@ def _spell_value(entry: DeckEntry, archetype: str) -> tuple[int, float, str]:
             value = 5.0 if "mill" in signals else 0.5
         return mana, value, "mill"
     if archetype == "artifacts":
-        value = 1.0 if "artifact" in signals else 0.0
+        marked_artifacts = _metadata_number(entry, "artifact_immediate_")
+        value = float(marked_artifacts or (1 if "artifact" in signals else 0))
         return mana, value, "artifact"
     if archetype == "shrines":
         value = 1.0 if "shrine" in signals else 0.0

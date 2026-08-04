@@ -1,5 +1,5 @@
 name: Global Calibration PR
-run-name: Control – Stabilization Sequence
+run-name: Artifacts – Enabler/Payoff Access
 
 on:
   pull_request:

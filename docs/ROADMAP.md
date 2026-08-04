@@ -34,6 +34,8 @@
   zentral trennen
 - [x] Control-Antworten, echten Kartenvorteil und Winconditions als zentrale
   Stabilisierungssequenz modellieren
+- [x] Artifact-Enabler, Payoffs, Engines und Produktionskapazitäten zentral
+  trennen und in Benchmark/Opening Hands/Goldfish vereinheitlichen
 
 ## Stabiler Stand – Run 78
 
@@ -45,20 +47,19 @@
 - Burn-Plan: 3 `Dawnbringer Cleric` hinein; 2 `Descendant of Storms`, 1 `Duty Beyond Death` heraus
 - Mainboard-Hash `133e45be5a4ca94dc6bb8dddeb6c811db9e2889ced915f54c018898441668815`
 
-## Aktueller Zyklus – Control Stabilization Sequence
+## Aktueller Zyklus – Artifacts Enabler/Payoff Access
 
-1. Verlässliche Antworten von bedingter Verzögerung trennen.
-2. echten Kartenvorteil von Cycling und Selection abgrenzen.
-3. Winconditions in Profil, Handplan und Matchups einheitlich erfassen.
-4. Control-Sequenz im Artefakt ausweisen und vier Referenzlisten stabil halten.
+1. echte Enabler von Textnennungen und verzögerter Produktion trennen.
+2. Engines und Payoffs über zentrale Rollen erfassen.
+3. sofortige Artifact-Tokens im Goldfish und Diagnoseartefakt ausweisen.
+4. übersteuerte Payoff-Ziele gegen Kurve, Mana und Keepability verwerfen.
 
 ## Prioritäten danach
 
-1. Artifacts-Payoff-Zugang gegen reine Artefaktmenge abwägen.
-2. Modellierte Matchups gegen reale Spiele kalibrieren.
-3. Regression-Baseline statt `baseline: none`.
+1. Modellierte Matchups gegen reale Spiele kalibrieren.
+2. Regression-Baseline statt `baseline: none`.
 
 ## Genau ein nächster ausführbarer Schritt
 
-Artifact-Kandidaten nach frühem Enabler plus erreichbarem Engine- oder
-Payoff-Zugang bewerten, statt reine Artefaktmenge als Planerfolg zu werten.
+Ein kleines versioniertes Schema für reale Matchup-Beobachtungen definieren
+und die extremen simulierten Control–Artifacts-/Burn-Werte dagegen kalibrieren.
