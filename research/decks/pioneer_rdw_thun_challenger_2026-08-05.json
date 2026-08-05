@@ -1,0 +1,217 @@
+{
+  "experiment_id": "pioneer-rdw-thun-composition-2026-08-05-v1",
+  "date": "2026-08-05",
+  "status": "technical_audit_pending",
+  "source": {
+    "calibration_base_pr": 14,
+    "calibration_base_head": "2d879e969351fe8c3b266948a9888e02b829f403",
+    "rdw_audit_pr": 16,
+    "rdw_audit_head": "3908136ae939d4af138025c30b539f949991dd05",
+    "rdw_transfer_prior": 7.2
+  },
+  "hypothesis": "A lower and functionally redundant mono-red Prowess/Burn shell can preserve the successful Pioneer opening pattern under the Thun three-copy rule if it uses at least four distinct turn-one threat packages, six repeatable spell-damage creatures, explicit reload, and no attempted one-card imitation of the missing rare midgame role-compression package.",
+  "champion": {
+    "name": "Current PR #14 Generated Burn Champion",
+    "provenance": "Generated live from PR #14 head 2d879e969351fe8c3b266948a9888e02b829f403 with the current Scryfall database; snapshot captured by guarded workflow run 30994284008, artifact 8925486427.",
+    "recorded_hash": null,
+    "recorded_metrics": {
+      "note": "Metrics are recalculated live in the composition audit with the same seeds and sample counts as the Challenger.",
+      "historical_run79_reference": {
+        "benchmark": 83,
+        "keepability_pct": 78,
+        "plan_capable_pct": 78,
+        "early_play_turn_two_pct": 98,
+        "early_play_turn_three_pct": 98,
+        "average_damage": 45.99,
+        "kill_by_turn_five_pct": 98
+      }
+    },
+    "mainboard": [
+      {"quantity": 3, "name": "Burst Lightning"},
+      {"quantity": 3, "name": "Sawblade Scamp"},
+      {"quantity": 3, "name": "Shock"},
+      {"quantity": 3, "name": "Voldaren Epicure"},
+      {"quantity": 3, "name": "Coruscation Mage"},
+      {"quantity": 3, "name": "Lightning Strike"},
+      {"quantity": 2, "name": "Reality Hemorrhage"},
+      {"quantity": 3, "name": "Roil Eruption"},
+      {"quantity": 2, "name": "Thermo-Alchemist"},
+      {"quantity": 3, "name": "Thunderdrum Soloist"},
+      {"quantity": 3, "name": "Call In a Professional"},
+      {"quantity": 2, "name": "Fateful End"},
+      {"quantity": 3, "name": "Flick a Coin"}
+    ],
+    "lands": [
+      {"quantity": 24, "name": "Mountain", "color": "R"}
+    ],
+    "sideboard": [
+      {"quantity": 3, "name": "Smash to Dust"},
+      {"quantity": 3, "name": "Deface"},
+      {"quantity": 3, "name": "Dreadmaw's Ire"},
+      {"quantity": 3, "name": "Explosive Derailment"},
+      {"quantity": 3, "name": "Gleeful Demolition"}
+    ]
+  },
+  "challenger": {
+    "name": "Thun Mono-Red Redundancy v1",
+    "status": "untested",
+    "mainboard": [
+      {"quantity": 3, "name": "Monastery Swiftspear"},
+      {"quantity": 3, "name": "Sawblade Scamp"},
+      {"quantity": 3, "name": "Clockwork Percussionist"},
+      {"quantity": 3, "name": "Phoenix Chick"},
+      {"quantity": 3, "name": "Firebrand Archer"},
+      {"quantity": 3, "name": "Kessig Flamebreather"},
+      {"quantity": 3, "name": "Kumano Faces Kakkazan // Etching of Kumano"},
+      {"quantity": 3, "name": "Burst Lightning"},
+      {"quantity": 3, "name": "Play with Fire"},
+      {"quantity": 3, "name": "Lightning Strike"},
+      {"quantity": 3, "name": "Monstrous Rage"},
+      {"quantity": 3, "name": "Ancestral Anger"},
+      {"quantity": 2, "name": "Reckless Impulse"},
+      {"quantity": 2, "name": "Abrade"}
+    ],
+    "lands": [
+      {"quantity": 18, "name": "Mountain", "color": "R"},
+      {"quantity": 2, "name": "Ramunap Ruins", "color": "R"}
+    ],
+    "sideboard": [
+      {"quantity": 3, "name": "Smash to Dust"},
+      {"quantity": 3, "name": "Pyroclasm"},
+      {"quantity": 3, "name": "Weathered Runestone"},
+      {"quantity": 3, "name": "Magebane Lizard"},
+      {"quantity": 3, "name": "Call In a Professional"}
+    ],
+    "functional_groups": {
+      "turn_one_packages": [
+        "Monastery Swiftspear",
+        "Sawblade Scamp",
+        "Clockwork Percussionist",
+        "Phoenix Chick",
+        "Kumano Faces Kakkazan // Etching of Kumano"
+      ],
+      "repeatable_spell_damage": [
+        "Firebrand Archer",
+        "Kessig Flamebreather"
+      ],
+      "direct_face_burn": [
+        "Burst Lightning",
+        "Play with Fire",
+        "Lightning Strike"
+      ],
+      "pump_or_trample": [
+        "Monstrous Rage",
+        "Ancestral Anger"
+      ],
+      "explicit_reload": [
+        "Reckless Impulse"
+      ],
+      "conditional_reload": [
+        "Clockwork Percussionist",
+        "Ancestral Anger"
+      ],
+      "mainboard_artifact_interaction": [
+        "Abrade"
+      ],
+      "late_land_reach": [
+        "Ramunap Ruins"
+      ]
+    },
+    "rejected_cards": [
+      {
+        "name": "Rockface Village",
+        "reason": "No mainboard creature is a Lizard, Mouse, Otter, or Raccoon; the activated haste function would therefore be unavailable."
+      },
+      {
+        "name": "Giant Cindermaw",
+        "reason": "Anti-lifegain is narrower than the core game-one plan and is reserved for targeted sideboarding through Call In a Professional."
+      },
+      {
+        "name": "Reckless Rage",
+        "reason": "It cannot damage the opponent and requires both an opposing creature and a creature controlled by the pilot; Abrade is the less conditional game-one interaction."
+      }
+    ],
+    "mulligan_guide": {
+      "keep": [
+        "Two or three lands plus a turn-one package and at least one cheap follow-up spell.",
+        "One land only when the hand has at least two one-mana plays and the land produces red without entering tapped.",
+        "Four lands only with Monastery Swiftspear or another turn-one threat plus real card flow."
+      ],
+      "mulligan": [
+        "Zero lands or five or more lands.",
+        "A hand with pump spells but no creature.",
+        "A hand whose first pressure card costs two mana and has no direct burn sequence.",
+        "Ramunap Ruins as the only land when the hand requires repeated colored activation without accepting the life cost."
+      ]
+    },
+    "sideboard_plans": {
+      "white_tokens": {
+        "in": ["3 Pyroclasm", "3 Smash to Dust"],
+        "out": ["3 Phoenix Chick", "2 Reckless Impulse", "1 Ancestral Anger"],
+        "notes": "Pyroclasm is symmetrical and should be sequenced before rebuilding. Smash to Dust is primarily for artifact tokens or one-toughness boards, not assumed to be a universal sweeper."
+      },
+      "artifacts": {
+        "in": ["3 Smash to Dust"],
+        "out": ["2 Reckless Impulse", "1 Phoenix Chick"],
+        "notes": "Retain Abrade. Do not use the Defender or one-damage mode unless the board makes it relevant."
+      },
+      "spell_heavy": {
+        "in": ["3 Magebane Lizard"],
+        "out": ["2 Reckless Impulse", "1 Phoenix Chick"],
+        "notes": "Magebane Lizard triggers for both players and becomes more punishing as multiple noncreature spells are cast in the same turn."
+      },
+      "lifegain": {
+        "in": ["3 Call In a Professional"],
+        "out": ["2 Abrade", "1 Reckless Impulse"],
+        "notes": "The lifegain lock lasts only for the current turn; cast it on the decisive damage turn rather than treating it as permanent hate."
+      },
+      "graveyard_or_library_cheat": {
+        "in": ["3 Weathered Runestone"],
+        "out": ["2 Abrade", "1 Reckless Impulse"],
+        "notes": "Runestone does not stop cards entering from hand or exile and does not itself pressure the opponent."
+      }
+    }
+  },
+  "technical_success_criteria": {
+    "exact_mainboard": 60,
+    "exact_sideboard": 15,
+    "maximum_nonbasic_copies": 3,
+    "minimum_turn_one_copies": 12,
+    "minimum_distinct_turn_one_names": 4,
+    "minimum_red_sources": 18,
+    "minimum_explicit_reload_copies": 2,
+    "maximum_benchmark_drop_vs_champion": 5,
+    "maximum_plan_capable_drop_vs_champion": 5,
+    "minimum_turn_two_play_pct": 95,
+    "minimum_turn_three_play_pct": 95
+  },
+  "arena_test_plan": {
+    "format": "Best of Three",
+    "minimum_matches": 12,
+    "minimum_games": 24,
+    "required_matchup_buckets": [
+      "white tokens or go-wide",
+      "artifact deck",
+      "spell-heavy tempo or prowess",
+      "lifegain or midrange",
+      "control or removal-heavy"
+    ],
+    "record": [
+      "play or draw",
+      "opening seven and mulligan decision",
+      "turn-one and turn-two sequence",
+      "dead pump or conditional cards",
+      "red-source and Ramunap Ruins life-cost problems",
+      "sideboard cards drawn and their actual impact",
+      "model prediction versus real result"
+    ]
+  },
+  "arena_success_criteria": {
+    "minimum_match_win_rate": 0.5,
+    "maximum_nonfunctional_opening_rate": 0.2,
+    "maximum_games_with_unusable_pump": 0.15,
+    "require_no_repeated_red_source_failure": true,
+    "champion_replacement_requires_direct_arena_comparison": true
+  },
+  "next_step": "Run the reproducible composition audit against the current Burn Champion and only move the list to Arena testing if all technical gates pass."
+}
