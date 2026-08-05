@@ -1,0 +1,63 @@
+name: Pioneer RDW Composition Audit
+
+on:
+  push:
+    branches:
+      - agent/pioneer-rdw-composition-audit
+  pull_request:
+    paths:
+      - .github/workflows/pioneer-rdw-composition-audit.yml
+      - research/decks/pioneer_rdw_thun_challenger*.json
+      - scripts/audit_pioneer_rdw_composition.py
+      - scripts/run_pioneer_rdw_composition_audit.py
+      - tests/test_pioneer_rdw_composition_fixture.py
+      - docs/reports/PIONEER_RDW_COMPOSITION_AUDIT_2026-08-05.md
+      - docs/DEVELOPMENT_LOGBOOK.md
+      - docs/ROADMAP.md
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      THUN_REUSE_CARD_DATABASE: "1"
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install project
+        run: python -m pip install -e ".[dev]"
+
+      - name: Build current verified card database
+        run: python -c "from scripts.ci_global_validation import _prepare_database; _prepare_database()"
+
+      - name: Run complete test suite
+        run: python -m pytest
+
+      - name: Run final composition audit against current Burn Champion
+        run: |
+          mkdir -p artifacts/pioneer-rdw-composition
+          python -m scripts.run_pioneer_rdw_composition_audit \
+            --fixture research/decks/pioneer_rdw_thun_challenger_v2_2026-08-05.json \
+            --json-output artifacts/pioneer-rdw-composition/audit.json \
+            --markdown-output artifacts/pioneer-rdw-composition/audit.md \
+            --arena-output artifacts/pioneer-rdw-composition/challenger-arena.txt
+
+      - name: Upload composition audit
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pioneer-rdw-composition-audit-${{ github.run_number }}
+          path: artifacts/pioneer-rdw-composition/
+          retention-days: 14
+          if-no-files-found: error

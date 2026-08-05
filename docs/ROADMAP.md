@@ -67,3 +67,24 @@
 Den letzten erfolgreichen `global-report.json` als versionierten
 Regression-Snapshot einchecken und in Fast-Validierung beweisen, dass ein
 unveränderter Folgelauf `baseline: restored` statt `baseline: none` meldet.
+
+## Pioneer RDW Arena Validation
+
+Status: **Ready for Arena evidence; Champion unchanged**
+
+- Technical composition cycles completed: 2/2.
+- Rejected v1 hash:
+  `bbc9d16012d09d47bffd7497d751abab927eea700919c4c9708912d0b9c199b3`.
+- Arena Challenger v2 hash:
+  `9dfa387052563548704115599f20ed0b61d5cf41053b422b85ec78f5917888da`.
+- Current Burn Champion hash:
+  `0f0a282f0e15ce6f15fae47349f9d7af803d142e76d2a4c25e436edfa9af65d5`.
+- Required evidence: at least 12 BO3 matches / 24 games across go-wide,
+  artifacts, spell-heavy, lifegain/midrange, and control/removal-heavy buckets.
+- Record play/draw, mulligans, early sequence, stranded three-mana cards,
+  Ramunap Ruins source/life issues, reload conversion, sideboard impact, and
+  model prediction versus real result.
+- Success gates: at least 50 % match win rate, at most 20 % nonfunctional
+  openings, at most 15 % games with stranded three-mana cards, and no repeated
+  red-source failure.
+- No Champion replacement or generator calibration before the Arena report.

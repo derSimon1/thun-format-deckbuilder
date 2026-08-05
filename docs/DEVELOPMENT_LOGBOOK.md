@@ -586,3 +586,39 @@ Eine vollständig qualifizierte v2-KGB existiert noch nicht. `baseline: none` be
 Das globale Outlet-Tagging nur gemeinsam mit der Bewertung und Simulation von
 „genau 10 Leben“-Burn korrigieren; die Änderung darf den Burn-Goldfish nicht
 durch Benchmark-Gaming verschlechtern.
+
+## Pioneer RDW – Composition Audit (2026-08-05)
+
+- **Ausgangslage:** Der aktuelle Burn-Champion wurde live aus PR #14 erzeugt.
+  Der Card-Pool-Audit aus PR #16 bewertete den strukturellen Transfer mit
+  7,2/10, zeigte aber fehlende Rare-Role-Compression.
+- **Hypothese Zyklus 1:** 20 Länder, 15 Turn-1-Pakete, sechs permanente
+  Spell-Damage-Kreaturen, Pump, Burn und explizites Reload erhalten das
+  Pioneer-Opening. **Widerlegt:** Benchmark 56 vs. 83, Planfähigkeit 67 % vs.
+  78 %, Manafehler 32 % vs. 22 %. Trotz 43,27 vs. 41,61 Goldfish-Schaden wurde
+  Hash `bbc9d16012d09d47bffd7497d751abab927eea700919c4c9708912d0b9c199b3`
+  technisch verworfen und nicht für Arena freigegeben.
+- **Hypothese Zyklus 2:** 22 Länder, exakt zwölf Turn-1-Threats, sechs
+  permanente Spell-Damage-Kreaturen und die Verlagerung der Pump-Slots in
+  Reload sowie zwei- bis dreimanaigen Burn beheben die Hand- und
+  Kurvenprobleme. **Technisch bestätigt:** Benchmark 81 vs. 83, Planfähigkeit
+  75 % vs. 78 %, Manafehler 24 % vs. 22 %, T2/T3 97/97 % vs. 98/98 % und
+  Goldfish-Schaden 43,69 vs. 41,61.
+- **Challenger:** `Thun Mono-Red Redundancy v2`, Hash
+  `9dfa387052563548704115599f20ed0b61d5cf41053b422b85ec78f5917888da`,
+  exakt 60/15, Status `untested`, technisch für Arena freigegeben.
+- **Champion:** Hash
+  `0f0a282f0e15ce6f15fae47349f9d7af803d142e76d2a4c25e436edfa9af65d5`
+  bleibt unverändert Champion. Weder Championwechsel noch Generatoränderung
+  sind autorisiert.
+- **Validierung:** 403 Gesamttests grün; Live-Datenbank 38.542 Oracle-Karten;
+  100 Hände Seed 1701; 2.000 Goldfish-Läufe Seed 31; alle vorab definierten
+  Hard Gates bestanden.
+- **Unsicherheit:** Goldfish und Benchmark modellieren Prowess, Kapitel,
+  Death-Reload, echtes Combat und gegnerische Interaktion nur unvollständig.
+  Die höhere technische Schadenszahl beweist keine reale Überlegenheit.
+- **KGB-Entscheidung:** keine neue KGB. `baseline: none` bleibt bestehen.
+- **Genau ein nächster Schritt:** Challenger-Hash
+  `9dfa387052563548704115599f20ed0b61d5cf41053b422b85ec78f5917888da`
+  in Arena über zwölf BO3-Matches testen und den Burn-Champion bis zur
+  semantischen Spieltestauswertung unverändert lassen.

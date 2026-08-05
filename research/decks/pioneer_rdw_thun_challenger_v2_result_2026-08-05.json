@@ -1,0 +1,66 @@
+{
+  "experiment_id": "pioneer-rdw-thun-composition-2026-08-05-v2",
+  "date": "2026-08-05",
+  "status": "technical_pass_arena_authorized",
+  "workflow_run": 30995382938,
+  "artifact_id": 8925944792,
+  "artifact_name": "pioneer-rdw-composition-audit-12",
+  "artifact_digest": "sha256:8e628b85f7f8a6a206f62c81bddef9e7ad6290e0081c0f72ff440a5b7fdc9085",
+  "champion_hash": "0f0a282f0e15ce6f15fae47349f9d7af803d142e76d2a4c25e436edfa9af65d5",
+  "challenger_hash": "9dfa387052563548704115599f20ed0b61d5cf41053b422b85ec78f5917888da",
+  "comparison": {
+    "benchmark": {"champion": 83, "challenger": 81, "delta": -2},
+    "keepability_pct": {"champion": 78, "challenger": 76, "delta": -2},
+    "plan_capable_pct": {"champion": 78, "challenger": 75, "delta": -3},
+    "mana_error_pct": {"champion": 22, "challenger": 24, "delta": 2},
+    "turn_two_play_pct": {"champion": 98, "challenger": 97, "delta": -1},
+    "turn_three_play_pct": {"champion": 98, "challenger": 97, "delta": -1},
+    "average_damage": {"champion": 41.61, "challenger": 43.69, "delta": 2.08},
+    "kill_by_turn_five_pct": {"champion": 96, "challenger": 96, "delta": 0},
+    "average_spells_cast": {"champion": 5.94, "challenger": 6.33, "delta": 0.39},
+    "average_unused_mana": {"champion": 3.84, "challenger": 3.14, "delta": -0.70},
+    "mana_quality": {"champion": 94, "challenger": 100, "delta": 6}
+  },
+  "structure": {
+    "mainboard": 60,
+    "sideboard": 15,
+    "lands": 22,
+    "red_sources": 22,
+    "turn_one_threat_copies": 12,
+    "distinct_turn_one_names": 4,
+    "repeatable_spell_damage_copies": 6,
+    "direct_face_burn_copies": 11,
+    "explicit_reload_copies": 7,
+    "conditional_reload_copies": 3
+  },
+  "passed_gates": [
+    "exact_mainboard",
+    "exact_sideboard",
+    "copy_limit",
+    "explicit_reload",
+    "mana_quality",
+    "red_sources",
+    "turn_one_density",
+    "turn_one_redundancy",
+    "benchmark_delta",
+    "plan_capable_delta",
+    "turn_two_play",
+    "turn_three_play"
+  ],
+  "failed_gates": [],
+  "observed_problem_types": [
+    ["mana_screw", 18],
+    ["insufficient_burn_density", 11],
+    ["mana_flood", 6]
+  ],
+  "interpretation": [
+    "The 22-land revision recovered the opening-hand and benchmark gates that v1 failed.",
+    "The Challenger remains slightly behind the Champion in keepability, plan capability, and mana errors, so technical passage is not evidence of superiority.",
+    "The higher Goldfish damage and lower unused mana are encouraging proxies but do not model interaction, prowess sequencing, Saga timing, death-triggered reload, or real combat.",
+    "The existing 24-land Burn profile mismatch is diagnostic only because the 22-land subprofile and its thresholds were declared before the final audit."
+  ],
+  "arena_test_authorized": true,
+  "champion_replacement_authorized": false,
+  "kgb_decision": "no new KGB",
+  "next_step": "Import Challenger hash 9dfa387052563548704115599f20ed0b61d5cf41053b422b85ec78f5917888da into Arena and execute the predefined twelve-match Best-of-Three test while preserving the current Burn Champion."
+}

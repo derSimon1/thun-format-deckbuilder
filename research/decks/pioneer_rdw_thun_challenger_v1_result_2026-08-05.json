@@ -1,0 +1,54 @@
+{
+  "experiment_id": "pioneer-rdw-thun-composition-2026-08-05-v1",
+  "date": "2026-08-05",
+  "status": "rejected_technical",
+  "workflow_run": 30994922653,
+  "artifact_id": 8925753702,
+  "artifact_name": "pioneer-rdw-composition-audit-8",
+  "artifact_digest": "sha256:b87898bcfa3032c6c1f77b3a030189e1b40684f934e2eb7ded30de27ea9bfe56",
+  "champion_hash": "0f0a282f0e15ce6f15fae47349f9d7af803d142e76d2a4c25e436edfa9af65d5",
+  "challenger_hash": "bbc9d16012d09d47bffd7497d751abab927eea700919c4c9708912d0b9c199b3",
+  "comparison": {
+    "benchmark": {"champion": 83, "challenger": 56, "delta": -27},
+    "keepability_pct": {"champion": 78, "challenger": 68, "delta": -10},
+    "plan_capable_pct": {"champion": 78, "challenger": 67, "delta": -11},
+    "mana_error_pct": {"champion": 22, "challenger": 32, "delta": 10},
+    "turn_two_play_pct": {"champion": 98, "challenger": 96, "delta": -2},
+    "turn_three_play_pct": {"champion": 98, "challenger": 96, "delta": -2},
+    "average_damage": {"champion": 41.61, "challenger": 43.27, "delta": 1.66},
+    "kill_by_turn_five_pct": {"champion": 96, "challenger": 96, "delta": 0},
+    "average_spells_cast": {"champion": 5.94, "challenger": 7.11, "delta": 1.17},
+    "mana_quality": {"champion": 94, "challenger": 94, "delta": 0}
+  },
+  "passed_gates": [
+    "exact_mainboard",
+    "exact_sideboard",
+    "copy_limit",
+    "explicit_reload",
+    "mana_quality",
+    "red_sources",
+    "turn_one_density",
+    "turn_one_redundancy",
+    "turn_two_play",
+    "turn_three_play"
+  ],
+  "failed_gates": [
+    "benchmark_delta",
+    "plan_capable_delta"
+  ],
+  "observed_problem_types": [
+    ["mana_screw", 28],
+    ["insufficient_burn_density", 9],
+    ["missing_early_pressure", 4]
+  ],
+  "interpretation": [
+    "The higher Goldfish damage is not sufficient evidence of deck strength because the opening-hand plan and benchmark gates failed.",
+    "The 20-land configuration increased mana-error hands by ten percentage points versus the current Champion.",
+    "Twenty-seven one-mana spells overconcentrated the curve and reduced the benchmark from 83 to 56.",
+    "The result does not prove that individual pump cards are weak; it rejects this complete 20-land, 27-one-mana composition."
+  ],
+  "arena_test_authorized": false,
+  "champion_replacement_authorized": false,
+  "kgb_decision": "no new KGB",
+  "next_step": "Run one final composition cycle with 22 lands, exactly twelve turn-one threat copies, six repeatable spell-damage creatures, and the excess one-mana pump slots reassigned to explicit reload and burn-density roles."
+}
