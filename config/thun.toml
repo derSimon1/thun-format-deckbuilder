@@ -28,5 +28,5 @@ allowed_sets = [
   "dom", "m19", "grn", "rna", "war", "m20", "eld", "thb", "iko", "m21",
   "znr", "khm", "stx", "afr", "mid", "vow", "neo", "snc", "dmu", "bro",
   "one", "mom", "mat", "woe", "lci", "mkm", "otj", "blb", "dsk", "fdn",
-  "dft", "tdm", "fin", "eoe", "spm", "atla", "msh", "sos"
+  "dft", "tdm", "fin", "eoe", "spm", "tla", "msh", "sos", "ecl", "tmt"
 ]
