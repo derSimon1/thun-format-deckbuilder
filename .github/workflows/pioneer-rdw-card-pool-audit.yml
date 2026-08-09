@@ -3,7 +3,7 @@ name: Pioneer RDW Card-Pool Audit
 on:
   push:
     branches:
-      - agent/pioneer-rdw-card-pool-audit
+      - integration/deckbuilder-v3
   pull_request:
     paths:
       - .github/workflows/pioneer-rdw-card-pool-audit.yml
@@ -37,14 +37,14 @@ jobs:
       - name: Install project
         run: python -m pip install -e ".[dev]"
 
-      - name: Run complete test suite
-        run: python -m pytest
-
       - name: Download current Scryfall data
         run: python scripts/download_scryfall.py
 
       - name: Build current Thun card database
         run: python scripts/build_index.py
+
+      - name: Run complete test suite
+        run: python -m pytest
 
       - name: Run Pioneer RDW transfer audit
         run: |
