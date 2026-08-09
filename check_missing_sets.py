@@ -1,7 +1,6 @@
 """
-Prueft, ob in Scryfalls Set-Liste neue Standard-legale Sets existieren,
-die in config/thun.toml noch fehlen - genau das Problem, das den
-Zuko's-Conviction-Bug verursacht hat (fehlendes/falsches Set).
+Prueft, ob in Scryfalls Set-Liste neue, bereits veroeffentlichte Kandidaten
+existieren, die in config/thun.toml noch fehlen.
 
 Nutzung (im Projekt-Root ausfuehren, braucht Internet):
     python check_missing_sets.py
@@ -27,12 +26,13 @@ SCRYFALL_SETS_URL = "https://api.scryfall.com/sets"
 USER_AGENT = "ThunFormatDeckbuilder/0.1 (set-checker)"
 
 # Set-Typen, die als "normale", draftbare Erweiterungen zaehlen.
-# 'expansion' deckt auch Standard-legale Universes-Beyond-Tentpole-Sets ab
-# (z.B. Final Fantasy, Avatar: The Last Airbender, Marvel's Spider-Man).
+# 'expansion' deckt auch Standard-legale Universes-Beyond-Tentpole-Sets ab.
+# Die Set-API allein beweist aber keine Standard-Legalitaet; Treffer bleiben
+# deshalb bewusst nur Kandidaten fuer eine manuelle Pruefung.
 RELEVANT_SET_TYPES = {"expansion", "core"}
 
 
-def load_config_allowed_sets() -> tuple[set[str], date]:
+def load_config_allowed_sets() -> tuple[set[str], str]:
     with CONFIG_PATH.open("rb") as f:
         config = tomllib.load(f)
 
@@ -70,7 +70,9 @@ def main() -> int:
     all_sets = fetch_scryfall_sets()
 
     start_date = find_starting_set_date(all_sets, starting_set_code)
-    print(f"Startpunkt des Formats: {starting_set_code} ({start_date})\n")
+    today = date.today().isoformat()
+    print(f"Startpunkt des Formats: {starting_set_code} ({start_date})")
+    print(f"Pruefdatum: {today}\n")
 
     candidates = []
     for s in all_sets:
@@ -80,6 +82,8 @@ def main() -> int:
         digital = s.get("digital", False)
 
         if not released_at or released_at < start_date:
+            continue
+        if released_at > today:
             continue
         if set_type not in RELEVANT_SET_TYPES:
             continue
@@ -93,7 +97,7 @@ def main() -> int:
     candidates.sort()
 
     if not candidates:
-        print("Keine fehlenden Sets gefunden - allowed_sets ist aktuell.")
+        print("Keine fehlenden Set-Kandidaten gefunden - allowed_sets ist aktuell.")
         return 0
 
     print(f"{'MOEGLICH FEHLEND':<20} | {'Code':<6} | Released   | Name")
@@ -102,10 +106,10 @@ def main() -> int:
         print(f"{'>>> PRUEFEN <<<':<20} | {code:<6} | {released_at} | {name}")
 
     print()
-    print("Hinweis: Das sind KANDIDATEN, keine automatische Wahrheit. Manche")
-    print("koennten bewusst nicht im Format sein (z.B. reine Nicht-Standard-")
-    print("Produkte, die trotzdem als 'expansion' gefuehrt werden). Bitte")
-    print("jeden Code kurz pruefen, bevor er in allowed_sets aufgenommen wird.")
+    print("Hinweis: Das sind KANDIDATEN, keine automatische Wahrheit. Die")
+    print("Scryfall-Set-API kennt den Set-Typ, beweist aber nicht allein die")
+    print("Standard-Legalitaet. Bitte jeden Code gegen eine belastbare")
+    print("Standard-Quelle pruefen, bevor er in allowed_sets aufgenommen wird.")
 
     return 0
 
