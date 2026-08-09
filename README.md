@@ -4,7 +4,7 @@ Ein Deckbuilder und Kalibrierungsprojekt für das Magic Club Thun Clubformat.
 
 ## Aktueller Entwicklungsstand
 
-Die aktive Konsolidierung läuft auf `integration/deckbuilder-v3`. Diese Linie verbindet die globale Multi-Archetypen-Kalibrierung aus PR #14 mit dem bereits akzeptierten Meta-Transfer-Audit aus PR #15 und der Pioneer-RDW-Kartenpool-Forschung aus PR #16.
+`main` ist die verbindliche Zielbasis für zukünftige Entwicklung. Die Konsolidierung in PR #20 führt die globale Multi-Archetypen-Kalibrierung aus PR #14, den bereits akzeptierten Meta-Transfer-Audit aus PR #15, die Pioneer-RDW-Kartenpool-Forschung aus PR #16 sowie aktuelle Arena-Evidenz in diese gemeinsame Linie.
 
 PR #13 (Izzet Prowess) und PR #17 (Pioneer-RDW Challenger) bleiben separate Experimente, bis ihre Arena-Evidenz ausreichend ist. Modellwerte allein ersetzen keine realen Playtests.
 
