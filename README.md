@@ -1,58 +1,50 @@
 # Thun Format Deckbuilder
 
-Deckbuilding and legality engine for the Magic Club Thun format.
+Ein Deckbuilder und Kalibrierungsprojekt für das Magic Club Thun Clubformat.
 
-## Current scope
+## Aktueller Entwicklungsstand
 
-- SQLite card database built from Scryfall bulk data
-- Central legality check across all printings of an Oracle card
-- Common/uncommon paper prints from explicitly allowed sets
-- Reprint-aware legality
-- Mono-red Burn prototype
-- Mono-white Tokens prototype
-- Reproducible tests using a small temporary SQLite database
+`main` ist die verbindliche Zielbasis für zukünftige Entwicklung. Die Konsolidierung in PR #20 führt die globale Multi-Archetypen-Kalibrierung aus PR #14, den bereits akzeptierten Meta-Transfer-Audit aus PR #15, die Pioneer-RDW-Kartenpool-Forschung aus PR #16 sowie aktuelle Arena-Evidenz in diese gemeinsame Linie.
 
-## Installation
+PR #13 (Izzet Prowess) und PR #17 (Pioneer-RDW Challenger) bleiben separate Experimente, bis ihre Arena-Evidenz ausreichend ist. Modellwerte allein ersetzen keine realen Playtests.
 
-```bash
-python -m pip install -e ".[dev]"
-```
-
-## Build the local card database
-
-The generated files are intentionally not stored in Git.
-
-```bash
-python scripts/download_scryfall.py
-python scripts/build_index.py
-```
-
-This creates `data/default_cards.json` and `data/cards.db`.
-
-## Run tests
-
-```bash
-pytest
-```
-
-The tests do not require the full Scryfall database.
-
-## Check legality
-
-```bash
-thun-deckbuilder legal "Ocelot Pride"
-thun-deckbuilder legal "Lightning Strike"
-```
-
-## Generate decks
+## Unterstützte Archetypen
 
 ```bash
 thun-deckbuilder build burn --colors R
 thun-deckbuilder build tokens --colors W
+thun-deckbuilder build artifacts --colors U R
+thun-deckbuilder build shrines --colors W U B R G
+thun-deckbuilder build mill --colors U B
 ```
 
-## Important configuration
+Mit `--benchmark` werden archetypische Kernfunktionen, Dichte und weitere Kalibrierungsmetriken geprüft. Opening-Hand-, Goldfish- und Matchup-Simulationen sind Heuristiken und dürfen nicht als reale Winrate interpretiert werden.
 
-`config/thun.toml` is the single authoritative format configuration. The `allowed_sets` list must be reviewed whenever new Standard sets are added.
+## Empirische Evidenz
 
-See `docs/ARCHITECTURE.md` and `docs/MIGRATION.md` for design decisions and upgrade notes.
+Arena-Ergebnisse werden getrennt von Modellresultaten dokumentiert. Der aktuelle Mono-White-Token-Test zeigte:
+
+- TOK-A Builder Baseline: 0-3 BO3 / 0-6 Games — als aktiver Deckkandidat verworfen;
+- TOK-B Immediate Pressure: 4-2 im dedizierten BO1-Mainboard-Screen — vorläufiger Token-Finalist;
+- TOK-C Repeatable Pressure: 3-2 BO1, davon ein Low-Information-Concession-Win — Challenger.
+
+Siehe `docs/reports/ARENA_TOKEN_PLAYTEST_2026-08-06.md` und `research/decks/token_arena_challengers_2026-08-06.json`.
+
+## Repository-Struktur
+
+- `src/thun_deckbuilder/` — Builder, Scoring, Simulation und Audit-Code
+- `tests/` — Regressionstests
+- `research/` — reproduzierbare Meta- und Challenger-Daten
+- `docs/reports/` — aktuelle technische und empirische Auswertungen
+- `docs/archive/` — historische Zwischenstände und alte Changelogs
+- `config/thun.toml` — verbindliche Formatkonfiguration
+
+## Tests
+
+```bash
+python -m pytest
+```
+
+## Grundsatz
+
+Champion- oder Generatoränderungen benötigen reproduzierbare technische Evidenz und, wo Deckstärke betroffen ist, reale Arena-Validierung. Ein einzelnes Spiel oder ein hoher Simulationsscore reicht nicht aus.

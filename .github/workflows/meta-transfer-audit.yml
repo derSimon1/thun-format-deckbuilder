@@ -3,7 +3,7 @@ name: Meta Archetype Transfer Audit
 on:
   push:
     branches:
-      - agent/meta-archetype-transfer-audit
+      - integration/deckbuilder-v3
     paths:
       - .github/workflows/meta-transfer-audit.yml
       - docs/META_ARCHETYPE_TRANSFER_2026-08-05.md
@@ -25,7 +25,7 @@ permissions:
 jobs:
   test:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 45
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -36,5 +36,9 @@ jobs:
           cache: pip
       - name: Install project
         run: python -m pip install -e ".[dev]"
+      - name: Prepare current card database
+        run: |
+          python scripts/download_scryfall.py
+          python scripts/build_index.py
       - name: Run complete test suite
         run: python -m pytest

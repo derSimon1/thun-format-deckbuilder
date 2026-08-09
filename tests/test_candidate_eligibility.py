@@ -5,10 +5,10 @@ from thun_deckbuilder.deck_state import DeckState
 from thun_deckbuilder.knowledge_base import CardKnowledge
 
 
-def knowledge(name: str = "Test Spell") -> CardKnowledge:
+def knowledge(name: str = "Test Spell", mana_cost: str = "{1}{W}") -> CardKnowledge:
     card = {
         "name": name,
-        "mana_cost": "{1}{W}",
+        "mana_cost": mana_cost,
         "mana_value": 2,
         "colors": ["W"],
         "color_identity": ["W"],
@@ -49,3 +49,46 @@ def test_rejects_strategy_ineligible_candidate() -> None:
 
     assert not result.eligible
     assert "strategy" in result.reason.lower()
+
+
+def test_rejects_explicit_colorless_cost_without_colorless_source_support() -> None:
+    card = knowledge(name="Colorless Spell", mana_cost="{1}{C}")
+    result = CandidateEligibility(frozenset({"W", "*"})).check(
+        card,
+        contribution_from_knowledge(card),
+        DeckState(),
+        deck_size=36,
+        max_copies=3,
+        strategy_eligible=lambda item: True,
+    )
+
+    assert not result.eligible
+    assert "mana source" in result.reason.lower()
+
+
+def test_accepts_explicit_colorless_cost_when_builder_supports_wastes() -> None:
+    card = knowledge(name="Colorless Spell", mana_cost="{1}{C}")
+    result = CandidateEligibility().check(
+        card,
+        contribution_from_knowledge(card),
+        DeckState(),
+        deck_size=36,
+        max_copies=3,
+        strategy_eligible=lambda item: True,
+    )
+
+    assert result.eligible
+
+
+def test_non_colorless_candidate_keeps_existing_eligibility_behavior() -> None:
+    card = knowledge(mana_cost="{1}{W}")
+    result = CandidateEligibility(frozenset({"W"})).check(
+        card,
+        contribution_from_knowledge(card),
+        DeckState(),
+        deck_size=36,
+        max_copies=3,
+        strategy_eligible=lambda item: True,
+    )
+
+    assert result.eligible

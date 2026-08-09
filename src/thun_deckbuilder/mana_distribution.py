@@ -2,15 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from thun_deckbuilder.mana_requirement import COLORS, ManaRequirement
-
-BASIC_LANDS = {
-    "W": "Plains",
-    "U": "Island",
-    "B": "Swamp",
-    "R": "Mountain",
-    "G": "Forest",
-}
+from thun_deckbuilder.mana_requirement import BASIC_LANDS, COLORS, ManaRequirement
 
 
 @dataclass(frozen=True)
@@ -68,8 +60,51 @@ def distribute_basic_lands(requirement: ManaRequirement, total_lands: int) -> Ma
             quantities[donor] -= 1
             quantities[color] += 1
 
+    # A spell with repeated strict pips (especially {C}{C}) must have at least
+    # that many matching real sources. Hybrid symbols do not impose this floor.
+    floors = {
+        color: requirement.minimum_sources_for(color)
+        for color in colors
+    }
+    for color in colors:
+        while quantities[color] < floors[color]:
+            donors = [
+                donor
+                for donor in colors
+                if quantities[donor] > max(1, floors[donor])
+            ]
+            if not donors:
+                break
+            donor = max(
+                donors,
+                key=lambda item: quantities[item] - max(1, floors[item]),
+            )
+            quantities[donor] -= 1
+            quantities[color] += 1
+
+    required_by_color = {
+        color: max(
+            1,
+            floors[color],
+            round(total_lands * weights[color] / sum(weights.values())),
+        )
+        for color in colors
+    }
+    while sum(required_by_color.values()) > total_lands:
+        donors = [
+            color
+            for color in colors
+            if required_by_color[color] > max(1, floors[color])
+        ]
+        if not donors:
+            break
+        donor = max(
+            donors,
+            key=lambda color: required_by_color[color] - max(1, floors[color]),
+        )
+        required_by_color[donor] -= 1
     requirements = tuple(
-        (color, max(1, round(total_lands * weights[color] / sum(weights.values()))))
+        (color, required_by_color[color])
         for color in colors
     )
     lands = tuple(

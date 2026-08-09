@@ -9,6 +9,8 @@ if TYPE_CHECKING:
     from thun_deckbuilder.selection_trace import SelectionTrace
     from thun_deckbuilder.mana_distribution import ManaDistribution
     from thun_deckbuilder.mana_quality import ManaQualityReport
+    from thun_deckbuilder.opening_hand_simulator import OpeningHandReport
+    from thun_deckbuilder.goldfish_simulator import GoldfishReport
 
 from thun_deckbuilder.card_analyzer import CardAnalysis
 from thun_deckbuilder.card_scoring import ScoreBreakdown, score_burn_card
@@ -56,6 +58,8 @@ class GeneratedDeck:
     mana_quality: "ManaQualityReport | None" = None
     sideboard: tuple[DeckEntry, ...] = ()
     benchmark_report: object | None = None
+    opening_hand_report: "OpeningHandReport | None" = None
+    goldfish_report: "GoldfishReport | None" = None
 
 
 def parse_mana_cost(raw_mana_cost: str) -> ManaCost:
@@ -68,7 +72,11 @@ def parse_mana_cost(raw_mana_cost: str) -> ManaCost:
             generic += int(normalized)
         else:
             colored_parts.append(normalized)
-    return ManaCost(raw=raw_mana_cost, generic=generic, colored=" ".join(colored_parts))
+    return ManaCost(
+        raw=raw_mana_cost,
+        generic=generic,
+        colored=" ".join(colored_parts),
+    )
 
 
 def _is_mono_red(analysis: CardAnalysis) -> bool:
@@ -78,9 +86,15 @@ def _is_mono_red(analysis: CardAnalysis) -> bool:
 def _is_reasonable_burn_card(knowledge: CardKnowledge) -> bool:
     analysis = knowledge.analysis
     text = analysis.oracle_text.lower()
-    if analysis.is_land or not _is_mono_red(analysis) or analysis.mana_value > 4:
+    if (
+        analysis.is_land
+        or not _is_mono_red(analysis)
+        or analysis.mana_value > 4
+    ):
         return False
-    if not knowledge.roles.intersection({"burn", "aggro_creature", "card_draw"}):
+    if not knowledge.roles.intersection(
+        {"burn", "aggro_creature", "card_draw"}
+    ):
         return False
     bad_phrases = (
         "deals damage to you",
@@ -92,18 +106,28 @@ def _is_reasonable_burn_card(knowledge: CardKnowledge) -> bool:
     return not any(phrase in text for phrase in bad_phrases)
 
 
-def _score_for_composition(knowledge: CardKnowledge) -> tuple[float, tuple[str, ...]]:
+def _score_for_composition(
+    knowledge: CardKnowledge,
+) -> tuple[float, tuple[str, ...]]:
     scored = score_burn_card(knowledge.analysis)
     score = scored.score
     reasons = list(scored.reasons)
+
+    if "burn" in knowledge.roles:
+        score += 2.5
+        reasons.append("Kernrolle Burn")
+
     if "aggro_creature" in knowledge.roles:
-        score += 2
-        reasons.append("Frühe aggressive Kreatur")
-    if "card_draw" in knowledge.roles:
         score += 1.5
+        reasons.append("Frühe aggressive Kreatur")
+
+    if "card_draw" in knowledge.roles:
+        score += 0.75
         reasons.append("Kartennachschub")
+
     if not reasons:
         reasons.append("Passt zum Burn-Profil")
+
     return score, tuple(reasons)
 
 
@@ -126,7 +150,9 @@ def generate_burn_deck(
             role_targets=BURN_PROFILE.role_targets,
             curve_targets=BURN_PROFILE.curve_targets,
         )
-    deck_size = profile.lands + sum(slot.cards for slot in skeleton.curve)
+    deck_size = profile.lands + sum(
+        slot.cards for slot in skeleton.curve
+    )
     result = build_composition(
         knowledge_base.cards,
         profile=profile,
@@ -139,7 +165,9 @@ def generate_burn_deck(
     from thun_deckbuilder.deck_quality import with_mana_quality
 
     mana = ManaBaseBuilder().build(
-        result.entries, total_lands=profile.lands, deck_size=deck_size
+        result.entries,
+        total_lands=profile.lands,
+        deck_size=deck_size,
     )
     return GeneratedDeck(
         mainboard=result.entries,
@@ -149,7 +177,10 @@ def generate_burn_deck(
         fulfilled_roles=result.fulfilled_roles,
         warnings=result.warnings,
         selections=result.selections,
-        quality_report=with_mana_quality(result.quality_report, mana.quality),
+        quality_report=with_mana_quality(
+            result.quality_report,
+            mana.quality,
+        ),
         mana_base=mana.distribution,
         mana_quality=mana.quality,
     )

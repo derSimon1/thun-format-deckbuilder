@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from collections import Counter
 from dataclasses import dataclass
 from typing import Iterable
@@ -16,20 +17,186 @@ class SideboardRule:
     priority: float = 1.0
 
 
+def sideboard_role_marker(label: str) -> str:
+    normalized = re.sub(r"[^a-z0-9]+", "_", label.lower()).strip("_")
+    return f"sideboard_{normalized}"
+
+
+ARTIFACT_ENCHANTMENT_ANSWER = SideboardRule(
+    "artifact/enchantment answer",
+    (
+        "destroy target artifact",
+        "destroy target enchantment",
+        "exile target artifact",
+        "exile target enchantment",
+    ),
+    priority=5,
+)
+GRAVEYARD_HATE = SideboardRule(
+    "graveyard hate",
+    (
+        "exile all cards from",
+        "cards in graveyards can't",
+        "exile target player's graveyard",
+        "exile target card from a graveyard",
+    ),
+    priority=4,
+)
+CREATURE_SWEEPER = SideboardRule(
+    "creature sweeper",
+    (
+        "destroy all creatures",
+        "exile all creatures",
+        "damage to each creature",
+        "-2/-2 until end of turn",
+    ),
+    priority=4,
+)
+COUNTERSPELL = SideboardRule(
+    "countermagic",
+    ("counter target spell", "counter target noncreature spell"),
+    priority=3.5,
+)
+TOKEN_PROTECTION = SideboardRule(
+    "protection",
+    (
+        "creatures you control gain indestructible",
+        "creatures you control gain hexproof",
+        "you gain 2 life",
+        "you gain 3 life",
+        "you gain 4 life",
+        "you gain 5 life",
+        "you gain life equal to",
+        "prevent all damage",
+        "prevent the next",
+    ),
+    roles=("protection",),
+    priority=6,
+)
+
+
 RULES: dict[str, tuple[SideboardRule, ...]] = {
     "burn": (
-        SideboardRule("artifact/enchantment answer", ("destroy target artifact", "destroy target enchantment", "exile target artifact", "exile target enchantment"), priority=5),
-        SideboardRule("graveyard hate", ("exile all cards from", "cards in graveyards can't"), priority=4),
-        SideboardRule("anti-lifegain", ("players can't gain life", "your opponents can't gain life"), priority=5),
-        SideboardRule("sweeper", ("damage to each creature",), priority=3),
+        ARTIFACT_ENCHANTMENT_ANSWER,
+        GRAVEYARD_HATE,
+        SideboardRule(
+            "anti-lifegain",
+            ("players can't gain life", "your opponents can't gain life"),
+            priority=5,
+        ),
+        CREATURE_SWEEPER,
     ),
     "tokens": (
-        SideboardRule("artifact/enchantment answer", ("destroy target artifact", "destroy target enchantment", "exile target artifact", "exile target enchantment"), priority=5),
-        SideboardRule("graveyard hate", ("exile all cards from", "cards in graveyards can't"), priority=4),
-        SideboardRule("protection", ("creatures you control gain indestructible", "creatures you control gain hexproof"), roles=("protection",), priority=4),
-        SideboardRule("sweeper", ("destroy all creatures", "exile all creatures"), priority=3),
+        TOKEN_PROTECTION,
+        ARTIFACT_ENCHANTMENT_ANSWER,
+        GRAVEYARD_HATE,
+        CREATURE_SWEEPER,
+    ),
+    "artifacts": (
+        GRAVEYARD_HATE,
+        CREATURE_SWEEPER,
+        COUNTERSPELL,
+        SideboardRule(
+            "protect artifacts",
+            (
+                "artifacts you control gain hexproof",
+                "target artifact gains hexproof",
+                "return target artifact card from your graveyard",
+                "return target artifact to its owner's hand",
+            ),
+            priority=4.5,
+        ),
+        SideboardRule(
+            "answer opposing artifacts",
+            (
+                "destroy target artifact",
+                "exile target artifact",
+                "gain control of target artifact",
+            ),
+            priority=4,
+        ),
+    ),
+    "shrines": (
+        GRAVEYARD_HATE,
+        CREATURE_SWEEPER,
+        COUNTERSPELL,
+        SideboardRule(
+            "protect enchantments",
+            (
+                "enchantments you control have hexproof",
+                "target enchantment gains hexproof",
+                "permanents you control gain hexproof",
+                "permanents you control gain indestructible",
+            ),
+            roles=("protection",),
+            priority=5,
+        ),
+        SideboardRule(
+            "enchantment recursion",
+            (
+                "return target enchantment card from your graveyard",
+                "return target permanent card from your graveyard",
+            ),
+            priority=4,
+        ),
+        ARTIFACT_ENCHANTMENT_ANSWER,
+    ),
+    "mill": (
+        GRAVEYARD_HATE,
+        CREATURE_SWEEPER,
+        COUNTERSPELL,
+        SideboardRule(
+            "anti-aggro removal",
+            (
+                "destroy target creature",
+                "exile target creature",
+                "target creature gets -",
+            ),
+            roles=("removal",),
+            priority=4.5,
+        ),
+        SideboardRule(
+            "protect mill plan",
+            (
+                "target player can't search",
+                "cards can't leave graveyards",
+                "spells in graveyards can't be cast",
+            ),
+            priority=4,
+        ),
     ),
 }
+
+
+def _matching_rules(
+    knowledge: CardKnowledge,
+    rules: tuple[SideboardRule, ...],
+) -> tuple[SideboardRule, ...]:
+    """Prefer exact Oracle-text categories over broad functional roles."""
+
+    text = knowledge.analysis.oracle_text.lower()
+    phrase_matches = tuple(
+        rule
+        for rule in rules
+        if any(phrase in text for phrase in rule.phrases)
+        and not (
+            rule is TOKEN_PROTECTION
+            and "choose one" not in text
+            and any(
+                targeted_action in text
+                for targeted_action in ("destroy target", "exile target")
+            )
+        )
+    )
+    if phrase_matches:
+        return phrase_matches
+
+    role_values = {str(role) for role in knowledge.roles}
+    return tuple(
+        rule
+        for rule in rules
+        if rule.roles and role_values.intersection(rule.roles)
+    )
 
 
 class SideboardBuilder:
@@ -57,27 +224,33 @@ class SideboardBuilder:
             available = max_copies - main_counts[analysis.name]
             if available <= 0:
                 continue
-            text = analysis.oracle_text.lower()
-            matched: list[str] = []
-            score = 0.0
-            for rule in rules:
-                phrase_match = any(phrase in text for phrase in rule.phrases)
-                role_match = any(role in knowledge.roles for role in rule.roles)
-                if phrase_match or role_match:
-                    matched.append(rule.label)
-                    score += rule.priority
-            if score <= 0:
-                continue
-            score -= analysis.mana_value * 0.15
-            scored.append((score, knowledge, tuple(matched)))
 
-        scored.sort(key=lambda item: (-item[0], item[1].analysis.mana_value, item[1].analysis.name))
+            matched_rules = _matching_rules(knowledge, rules)
+            if not matched_rules:
+                continue
+            score = sum(rule.priority for rule in matched_rules)
+            score -= analysis.mana_value * 0.15
+            matched = tuple(dict.fromkeys(rule.label for rule in matched_rules))
+            scored.append((score, knowledge, matched))
+
+        scored.sort(
+            key=lambda item: (
+                -item[0],
+                item[1].analysis.mana_value,
+                item[1].analysis.name,
+            )
+        )
         entries: list[DeckEntry] = []
         remaining = size
         for score, knowledge, reasons in scored:
             if remaining <= 0:
                 break
-            quantity = min(max_copies - main_counts[knowledge.analysis.name], 3, remaining)
+            quantity = min(
+                max_copies - main_counts[knowledge.analysis.name],
+                3,
+                remaining,
+            )
+            markers = {sideboard_role_marker(reason) for reason in reasons}
             entries.append(
                 DeckEntry(
                     name=knowledge.analysis.name,
@@ -87,7 +260,9 @@ class SideboardBuilder:
                     type_line=knowledge.analysis.type_line,
                     score=score,
                     reasons=tuple(f"Sideboard: {reason}" for reason in reasons),
-                    roles=tuple(sorted(str(role) for role in knowledge.roles)),
+                    roles=tuple(
+                        sorted({str(role) for role in knowledge.roles}.union(markers))
+                    ),
                 )
             )
             remaining -= quantity

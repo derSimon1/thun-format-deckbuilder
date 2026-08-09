@@ -7,6 +7,9 @@ SUPPORTED_ARCHETYPES = frozenset(
     {
         "burn",
         "tokens",
+        "artifacts",
+        "shrines",
+        "mill",
     }
 )
 
@@ -52,14 +55,9 @@ class DeckRequest:
             normalized_colors,
         )
 
-        if normalized_archetype not in SUPPORTED_ARCHETYPES:
-            supported = ", ".join(
-                sorted(SUPPORTED_ARCHETYPES)
-            )
-
+        if not normalized_archetype:
             raise ValueError(
-                f"Unbekannter Archetyp: {self.archetype}. "
-                f"Unterstützt werden aktuell: {supported}."
+                "Der Archetyp darf nicht leer sein."
             )
 
         invalid_colors = (

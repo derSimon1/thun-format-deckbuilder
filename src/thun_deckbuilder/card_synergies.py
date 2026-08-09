@@ -1,8 +1,9 @@
 from __future__ import annotations
 
-import re
-
-from thun_deckbuilder.card_analyzer import CardAnalysis
+from thun_deckbuilder.card_analyzer import (
+    CardAnalysis,
+    has_activated_sacrifice_outlet,
+)
 from thun_deckbuilder.synergy_tag import SynergyTag
 
 
@@ -80,7 +81,7 @@ def detect_synergies(analysis: CardAnalysis) -> frozenset[SynergyTag]:
 
     if "sacrifice" in text:
         synergies.add(SynergyTag.ARISTOCRATS)
-        if re.search(r"sacrifice (?:a|another) (?:creature|artifact|permanent)", text):
+        if has_activated_sacrifice_outlet(analysis):
             synergies.add(SynergyTag.SACRIFICE_OUTLET)
 
     if _contains_any(text, _DEATH_TRIGGER_PATTERNS):

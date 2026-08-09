@@ -1,0 +1,187 @@
+{
+  "review_id": "pioneer-rdw-thun-review-2026-08-05-v1",
+  "as_of": "2026-08-05",
+  "source_audit_run": 30988975288,
+  "source_audit_artifact": "pioneer-rdw-card-pool-audit-6",
+  "status": "read_only_research",
+  "source_mainboard_cards": [
+    "Monastery Swiftspear",
+    "Kumano Faces Kakkazan // Etching of Kumano",
+    "Soul-Scar Mage",
+    "Emberheart Challenger",
+    "Screaming Nemesis",
+    "Sunspine Lynx",
+    "Bonecrusher Giant // Stomp",
+    "Burst Lightning",
+    "Monstrous Rage",
+    "Reckless Rage",
+    "Ramunap Ruins",
+    "Rockface Village",
+    "Mutavault",
+    "Den of the Bugbear",
+    "Sokenzan, Crucible of Defiance"
+  ],
+  "conclusion": {
+    "transfer_band": "high_structural_partial_card_level",
+    "transfer_score_prior": 7.2,
+    "confidence": "medium_high",
+    "summary": "The low-curve mono-red shell, burn, pump and sideboard interaction transfer well. The current Pioneer role-compression package and creature-land resilience do not.",
+    "champion_change_authorized": false,
+    "generator_change_authorized": false
+  },
+  "evidence_counts": {
+    "reference_decks": 5,
+    "mainboard_core_cards_checked": 15,
+    "mainboard_core_cards_directly_legal": 7,
+    "sideboard_cards_checked": 6,
+    "sideboard_cards_directly_legal": 6,
+    "thun_legal_oracle_cards": 8021,
+    "mono_red_or_colorless_legal_candidates": 1868
+  },
+  "direct_transfers": [
+    {
+      "card": "Monastery Swiftspear",
+      "function": ["one_mana_threat", "spell_matter_threat", "haste"],
+      "timing": "immediate",
+      "notes": "Best direct transfer of the Pioneer one-drop engine."
+    },
+    {
+      "card": "Kumano Faces Kakkazan // Etching of Kumano",
+      "function": ["turn_one_damage", "future_creature_counter", "delayed_threat"],
+      "timing": "chapter_and_delayed_transformation",
+      "notes": "Legal and strategically relevant, but the creature body is not available immediately."
+    },
+    {
+      "card": "Burst Lightning",
+      "function": ["face_burn", "creature_removal", "late_mana_sink"],
+      "timing": "immediate_base_mode_conditional_kicker",
+      "notes": "Direct flexible burn; four damage requires kicker and must not be assumed on curve."
+    },
+    {
+      "card": "Monstrous Rage",
+      "function": ["combat_trick", "trample", "persistent_role_bonus"],
+      "timing": "immediate_target_required",
+      "notes": "Direct pump transfer, but it requires a creature and exposes the deck to removal in response."
+    },
+    {
+      "card": "Reckless Rage",
+      "function": ["efficient_creature_removal"],
+      "timing": "immediate_two_targets_required",
+      "notes": "Direct legal interaction, but requires a legal own-creature target and cannot damage the opponent."
+    },
+    {
+      "card": "Ramunap Ruins",
+      "function": ["utility_land", "late_reach"],
+      "timing": "activated_four_mana_desert_sacrifice",
+      "notes": "Direct legal reach land; the damage is neither free nor early."
+    },
+    {
+      "card": "Rockface Village",
+      "function": ["utility_land", "haste_support"],
+      "timing": "sorcery_speed_activated_tribal_target",
+      "notes": "Directly legal, but only supports Lizard, Mouse, Otter or Raccoon creatures. Its value depends on the final creature types."
+    }
+  ],
+  "sideboard_direct_transfers": [
+    "Flowstone Infusion",
+    "Magebane Lizard",
+    "Pyroclasm",
+    "Redcap Melee",
+    "Scorching Shot",
+    "Weathered Runestone"
+  ],
+  "functional_replacements": [
+    {
+      "missing_original": "Soul-Scar Mage",
+      "candidates": ["Sawblade Scamp", "Dwarven Forge-Chanter", "Electrostatic Infantry"],
+      "classification": "partial",
+      "lost_functions": ["one_mana_prowess_body", "damage_to_minus_counters"],
+      "notes": "Sawblade Scamp is one mana but converts spell casts into oil and requires tapping; the two-mana alternatives preserve spell scaling but not curve compression."
+    },
+    {
+      "missing_original": "Emberheart Challenger",
+      "candidates": ["Ancestral Anger", "Reckless Impulse", "Wrenn's Resolve", "Clockwork Percussionist"],
+      "classification": "split_across_cards",
+      "lost_functions": ["threat_plus_valiant_plus_card_access_in_one_slot"],
+      "notes": "Pump/trample and reload exist, but not on one efficient creature."
+    },
+    {
+      "missing_original": "Screaming Nemesis",
+      "candidates": ["Giant Cindermaw", "Call In a Professional"],
+      "classification": "partial",
+      "lost_functions": ["haste", "punishes_damage", "persistent_single-target_lifegain_lock"],
+      "notes": "The pool can prevent lifegain, but cannot reproduce the complete pressure and resilience package."
+    },
+    {
+      "missing_original": "Sunspine Lynx",
+      "candidates": ["Giant Cindermaw", "Call In a Professional"],
+      "classification": "partial",
+      "lost_functions": ["entry_damage_scaling", "nonbasic_punishment", "large_body_plus_lifegain_lock"],
+      "notes": "Anti-lifegain is available; the immediate top-end damage package is not."
+    },
+    {
+      "missing_original": "Bonecrusher Giant // Stomp",
+      "candidates": ["Burst Lightning", "Lightning Strike", "Abrade"],
+      "classification": "split_across_cards",
+      "lost_functions": ["burn_plus_creature_card_advantage", "single-card_role_compression"],
+      "notes": "Interaction is plentiful, but a separate threat slot is required."
+    },
+    {
+      "missing_original": "Mutavault / Den of the Bugbear / Sokenzan, Crucible of Defiance",
+      "candidates": ["Ramunap Ruins", "Rockface Village", "Blighted Gorge", "Spikefield Hazard // Spikefield Cave"],
+      "classification": "partial",
+      "lost_functions": ["untapped_creature_land_pressure", "low-opportunity-cost_token_or_creature_output"],
+      "notes": "Reach and land/spell flexibility exist, but not the same resilient board pressure. MDFCs enter tapped on the land side."
+    }
+  ],
+  "non_reproducible_functions": [
+    "A twelve-slot one-mana engine cannot be copied with three names at four copies; the Thun three-copy rule requires at least four distinct one-mana cards and lowers average card quality.",
+    "No checked common or uncommon reproduces Screaming Nemesis or Sunspine Lynx role compression.",
+    "No checked common or uncommon reproduces Bonecrusher Giant as both interaction and a threat from one card.",
+    "The checked pool has no direct equivalent to Mutavault or Den of the Bugbear as resilient creature-land pressure.",
+    "Persistent anti-lifegain exists only on narrower or slower cards and cannot be counted as immediate damage."
+  ],
+  "curated_candidate_core": {
+    "one_mana_or_turn_one": [
+      "Monastery Swiftspear",
+      "Kumano Faces Kakkazan // Etching of Kumano",
+      "Sawblade Scamp",
+      "Clockwork Percussionist",
+      "Phoenix Chick"
+    ],
+    "burn_and_removal": [
+      "Burst Lightning",
+      "Shock",
+      "Play with Fire",
+      "Lightning Strike",
+      "Reckless Rage",
+      "Abrade"
+    ],
+    "pump_and_trample": [
+      "Monstrous Rage",
+      "Ancestral Anger",
+      "Raze the Effigy"
+    ],
+    "reload": [
+      "Reckless Impulse",
+      "Wrenn's Resolve",
+      "Clockwork Percussionist"
+    ],
+    "anti_lifegain": [
+      "Giant Cindermaw",
+      "Call In a Professional"
+    ],
+    "lands": [
+      "Ramunap Ruins",
+      "Rockface Village",
+      "Blighted Gorge",
+      "Spikefield Hazard // Spikefield Cave"
+    ]
+  },
+  "open_questions": [
+    "Can four distinct one-mana packages reach acceptable opening-hand quality under the three-copy rule?",
+    "Is the loss of rare midgame role compression better answered by a lower, faster curve or by adding explicit reload slots?",
+    "Does Rockface Village have enough legal creature-type targets in the best generated shell to justify colorless early mana?",
+    "Can Ramunap Ruins provide enough late reach without overloading the mana base with colorless sources?"
+  ]
+}

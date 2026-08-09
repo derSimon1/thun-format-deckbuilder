@@ -20,3 +20,15 @@ def test_builder_respects_explicit_land_count():
     assert result.distribution.total_lands == 24
     assert sum(land.quantity for land in result.distribution.lands) == 24
     assert result.distribution.sources_for("W") > result.distribution.sources_for("U")
+
+
+def test_builder_guarantees_real_colorless_sources_for_colorless_costs():
+    entries = (
+        entry("White", 30, "{W}", 1.0),
+        entry("True Colorless", 1, "{2}{C}{C}", 4.0),
+    )
+
+    result = ManaBaseBuilder().build(entries, total_lands=24, deck_size=60)
+
+    assert result.distribution.sources_for("C") >= 2
+    assert result.quality.sufficient

@@ -1,0 +1,46 @@
+{
+  "as_of": "2026-08-06",
+  "format": "Thun",
+  "evidence_type": "MTG Arena playtest",
+  "baseline": {
+    "id": "TOK-A",
+    "name": "THUN-TOK-A Builder Baseline",
+    "origin": "PR #14 / Run 99",
+    "status": "rejected_as_active_candidate",
+    "bo3_matches": {"wins": 0, "losses": 3},
+    "games": {"wins": 0, "losses": 6},
+    "mainboard": [
+      [3, "Charge"], [3, "Hunted Witness"], [2, "Nesting Bot"], [1, "Battle Menu"],
+      [3, "Duty Beyond Death"], [3, "Raise the Alarm"], [3, "Servo Exhibition"],
+      [2, "Sunset Revelry"], [3, "Charge of the Mites"], [3, "Hop to It"],
+      [3, "Rally for the Throne"], [1, "Sworn Companions"], [3, "Okoye, Dora Milaje Leader"],
+      [3, "Rally the Monastery"], [24, "Plains"]
+    ]
+  },
+  "challengers": [
+    {
+      "id": "TOK-B",
+      "name": "THUN-TOK-B Immediate Pressure",
+      "status": "provisional_mainboard_leader",
+      "change_from_baseline": ["-3 Duty Beyond Death", "+2 Battle Menu", "+1 Sworn Companions"],
+      "bo3_matches": {"wins": 0, "losses": 1},
+      "bo3_games": {"wins": 0, "losses": 2},
+      "bo1_games": {"wins": 4, "losses": 2},
+      "hypothesis": "Unconditional immediate token production improves real pressure and removes a conditional failure mode."
+    },
+    {
+      "id": "TOK-C",
+      "name": "THUN-TOK-C Repeatable Pressure",
+      "status": "challenger",
+      "change_from_baseline": ["-3 Duty Beyond Death", "+3 Cathar's Call"],
+      "bo1_games": {"wins": 3, "losses": 2},
+      "low_information_wins": 1,
+      "hypothesis": "Repeatable token production may improve slower matchups but is more conditional and slower than immediate makers."
+    }
+  ],
+  "shared_sideboard": [
+    [3, "Dawnbringer Cleric"], [3, "Light of Hope"], [3, "Bagel and Schmear"],
+    [3, "Candy Trail"], [3, "Chaplain's Blessing"]
+  ],
+  "decision": "Advance TOK-B for focused future BO3 validation; no Champion or generator change yet."
+}

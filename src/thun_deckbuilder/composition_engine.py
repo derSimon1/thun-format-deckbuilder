@@ -7,12 +7,17 @@ from thun_deckbuilder.candidate_eligibility import CandidateEligibility
 from thun_deckbuilder.candidate_evaluator import CandidateEvaluator
 from thun_deckbuilder.candidate_score import CandidateScore
 from thun_deckbuilder.card_contribution import CardContribution, contribution_from_knowledge
+from thun_deckbuilder.card_analyzer import simulation_metadata_roles
+from thun_deckbuilder.artifact_signals import artifact_metadata_roles
 from thun_deckbuilder.deck_generator import DeckEntry, parse_mana_cost
 from thun_deckbuilder.deck_needs import DeckNeedsAnalyzer
 from thun_deckbuilder.deck_quality import DeckQualityAnalyzer, DeckQualityReport
 from thun_deckbuilder.deck_profile import DeckProfile
 from thun_deckbuilder.deck_state import DeckState
 from thun_deckbuilder.knowledge_base import CardKnowledge
+from thun_deckbuilder.mill_signals import (
+    simulation_metadata_roles as mill_simulation_metadata_roles,
+)
 from thun_deckbuilder.selection_trace import SelectionTrace
 
 
@@ -47,6 +52,18 @@ def _entry(
 ) -> DeckEntry:
     analysis = candidate.knowledge.analysis
     mana_cost = parse_mana_cost(str(candidate.knowledge.card.get("mana_cost", "")))
+    artifact_metadata = (
+        artifact_metadata_roles(analysis)
+        if candidate.knowledge.roles.intersection(
+            {
+                "artifact_enabler",
+                "artifact_engine",
+                "artifact_payoff",
+                "artifact_producer",
+            }
+        )
+        else ()
+    )
     return DeckEntry(
         name=analysis.name,
         quantity=quantity,
@@ -55,7 +72,16 @@ def _entry(
         type_line=analysis.type_line,
         score=score.total,
         reasons=tuple(component.reason for component in score.components),
-        roles=tuple(sorted(str(role) for role in candidate.knowledge.roles)),
+        roles=tuple(
+            sorted(
+                {
+                    *(str(role) for role in candidate.knowledge.roles),
+                    *simulation_metadata_roles(analysis),
+                    *mill_simulation_metadata_roles(analysis),
+                    *artifact_metadata,
+                }
+            )
+        ),
     )
 
 
