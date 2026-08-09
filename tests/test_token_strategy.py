@@ -117,7 +117,11 @@ def test_token_strategy_rejects_wrong_color():
 
     with CardDatabase() as database:
         knowledge_base = build_knowledge_base(database)
-        with pytest.raises(ValueError):
+
+        with pytest.raises(
+            ValueError,
+            match="nur Mono-Weiss",
+        ):
             TokenStrategy().generate(
                 knowledge_base=knowledge_base,
                 request=request,
