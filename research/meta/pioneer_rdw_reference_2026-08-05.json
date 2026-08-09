@@ -1,0 +1,126 @@
+{
+  "snapshot_id": "pioneer-rdw-reference-2026-08-05-v1",
+  "as_of": "2026-08-05",
+  "archetype": "Pioneer Red Deck Wins",
+  "purpose": "Card-level Thun transfer audit; not a Thun decklist and not Champion evidence.",
+  "source_decks": [
+    {
+      "player": "Giox96",
+      "event": "MTGO Pioneer Challenge 32 #12847702",
+      "date": "2026-07-18",
+      "result": "1st, 8-1",
+      "url": "https://mtgdecks.net/Pioneer/red-deck-wins-decklist-by-giox96-3026823"
+    },
+    {
+      "player": "yuxiaoyu",
+      "event": "MTGO Pioneer Challenge 32 #12847681",
+      "date": "2026-07-17",
+      "result": "Top 8, 4-3",
+      "url": "https://mtgdecks.net/Pioneer/red-deck-wins-decklist-by-yuxiaoyu-3023689"
+    },
+    {
+      "player": "The_Catfin",
+      "event": "MTGO Pioneer Challenge 32 #12847687",
+      "date": "2026-07-17",
+      "result": "Top 16, 4-2",
+      "url": "https://mtgdecks.net/Pioneer/red-deck-wins-decklist-by-the-catfin-3024075"
+    },
+    {
+      "player": "L1X0",
+      "event": "MTGO Pioneer Challenge 32 #12847147",
+      "date": "2026-07-12",
+      "result": "Top 16, 4-2",
+      "url": "https://mtgdecks.net/Pioneer/red-deck-wins-decklist-by-l1x0-3019760"
+    },
+    {
+      "player": "Arkany1",
+      "event": "MTGO Pioneer Challenge 32 #12847134",
+      "date": "2026-07-11",
+      "result": "Top 16, 4-2",
+      "url": "https://mtgdecks.net/Pioneer/red-deck-wins-decklist-by-arkany1-3015782"
+    }
+  ],
+  "observed_mainboard_structure": {
+    "lands": 23,
+    "one_mana_engine_slots": 12,
+    "creature_slots_typical": "25-28",
+    "cheap_spell_slots_typical": "9-12",
+    "core_card_average_copies": {
+      "Monastery Swiftspear": 4.0,
+      "Kumano Faces Kakkazan": 4.0,
+      "Soul-Scar Mage": 4.0,
+      "Emberheart Challenger": 4.0,
+      "Screaming Nemesis": 4.0,
+      "Sunspine Lynx": 4.0,
+      "Bonecrusher Giant": 3.4,
+      "Burst Lightning": 4.0,
+      "Monstrous Rage": 2.4,
+      "Reckless Rage": 3.0
+    }
+  },
+  "original_cards_to_verify": [
+    "Monastery Swiftspear",
+    "Kumano Faces Kakkazan // Etching of Kumano",
+    "Soul-Scar Mage",
+    "Emberheart Challenger",
+    "Screaming Nemesis",
+    "Sunspine Lynx",
+    "Bonecrusher Giant // Stomp",
+    "Burst Lightning",
+    "Monstrous Rage",
+    "Reckless Rage",
+    "Ramunap Ruins",
+    "Rockface Village",
+    "Mutavault",
+    "Den of the Bugbear",
+    "Sokenzan, Crucible of Defiance",
+    "Flowstone Infusion",
+    "Magebane Lizard",
+    "Pyroclasm",
+    "Redcap Melee",
+    "Scorching Shot",
+    "Weathered Runestone"
+  ],
+  "replacement_targets": {
+    "Soul-Scar Mage": [
+      "one_mana_threat",
+      "spell_matter_threat",
+      "creature_removal_synergy"
+    ],
+    "Emberheart Challenger": [
+      "efficient_threat",
+      "combat_trick_synergy",
+      "reload"
+    ],
+    "Screaming Nemesis": [
+      "immediate_pressure",
+      "resilient_threat",
+      "anti_lifegain"
+    ],
+    "Sunspine Lynx": [
+      "top_end_reach",
+      "anti_lifegain",
+      "punish_nonbasic_or_lifegain"
+    ],
+    "Bonecrusher Giant // Stomp": [
+      "face_burn",
+      "creature_removal",
+      "threat",
+      "role_compression"
+    ],
+    "Mutavault / Den of the Bugbear / Sokenzan": [
+      "utility_land",
+      "flood_protection",
+      "spell_slot_preservation"
+    ]
+  },
+  "minimum_functional_redundancy": {
+    "one_mana_threat": 4,
+    "spell_matter_threat": 4,
+    "face_burn": 4,
+    "combat_trick": 3,
+    "reload": 2,
+    "anti_lifegain": 1,
+    "utility_land": 2
+  }
+}

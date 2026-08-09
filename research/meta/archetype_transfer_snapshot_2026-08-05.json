@@ -1,0 +1,491 @@
+{
+  "snapshot_id": "pioneer-standard-transfer-2026-08-05-v1",
+  "as_of": "2026-08-05",
+  "minimum_ranked_decks": 100,
+  "methodology": "Read-only transfer audit. Archetypes were selected from public two-month Standard and Pioneer metagame aggregations. Each selected archetype has at least 100 source-reported decklists in the selection set and at least 100 ranked decks in the corresponding card-presence fingerprint. Scores are explicit priors for Thun-format research, not predicted win rates and not authorization to replace a Champion deck.",
+  "sources": [
+    {
+      "name": "MTGDecks Standard metagame",
+      "url": "https://mtgdecks.net/Standard",
+      "purpose": "Two-month archetype prevalence and deck-count selection",
+      "source_updated": "2026-07-28"
+    },
+    {
+      "name": "MTGDecks Pioneer metagame",
+      "url": "https://mtgdecks.net/Pioneer",
+      "purpose": "Two-month archetype prevalence and deck-count selection",
+      "source_updated": "2026-07-27"
+    },
+    {
+      "name": "MTGDecks archetype card statistics",
+      "url": "https://mtgdecks.net",
+      "purpose": "Core-card presence and structural fingerprint evidence",
+      "source_updated": "2026-08-05"
+    },
+    {
+      "name": "Wizards Banned and Restricted Announcement",
+      "url": "https://magic.wizards.com/en/news/announcements/banned-and-restricted-june-29-2026",
+      "purpose": "Official Standard metagame context and identification of Izzet and Badgermole-Cub pillars",
+      "source_updated": "2026-06-29"
+    },
+    {
+      "name": "Repository Thun legality configuration",
+      "url": "config/thun.toml",
+      "purpose": "Authoritative common/uncommon, set, paper and three-copy constraints",
+      "source_updated": "repository"
+    }
+  ],
+  "principles": [
+    "Successful decks usually make a relevant play by turn two.",
+    "Role compression is disproportionately valuable: one card often advances multiple strategic functions.",
+    "The best synergy enablers retain baseline utility when the ideal payoff is absent.",
+    "Core functions require redundant card names, especially under the Thun three-copy limit.",
+    "The mana base is part of the strategy through fixing, utility, flood protection or land triggers.",
+    "Top decks retain reload, resilience or a second wave after the first exchange.",
+    "Interaction must be available at the correct turn and speed, not merely present in aggregate.",
+    "A payoff must materially convert setup into damage, cards, mana, board control or inevitability.",
+    "Strong decks have useful mana sinks or card selection to reduce late-game dead draws.",
+    "Transferability is constrained by the least replaceable core function, not by the percentage of replaceable cards."
+  ],
+  "archetypes": [
+    {
+      "id": "standard-izzet-prowess",
+      "name": "Standard Izzet Prowess",
+      "format": "Standard",
+      "ranked_decks": 1460,
+      "fingerprint_decks": 534,
+      "confidence": "high",
+      "dimensions": {
+        "function_coverage": 0.90,
+        "redundancy_3copy": 0.88,
+        "mana_base": 0.65,
+        "role_compression": 0.55,
+        "sequence_preservation": 0.90,
+        "recovery_resilience": 0.65
+      },
+      "fingerprint": [
+        "Low threat count backed by a very high density of one- and two-mana noncreature spells",
+        "Cantrips are simultaneously consistency, trigger density and damage conversion",
+        "Tempo interaction protects the clock while preserving multi-spell turns",
+        "Evasion and burst damage punish opponents who tap out"
+      ],
+      "direct_functions": [
+        "Cheap cantrips",
+        "Prowess and spell-matter creatures",
+        "Cheap burn and bounce",
+        "Low curve"
+      ],
+      "functional_replacements": [
+        "Rare burst threats can be replaced by a wider package of uncommon prowess or magecraft threats",
+        "Rare modal interaction can be split across separate burn, bounce and counterspell slots"
+      ],
+      "non_reproducible_functions": [
+        "The best rare threats combine burst, evasion and resilience in one card",
+        "Rare dual and utility lands preserve both speed and late-game value"
+      ]
+    },
+    {
+      "id": "standard-izzet-spellementals",
+      "name": "Standard Izzet Spellementals",
+      "format": "Standard",
+      "ranked_decks": 533,
+      "fingerprint_decks": 276,
+      "confidence": "high",
+      "dimensions": {
+        "function_coverage": 0.92,
+        "redundancy_3copy": 0.85,
+        "mana_base": 0.65,
+        "role_compression": 0.58,
+        "sequence_preservation": 0.88,
+        "recovery_resilience": 0.70
+      },
+      "fingerprint": [
+        "Approximately twelve spell-cost-reduction or spell-scaling creatures",
+        "Large instant and sorcery density with cantrips, burn and counters",
+        "Threats become efficient through graveyard or spell-count conditions",
+        "The deck can switch between tempo and a longer permission game"
+      ],
+      "direct_functions": [
+        "Cheap instants and sorceries",
+        "Uncommon spell-cost-reduction creatures",
+        "Cantrips",
+        "Countermagic and burn"
+      ],
+      "functional_replacements": [
+        "Rare top-end spell creatures can be replaced by delve, cost-reduction or graveyard-scaling uncommons",
+        "Rare flexible interaction can be divided into narrower but efficient answers"
+      ],
+      "non_reproducible_functions": [
+        "Rare threats provide unusually high power while leaving mana open",
+        "Premium dual lands reduce the cost of playing reactive two-color Magic"
+      ]
+    },
+    {
+      "id": "standard-four-color-control",
+      "name": "Four-Color Control",
+      "format": "Standard",
+      "ranked_decks": 466,
+      "fingerprint_decks": 178,
+      "confidence": "high",
+      "critical_dependency_missing": true,
+      "dimensions": {
+        "function_coverage": 0.65,
+        "redundancy_3copy": 0.55,
+        "mana_base": 0.15,
+        "role_compression": 0.30,
+        "sequence_preservation": 0.40,
+        "recovery_resilience": 0.55
+      },
+      "fingerprint": [
+        "Best-in-class interaction and card advantage are selected across four colors",
+        "A rare-heavy mana base enables early interaction despite broad color requirements",
+        "Sweepers and card draw exchange resources before a compact finisher package takes over",
+        "Utility lands and modal cards reduce dead draws"
+      ],
+      "direct_functions": [
+        "Common and uncommon removal",
+        "Countermagic",
+        "Card draw",
+        "Some sweepers"
+      ],
+      "functional_replacements": [
+        "Individual rare answers can be replaced by narrower common or uncommon answers",
+        "Planeswalker finishers can be approximated by resilient creatures or repeatable enchantments"
+      ],
+      "non_reproducible_functions": [
+        "A common/uncommon four-color mana base cannot preserve the same early castability",
+        "Rare modal cards compress fixing, interaction and card advantage",
+        "The deck loses too many virtual spell slots when its lands provide only mana"
+      ]
+    },
+    {
+      "id": "standard-mono-green-landfall",
+      "name": "Mono-Green Landfall",
+      "format": "Standard",
+      "ranked_decks": 443,
+      "fingerprint_decks": 159,
+      "confidence": "high",
+      "dimensions": {
+        "function_coverage": 0.92,
+        "redundancy_3copy": 0.86,
+        "mana_base": 0.96,
+        "role_compression": 0.58,
+        "sequence_preservation": 0.88,
+        "recovery_resilience": 0.75
+      },
+      "fingerprint": [
+        "Turn-one acceleration followed by landfall or land-scaling threats",
+        "Sacrifice and fetch lands create multiple triggers from normal land drops",
+        "Payoffs turn future lands into board development rather than dead draws",
+        "Mono-color construction protects castability"
+      ],
+      "direct_functions": [
+        "Mana creatures",
+        "Common sacrifice lands",
+        "Landfall and land-scaling payoffs",
+        "Protection spells",
+        "Mono-color mana base"
+      ],
+      "functional_replacements": [
+        "Rare fetch lands can be approximated by slower common sacrifice lands",
+        "Rare role-compression creatures can be replaced by separate ramp and payoff cards"
+      ],
+      "non_reproducible_functions": [
+        "Badgermole Cub-level cards combine acceleration and threat quality at rare efficiency",
+        "The strongest rare payoffs recover more effectively from removal"
+      ]
+    },
+    {
+      "id": "standard-jeskai-lessons",
+      "name": "Jeskai Lessons",
+      "format": "Standard",
+      "ranked_decks": 543,
+      "fingerprint_decks": 428,
+      "confidence": "high",
+      "dimensions": {
+        "function_coverage": 0.70,
+        "redundancy_3copy": 0.62,
+        "mana_base": 0.38,
+        "role_compression": 0.45,
+        "sequence_preservation": 0.60,
+        "recovery_resilience": 0.60
+      },
+      "fingerprint": [
+        "A named spell engine is played in near-complete four-of packages",
+        "Tablet and repeated Lessons convert cheap spells into cumulative advantage",
+        "Three colors supply removal, counters and finishers",
+        "The deck is consistent because the engine pieces reinforce one another"
+      ],
+      "direct_functions": [
+        "Cheap spells",
+        "Cantrips and card draw",
+        "Common and uncommon Lessons",
+        "Countermagic and burn"
+      ],
+      "functional_replacements": [
+        "The broad spellslinger shell can be rebuilt with magecraft, flashback or cost-reduction packages",
+        "Some rare interaction can be replaced by narrower answers"
+      ],
+      "non_reproducible_functions": [
+        "Replacing the named Tablet/Lesson engine changes the archetype rather than preserving it",
+        "Three-color early interaction is much less reliable with low-rarity lands",
+        "The three-copy limit weakens a tightly coupled four-of engine"
+      ]
+    },
+    {
+      "id": "standard-selesnya-gearhulk",
+      "name": "Selesnya Gearhulk",
+      "format": "Standard",
+      "ranked_decks": 536,
+      "fingerprint_decks": 438,
+      "confidence": "high",
+      "dimensions": {
+        "function_coverage": 0.72,
+        "redundancy_3copy": 0.68,
+        "mana_base": 0.60,
+        "role_compression": 0.38,
+        "sequence_preservation": 0.65,
+        "recovery_resilience": 0.65
+      },
+      "fingerprint": [
+        "Turn-one mana creature into high-quality three- and four-mana plays",
+        "Creature toolbox and protection reduce the cost of situational cards",
+        "Counters and go-wide pressure produce a fast clock",
+        "Rare creatures compress tutor, body, protection and payoff functions"
+      ],
+      "direct_functions": [
+        "Mana creatures",
+        "+1/+1 counter synergies",
+        "Creature protection",
+        "Green-white go-wide bodies"
+      ],
+      "functional_replacements": [
+        "The shell can become Selesnya counters or creature midrange",
+        "Toolbox effects can be approximated by redundant functional packages"
+      ],
+      "non_reproducible_functions": [
+        "Brightglass Gearhulk-level tutor plus body role compression is unavailable",
+        "Rare threats preserve pressure and card quality after removal"
+      ]
+    },
+    {
+      "id": "pioneer-izzet-prowess",
+      "name": "Pioneer Izzet Prowess",
+      "format": "Pioneer",
+      "ranked_decks": 318,
+      "fingerprint_decks": 280,
+      "confidence": "high",
+      "dimensions": {
+        "function_coverage": 0.92,
+        "redundancy_3copy": 0.90,
+        "mana_base": 0.66,
+        "role_compression": 0.60,
+        "sequence_preservation": 0.92,
+        "recovery_resilience": 0.70
+      },
+      "fingerprint": [
+        "Eight or more one-mana spell-matter threats",
+        "Cheap burn, pump and cantrips enable multi-spell turns",
+        "Interaction doubles as damage or tempo",
+        "Redundant threat and spell classes preserve consistency"
+      ],
+      "direct_functions": [
+        "Monastery Swiftspear and other low-rarity prowess creatures",
+        "Cheap burn",
+        "Cantrips",
+        "Pump and protection"
+      ],
+      "functional_replacements": [
+        "Rare threats can be spread across more common and uncommon spell-matter creatures",
+        "Premium modal cards can be replaced by narrower effects"
+      ],
+      "non_reproducible_functions": [
+        "Rare dual lands and utility lands preserve both speed and reach",
+        "The best rare threats provide more resilience than low-rarity substitutes"
+      ]
+    },
+    {
+      "id": "pioneer-red-deck-wins",
+      "name": "Pioneer Red Deck Wins",
+      "format": "Pioneer",
+      "ranked_decks": 313,
+      "fingerprint_decks": 1609,
+      "confidence": "high",
+      "dimensions": {
+        "function_coverage": 0.95,
+        "redundancy_3copy": 0.94,
+        "mana_base": 0.98,
+        "role_compression": 0.65,
+        "sequence_preservation": 0.92,
+        "recovery_resilience": 0.72
+      },
+      "fingerprint": [
+        "High density of one-mana creatures and damage spells",
+        "Nearly every nonland card advances the damage race",
+        "Pump and burn convert small creatures into large tempo swings",
+        "Mono-red construction and redundant card classes support the three-copy limit"
+      ],
+      "direct_functions": [
+        "Low-rarity one-mana threats",
+        "Burn",
+        "Combat tricks",
+        "Mono-color mana base",
+        "Aggressive utility lands where legal"
+      ],
+      "functional_replacements": [
+        "Rare threats can be replaced by additional haste, prowess or burn cards",
+        "Rare land-based reach can be partially replaced by spell density"
+      ],
+      "non_reproducible_functions": [
+        "The best rare threats combine immediate damage, resilience and anti-lifegain",
+        "Utility lands reduce flood without consuming spell slots"
+      ]
+    },
+    {
+      "id": "pioneer-golgari-midrange",
+      "name": "Pioneer Golgari Midrange",
+      "format": "Pioneer",
+      "ranked_decks": 267,
+      "fingerprint_decks": 247,
+      "confidence": "medium",
+      "dimensions": {
+        "function_coverage": 0.78,
+        "redundancy_3copy": 0.75,
+        "mana_base": 0.72,
+        "role_compression": 0.38,
+        "sequence_preservation": 0.70,
+        "recovery_resilience": 0.65
+      },
+      "fingerprint": [
+        "Turn-one discard or removal followed by efficient standalone threats",
+        "Flexible answers cover creatures, permanents and graveyards",
+        "Threats generate value or remain relevant after a one-for-one exchange",
+        "Utility lands add pressure and reduce flood"
+      ],
+      "direct_functions": [
+        "Discard",
+        "Efficient uncommon removal",
+        "Graveyard value",
+        "Solid green-black creatures"
+      ],
+      "functional_replacements": [
+        "Rare threats can be replaced by ETB creatures, Adventures and recursion",
+        "Rare universal answers can be approximated by a diversified answer suite"
+      ],
+      "non_reproducible_functions": [
+        "Rare threats provide unusually high standalone rate and role compression",
+        "Rare lands contribute material pressure without reducing interaction count"
+      ]
+    },
+    {
+      "id": "pioneer-dimir-ninjas",
+      "name": "Pioneer Dimir Ninjas",
+      "format": "Pioneer",
+      "ranked_decks": 163,
+      "fingerprint_decks": 132,
+      "confidence": "medium",
+      "dimensions": {
+        "function_coverage": 0.86,
+        "redundancy_3copy": 0.82,
+        "mana_base": 0.66,
+        "role_compression": 0.58,
+        "sequence_preservation": 0.82,
+        "recovery_resilience": 0.66
+      },
+      "fingerprint": [
+        "Evasive one-mana creatures enable combat-damage and ninjutsu payoffs",
+        "Cheap discard and removal protect the connection window",
+        "Successful attacks convert tempo into card advantage",
+        "The deck can pivot into a disruptive midrange plan"
+      ],
+      "direct_functions": [
+        "Low-rarity evasive creatures",
+        "Moon-Circuit Hacker and other Ninja payoffs",
+        "Removal",
+        "Countermagic and discard"
+      ],
+      "functional_replacements": [
+        "Rare Kaito and Sheoldred backup can be replaced by slower draw engines or resilient uncommons",
+        "Premium discard can be approximated by conditional discard"
+      ],
+      "non_reproducible_functions": [
+        "Rare backup threats stabilize games where combat connection fails",
+        "Premium lands preserve early interaction and creature deployment simultaneously"
+      ]
+    },
+    {
+      "id": "pioneer-azorius-control",
+      "name": "Pioneer Azorius Control",
+      "format": "Pioneer",
+      "ranked_decks": 175,
+      "fingerprint_decks": 157,
+      "confidence": "medium",
+      "dimensions": {
+        "function_coverage": 0.72,
+        "redundancy_3copy": 0.70,
+        "mana_base": 0.62,
+        "role_compression": 0.35,
+        "sequence_preservation": 0.58,
+        "recovery_resilience": 0.60
+      },
+      "fingerprint": [
+        "Early counters and exile removal trade efficiently",
+        "Sweepers reset creature-heavy boards",
+        "Card draw and planeswalkers create inevitability",
+        "Utility lands provide win conditions and flood protection"
+      ],
+      "direct_functions": [
+        "Countermagic",
+        "Removal",
+        "Card draw",
+        "Some common and uncommon sweepers"
+      ],
+      "functional_replacements": [
+        "Planeswalkers can be approximated by repeatable enchantments and resilient finishers",
+        "Rare removal can be replaced by narrower answers"
+      ],
+      "non_reproducible_functions": [
+        "Premium uncounterable sweepers are rare",
+        "Planeswalkers compress card advantage, defense and win condition",
+        "Rare dual and utility lands support interaction without sacrificing inevitability"
+      ]
+    },
+    {
+      "id": "pioneer-abzan-greasefang",
+      "name": "Abzan Greasefang",
+      "format": "Pioneer",
+      "ranked_decks": 160,
+      "fingerprint_decks": 159,
+      "confidence": "high",
+      "critical_dependency_missing": true,
+      "dimensions": {
+        "function_coverage": 0.30,
+        "redundancy_3copy": 0.25,
+        "mana_base": 0.45,
+        "role_compression": 0.15,
+        "sequence_preservation": 0.20,
+        "recovery_resilience": 0.45
+      },
+      "fingerprint": [
+        "Place a specific large Vehicle in the graveyard",
+        "Resolve Greasefang and immediately return the Vehicle with haste",
+        "Use discard, selection and removal to protect a compact combo",
+        "Retain a midrange backup plan through standalone Vehicles and creatures"
+      ],
+      "direct_functions": [
+        "Self-mill and discard",
+        "Vehicles",
+        "Creature recursion",
+        "Green-black-white interaction"
+      ],
+      "functional_replacements": [
+        "The broad graveyard-Vehicle theme could become a different reanimator or artifact deck"
+      ],
+      "non_reproducible_functions": [
+        "Greasefang and Parhelion II are rare named combo pieces",
+        "No low-rarity replacement preserves immediate temporary reanimation, haste and the same attack output",
+        "Replacing the combo changes the archetype rather than translating it"
+      ]
+    }
+  ]
+}
