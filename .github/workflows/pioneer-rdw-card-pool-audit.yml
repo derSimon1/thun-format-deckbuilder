@@ -46,12 +46,50 @@ jobs:
       - name: Run complete test suite
         run: python -m pytest
 
+      - name: Export current legal Thun card pool
+        run: python export_legal_pool.py
+
+      - name: Validate legal-pool CSV schema
+        run: |
+          python - <<'PY'
+          import csv
+          from pathlib import Path
+
+          path = Path("thun_legal_pool.csv")
+          if not path.is_file():
+              raise SystemExit("thun_legal_pool.csv was not created")
+
+          with path.open(newline="", encoding="utf-8") as handle:
+              reader = csv.DictReader(handle)
+              required = {"power", "toughness", "oracle_tags"}
+              missing = required - set(reader.fieldnames or [])
+              if missing:
+                  raise SystemExit(f"Missing CSV columns: {sorted(missing)}")
+              rows = list(reader)
+
+          if not rows:
+              raise SystemExit("thun_legal_pool.csv contains no legal cards")
+
+          if not any(row.get("power") or row.get("toughness") for row in rows):
+              raise SystemExit("CSV contains no creature power/toughness values")
+
+          print(f"Validated {len(rows):,} legal cards with power/toughness/oracle_tags columns")
+          PY
+
       - name: Run Pioneer RDW transfer audit
         run: |
           mkdir -p artifacts/pioneer-rdw
           python scripts/audit_pioneer_rdw_transfer.py \
             --json-output artifacts/pioneer-rdw/audit.json \
             --markdown-output artifacts/pioneer-rdw/audit.md
+
+      - name: Upload legal card pool CSV
+        uses: actions/upload-artifact@v4
+        with:
+          name: thun-legal-pool-${{ github.run_number }}
+          path: thun_legal_pool.csv
+          retention-days: 7
+          if-no-files-found: error
 
       - name: Upload audit
         uses: actions/upload-artifact@v4
