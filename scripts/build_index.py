@@ -10,6 +10,7 @@ import ijson
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 INPUT_FILE = PROJECT_ROOT / "data" / "default_cards.json"
+ORACLE_TAGS_FILE = PROJECT_ROOT / "data" / "oracle_tags.json"
 OUTPUT_FILE = PROJECT_ROOT / "data" / "cards.db"
 
 BATCH_SIZE = 2_000
@@ -33,7 +34,10 @@ def create_database(connection: sqlite3.Connection) -> None:
             color_identity TEXT NOT NULL DEFAULT '',
             type_line TEXT,
             oracle_text TEXT,
-            keywords TEXT NOT NULL DEFAULT ''
+            keywords TEXT NOT NULL DEFAULT '',
+            power TEXT,
+            toughness TEXT,
+            oracle_tags TEXT NOT NULL DEFAULT ''
         );
 
         CREATE TABLE IF NOT EXISTS prints (
@@ -152,6 +156,32 @@ def get_mana_cost(card: dict[str, Any]) -> str:
     return " // ".join(costs)
 
 
+def get_card_characteristic(card: dict[str, Any], field: str) -> str | None:
+    """Liest Power/Toughness inklusive mehrseitiger Karten.
+
+    Scryfall modelliert Power und Toughness als Strings, da Werte wie ``*``,
+    ``1+*`` oder ``X`` vorkommen können.
+    """
+
+    value = card.get(field)
+    if isinstance(value, str):
+        return value
+
+    card_faces = card.get("card_faces")
+    if not isinstance(card_faces, list):
+        return None
+
+    face_values = [
+        str(face[field])
+        for face in card_faces
+        if face.get(field) is not None
+    ]
+    if not face_values:
+        return None
+
+    return " // ".join(face_values)
+
+
 def insert_card(
     connection: sqlite3.Connection,
     card: dict[str, Any],
@@ -177,9 +207,12 @@ def insert_card(
             color_identity,
             type_line,
             oracle_text,
-            keywords
+            keywords,
+            power,
+            toughness,
+            oracle_tags
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '')
         ON CONFLICT(oracle_id) DO UPDATE SET
             name = excluded.name,
             mana_cost = excluded.mana_cost,
@@ -188,7 +221,9 @@ def insert_card(
             color_identity = excluded.color_identity,
             type_line = excluded.type_line,
             oracle_text = excluded.oracle_text,
-            keywords = excluded.keywords
+            keywords = excluded.keywords,
+            power = excluded.power,
+            toughness = excluded.toughness
         """,
         (
             oracle_id,
@@ -200,6 +235,8 @@ def insert_card(
             card.get("type_line", ""),
             get_oracle_text(card),
             join_values(card.get("keywords", [])),
+            get_card_characteristic(card, "power"),
+            get_card_characteristic(card, "toughness"),
         ),
     )
 
@@ -263,10 +300,109 @@ def insert_card(
     return True
 
 
-def build_index() -> tuple[int, int, int]:
+def apply_oracle_tags(
+    connection: sqlite3.Connection,
+    path: Path = ORACLE_TAGS_FILE,
+) -> tuple[int, int]:
+    """Verknüpft Scryfall-Tagger-Oracle-Tags über ``oracle_id``.
+
+    Die Bulk-Datei ist tag-zentriert: Jeder Eintrag enthält ein ``label`` und
+    darunter ``taggings`` mit den betroffenen Oracle-IDs. Die temporäre Tabelle
+    vermeidet, den gesamten Tag-Datensatz in den Arbeitsspeicher zu laden.
+    """
+
+    if not path.exists():
+        raise FileNotFoundError(
+            f"Scryfall-Oracle-Tags nicht gefunden: {path}\n"
+            "Führe zuerst aus: python scripts/download_scryfall.py"
+        )
+
+    connection.executescript(
+        """
+        DROP TABLE IF EXISTS temp.oracle_tag_map;
+        CREATE TEMP TABLE oracle_tag_map (
+            oracle_id TEXT NOT NULL,
+            label TEXT NOT NULL,
+            PRIMARY KEY (oracle_id, label)
+        ) WITHOUT ROWID;
+        """
+    )
+
+    taggings_count = 0
+    pending_rows: list[tuple[str, str]] = []
+
+    with path.open("rb") as file_handle:
+        for tag in ijson.items(file_handle, "item"):
+            label = tag.get("label")
+            taggings = tag.get("taggings")
+            if not isinstance(label, str) or not isinstance(taggings, list):
+                continue
+
+            for tagging in taggings:
+                if not isinstance(tagging, dict):
+                    continue
+                oracle_id = tagging.get("oracle_id")
+                if not isinstance(oracle_id, str) or not oracle_id:
+                    continue
+
+                pending_rows.append((oracle_id, label))
+                taggings_count += 1
+
+                if len(pending_rows) >= BATCH_SIZE:
+                    connection.executemany(
+                        """
+                        INSERT OR IGNORE INTO oracle_tag_map (oracle_id, label)
+                        VALUES (?, ?)
+                        """,
+                        pending_rows,
+                    )
+                    pending_rows.clear()
+
+    if pending_rows:
+        connection.executemany(
+            """
+            INSERT OR IGNORE INTO oracle_tag_map (oracle_id, label)
+            VALUES (?, ?)
+            """,
+            pending_rows,
+        )
+
+    connection.execute(
+        """
+        UPDATE cards
+        SET oracle_tags = COALESCE(
+            (
+                SELECT GROUP_CONCAT(label, ',')
+                FROM (
+                    SELECT label
+                    FROM oracle_tag_map
+                    WHERE oracle_tag_map.oracle_id = cards.oracle_id
+                    ORDER BY label
+                )
+            ),
+            ''
+        )
+        """
+    )
+
+    tagged_cards = connection.execute(
+        "SELECT COUNT(*) FROM cards WHERE oracle_tags <> ''"
+    ).fetchone()[0]
+
+    connection.execute("DROP TABLE temp.oracle_tag_map")
+    return taggings_count, tagged_cards
+
+
+def build_index() -> tuple[int, int, int, int, int]:
     if not INPUT_FILE.exists():
         raise FileNotFoundError(
             f"Scryfall-Datei nicht gefunden: {INPUT_FILE}\n"
+            "Führe zuerst aus: python scripts/download_scryfall.py"
+        )
+
+    if not ORACLE_TAGS_FILE.exists():
+        raise FileNotFoundError(
+            f"Scryfall-Oracle-Tags nicht gefunden: {ORACLE_TAGS_FILE}\n"
             "Führe zuerst aus: python scripts/download_scryfall.py"
         )
 
@@ -307,11 +443,21 @@ def build_index() -> tuple[int, int, int]:
         connection.commit()
         print()
 
+        print(f"Verknüpfe Oracle-Tags: {ORACLE_TAGS_FILE}")
+        taggings_count, tagged_cards = apply_oracle_tags(connection)
+        connection.commit()
+
         unique_cards = connection.execute(
             "SELECT COUNT(*) FROM cards"
         ).fetchone()[0]
 
-        return unique_cards, stored_prints, skipped_prints
+        return (
+            unique_cards,
+            stored_prints,
+            skipped_prints,
+            taggings_count,
+            tagged_cards,
+        )
 
     finally:
         connection.close()
@@ -319,15 +465,23 @@ def build_index() -> tuple[int, int, int]:
 
 def main() -> int:
     try:
-        unique_cards, stored_prints, skipped_prints = build_index()
+        (
+            unique_cards,
+            stored_prints,
+            skipped_prints,
+            taggings_count,
+            tagged_cards,
+        ) = build_index()
 
         file_size_mb = OUTPUT_FILE.stat().st_size / 1024 / 1024
 
         print("Index erfolgreich erstellt.")
-        print(f"Eindeutige Karten: {unique_cards:,}")
+        print(f"Eindeutige Karten:   {unique_cards:,}")
         print(f"Gespeicherte Prints: {stored_prints:,}")
-        print(f"Übersprungene Prints: {skipped_prints:,}")
-        print(f"Datenbankgröße: {file_size_mb:.1f} MB")
+        print(f"Übersprungene Prints:{skipped_prints:,}")
+        print(f"Oracle-Taggings:     {taggings_count:,}")
+        print(f"Karten mit Tags:     {tagged_cards:,}")
+        print(f"Datenbankgröße:      {file_size_mb:.1f} MB")
         print(f"Datei: {OUTPUT_FILE}")
 
         return 0

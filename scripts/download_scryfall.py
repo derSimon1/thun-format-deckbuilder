@@ -15,8 +15,15 @@ DATA_DIR = PROJECT_ROOT / "data"
 
 BULK_INDEX_URL = "https://api.scryfall.com/bulk-data"
 BULK_TYPE = "default_cards"
+ORACLE_TAGS_BULK_TYPE = "oracle_tags"
 
 OUTPUT_FILE = DATA_DIR / "default_cards.json"
+ORACLE_TAGS_FILE = DATA_DIR / "oracle_tags.json"
+
+BULK_OUTPUTS = {
+    BULK_TYPE: OUTPUT_FILE,
+    ORACLE_TAGS_BULK_TYPE: ORACLE_TAGS_FILE,
+}
 
 USER_AGENT = "ThunFormatDeckbuilder/0.1"
 TIMEOUT_SECONDS = 120
@@ -35,7 +42,10 @@ def _download_uri(payload: dict[str, Any]) -> str | None:
     return None
 
 
-def get_bulk_download_url(session: requests.Session) -> str:
+def get_bulk_download_url(
+    session: requests.Session,
+    bulk_type: str = BULK_TYPE,
+) -> str:
     """Liest den Scryfall-Bulk-Index und liefert die Download-URL.
 
     Scryfall historically supplied ``download_uri`` with a JSON array and now
@@ -50,7 +60,7 @@ def get_bulk_download_url(session: requests.Session) -> str:
     payload: dict[str, Any] = response.json()
 
     for item in payload.get("data", []):
-        if item.get("type") != BULK_TYPE:
+        if item.get("type") != bulk_type:
             continue
 
         download_uri = _download_uri(item)
@@ -67,11 +77,11 @@ def get_bulk_download_url(session: requests.Session) -> str:
                 return detail_download_uri
 
         raise ScryfallDownloadError(
-            f"Bulk-Datensatz '{BULK_TYPE}' hat keine Download-URL."
+            f"Bulk-Datensatz '{bulk_type}' hat keine Download-URL."
         )
 
     raise ScryfallDownloadError(
-        f"Bulk-Datensatz '{BULK_TYPE}' wurde nicht gefunden."
+        f"Bulk-Datensatz '{bulk_type}' wurde nicht gefunden."
     )
 
 
@@ -98,14 +108,14 @@ def _jsonl_to_json_array(
                 if not stripped:
                     continue
                 try:
-                    card = json.loads(stripped)
+                    item = json.loads(stripped)
                 except json.JSONDecodeError as exc:
                     raise ScryfallDownloadError(
                         f"Ungültige JSONL-Zeile {line_number}: {exc}"
                     ) from exc
                 if not first:
                     output_handle.write(",\n")
-                json.dump(card, output_handle, ensure_ascii=False, separators=(",", ":"))
+                json.dump(item, output_handle, ensure_ascii=False, separators=(",", ":"))
                 first = False
                 count += 1
             output_handle.write("\n]\n")
@@ -119,7 +129,7 @@ def download_file(
     url: str,
     destination: Path,
 ) -> None:
-    """Lädt und normalisiert den Bulk-Datensatz atomar."""
+    """Lädt und normalisiert einen Bulk-Datensatz atomar."""
 
     downloaded_file = destination.with_suffix(destination.suffix + ".download.tmp")
     converted_file = destination.with_suffix(destination.suffix + ".tmp")
@@ -166,39 +176,45 @@ def download_file(
         raise
 
 
-def validate_download(path: Path) -> int:
-    """Prüft das große JSON-Array streamend, ohne es komplett zu laden."""
+def validate_download(
+    path: Path,
+    *,
+    required_fields: set[str] | None = None,
+) -> int:
+    """Prüft ein großes JSON-Array streamend, ohne es komplett zu laden."""
 
     count = 0
-    sample_card: dict[str, Any] | None = None
+    sample_item: dict[str, Any] | None = None
     try:
         with path.open("rb") as file_handle:
-            for card in ijson.items(file_handle, "item"):
-                if sample_card is None:
-                    sample_card = card
+            for item in ijson.items(file_handle, "item"):
+                if sample_item is None:
+                    sample_item = item
                 count += 1
     except (ijson.JSONError, OSError) as exc:
         raise ScryfallDownloadError(
             f"Die heruntergeladene Datei ist kein gültiges JSON-Array: {exc}"
         ) from exc
 
-    if sample_card is None or count == 0:
-        raise ScryfallDownloadError("Die Scryfall-Kartenliste ist leer.")
+    if sample_item is None or count == 0:
+        raise ScryfallDownloadError("Die Scryfall-Datenliste ist leer.")
 
-    required_fields = {
-        "id",
-        "name",
-        "set",
-        "rarity",
-        "type_line",
-    }
-    missing_fields = required_fields - sample_card.keys()
-    if missing_fields:
-        raise ScryfallDownloadError(
-            "Die Datei sieht nicht wie Scryfall-Kartendaten aus. "
-            f"Fehlende Felder: {sorted(missing_fields)}"
-        )
+    if required_fields:
+        missing_fields = required_fields - sample_item.keys()
+        if missing_fields:
+            raise ScryfallDownloadError(
+                "Die Datei hat nicht die erwartete Scryfall-Struktur. "
+                f"Fehlende Felder: {sorted(missing_fields)}"
+            )
     return count
+
+
+def _required_fields_for(bulk_type: str) -> set[str]:
+    if bulk_type == BULK_TYPE:
+        return {"id", "name", "set", "rarity", "type_line"}
+    if bulk_type == ORACLE_TAGS_BULK_TYPE:
+        return {"label", "taggings"}
+    return set()
 
 
 def main() -> int:
@@ -213,26 +229,30 @@ def main() -> int:
     )
 
     try:
-        print("Lese Scryfall-Bulk-Index ...")
-        download_url = get_bulk_download_url(session)
+        for bulk_type, output_file in BULK_OUTPUTS.items():
+            print(f"Lese Scryfall-Bulk-Index für '{bulk_type}' ...")
+            download_url = get_bulk_download_url(session, bulk_type)
 
-        print(f"Lade '{BULK_TYPE}' herunter ...")
-        download_file(
-            session=session,
-            url=download_url,
-            destination=OUTPUT_FILE,
-        )
+            print(f"Lade '{bulk_type}' herunter ...")
+            download_file(
+                session=session,
+                url=download_url,
+                destination=output_file,
+            )
 
-        print("Prüfe heruntergeladene Datei ...")
-        card_count = validate_download(OUTPUT_FILE)
+            print(f"Prüfe '{bulk_type}' ...")
+            item_count = validate_download(
+                output_file,
+                required_fields=_required_fields_for(bulk_type),
+            )
 
-        file_size_mb = OUTPUT_FILE.stat().st_size / 1024 / 1024
+            file_size_mb = output_file.stat().st_size / 1024 / 1024
+            print(f"Einträge:      {item_count:,}")
+            print(f"Dateigröße:    {file_size_mb:.1f} MB")
+            print(f"Gespeichert:   {output_file}")
+            print()
 
-        print("Download erfolgreich.")
-        print(f"Kartendrucke: {card_count:,}")
-        print(f"Dateigröße:   {file_size_mb:.1f} MB")
-        print(f"Gespeichert:  {OUTPUT_FILE}")
-
+        print("Scryfall-Download erfolgreich.")
         return 0
 
     except requests.RequestException as exc:
