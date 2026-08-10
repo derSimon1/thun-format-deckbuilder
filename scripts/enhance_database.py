@@ -42,6 +42,12 @@ def create_indexes(connection: sqlite3.Connection) -> None:
         CREATE INDEX IF NOT EXISTS idx_cards_color_identity
             ON cards(color_identity);
 
+        CREATE INDEX IF NOT EXISTS idx_cards_power
+            ON cards(power);
+
+        CREATE INDEX IF NOT EXISTS idx_cards_toughness
+            ON cards(toughness);
+
         CREATE INDEX IF NOT EXISTS idx_prints_oracle_id
             ON prints(oracle_id);
 
@@ -90,6 +96,9 @@ def create_views(connection: sqlite3.Connection) -> None:
             c.type_line,
             c.oracle_text,
             c.keywords,
+            c.power,
+            c.toughness,
+            c.oracle_tags,
             p.scryfall_id,
             p.set_code,
             p.set_name,
@@ -140,6 +149,9 @@ def create_views(connection: sqlite3.Connection) -> None:
             c.type_line,
             c.oracle_text,
             c.keywords,
+            c.power,
+            c.toughness,
+            c.oracle_tags,
             COUNT(p.scryfall_id) AS print_count,
             MIN(p.released_at) AS first_release,
             MAX(p.released_at) AS latest_release,
@@ -173,6 +185,7 @@ def create_fts_index(connection: sqlite3.Connection) -> bool:
             type_line,
             oracle_text,
             keywords,
+            oracle_tags,
             tokenize = 'unicode61 remove_diacritics 2',
             prefix = '2 3 4'
         );
@@ -182,14 +195,16 @@ def create_fts_index(connection: sqlite3.Connection) -> bool:
             name,
             type_line,
             oracle_text,
-            keywords
+            keywords,
+            oracle_tags
         )
         SELECT
             oracle_id,
             name,
             COALESCE(type_line, ''),
             COALESCE(oracle_text, ''),
-            COALESCE(keywords, '')
+            COALESCE(keywords, ''),
+            COALESCE(oracle_tags, '')
         FROM cards;
         """
     )

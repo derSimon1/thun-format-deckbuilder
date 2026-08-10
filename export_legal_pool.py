@@ -36,6 +36,7 @@ def main() -> None:
                 "keywords",
                 "power",
                 "toughness",
+                "oracle_tags",
                 "legal_prints",
             ]
         )
@@ -43,6 +44,7 @@ def main() -> None:
             keywords = c.get("keywords")
             if isinstance(keywords, list):
                 keywords = ";".join(keywords)
+            oracle_tags = c.get("oracle_tags") or []
             legal_prints = c.get("legal_prints") or []
             writer.writerow(
                 [
@@ -56,6 +58,7 @@ def main() -> None:
                     keywords,
                     c.get("power"),
                     c.get("toughness"),
+                    ";".join(str(tag) for tag in oracle_tags),
                     ";".join(str(p) for p in legal_prints),
                 ]
             )

@@ -36,6 +36,7 @@ def _row_to_card(row: sqlite3.Row) -> dict[str, Any]:
     card = dict(row)
     card["colors"] = _decode_json_list(card.get("colors"))
     card["color_identity"] = _decode_json_list(card.get("color_identity"))
+    card["oracle_tags"] = _decode_json_list(card.get("oracle_tags"))
     card.setdefault("mana_cost", "")
     card.setdefault("power", None)
     card.setdefault("toughness", None)
@@ -85,7 +86,7 @@ class CardDatabase:
         desired = [
             "oracle_id", "name", "mana_cost", "mana_value", "colors",
             "color_identity", "type_line", "oracle_text", "keywords",
-            "power", "toughness",
+            "power", "toughness", "oracle_tags",
         ]
         return ", ".join(column for column in desired if column in self.card_columns)
 
